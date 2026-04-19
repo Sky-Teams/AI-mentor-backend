@@ -27,18 +27,18 @@ const suggestionSchema = z.object({
 const metricSchema = z.object({
   name: z.string().min(1),
   score: z.number().int().min(0).max(100),
-  weight: z.number().int().min(1).max(100).optional(),
-  rationale: z.string().optional(),
+  weight: z.number().int().min(1).max(100).nullable(),
+  rationale: z.string().min(1).nullable(),
 });
 
 const sectionReviewSchema = z.object({
   summary: z.string().min(1),
-  issues: z.array(issueSchema).default([]),
-  missingInfoQuestions: z.array(z.string().min(1)).default([]),
-  nextSteps: z.array(z.string().min(1)).default([]),
-  suggestions: z.array(suggestionSchema).default([]),
-  metrics: z.array(metricSchema).default([]),
-  warnings: z.array(z.string().min(1)).default([]),
+  issues: z.array(issueSchema),
+  missingInfoQuestions: z.array(z.string().min(1)),
+  nextSteps: z.array(z.string().min(1)),
+  suggestions: z.array(suggestionSchema),
+  metrics: z.array(metricSchema),
+  warnings: z.array(z.string().min(1)),
   overallScore: z.number().int().min(0).max(100),
   readinessIndicator: z.number().int().min(0).max(100),
 });

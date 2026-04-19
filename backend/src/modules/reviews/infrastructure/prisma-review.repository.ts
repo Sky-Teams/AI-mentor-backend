@@ -7,7 +7,10 @@ import type {
   ReviewRun,
   ReviewSuggestion,
 } from "../domain/review";
-import type { ReviewCompletionInput, ReviewRepository } from "../domain/review.repository";
+import type {
+  ReviewCompletionInput,
+  ReviewRepository,
+} from "../domain/review.repository";
 
 const mapIssue = (issue: {
   id: string;
@@ -111,7 +114,8 @@ const mapReviewRun = (review: {
   createdAt: review.createdAt,
   completedAt: review.completedAt,
   sectionKey: review.section?.key,
-  missingInfoQuestions: (review.missingInfoQuestions as string[] | undefined) ?? [],
+  missingInfoQuestions:
+    (review.missingInfoQuestions as string[] | undefined) ?? [],
   nextSteps: (review.nextSteps as string[] | undefined) ?? [],
   warnings: (review.warnings as string[] | undefined) ?? [],
   issues: review.issues?.map(mapIssue),
@@ -137,7 +141,8 @@ const mapReadinessSnapshot = (snapshot: {
   summary: snapshot.summary,
   blockers: (snapshot.blockers as string[] | undefined) ?? [],
   strengths: (snapshot.strengths as string[] | undefined) ?? [],
-  sectionScores: (snapshot.sectionScores as Record<string, number> | undefined) ?? {},
+  sectionScores:
+    (snapshot.sectionScores as Record<string, number> | undefined) ?? {},
   createdAt: snapshot.createdAt,
 });
 
@@ -177,7 +182,10 @@ export class PrismaReviewRepository implements ReviewRepository {
     });
   }
 
-  public async markReviewFailed(reviewRunId: string, errorMessage: string): Promise<void> {
+  public async markReviewFailed(
+    reviewRunId: string,
+    errorMessage: string,
+  ): Promise<void> {
     await this.prisma.reviewRun.update({
       where: { id: reviewRunId },
       data: {
@@ -188,86 +196,114 @@ export class PrismaReviewRepository implements ReviewRepository {
     });
   }
 
-  public async completeReview(input: ReviewCompletionInput): Promise<ReviewRun> {
-    const review = await this.prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
-      await transaction.reviewIssue.deleteMany({
-        where: {
-          reviewRunId: input.reviewRunId,
-        },
-      });
-      await transaction.reviewSuggestion.deleteMany({
-        where: {
-          reviewRunId: input.reviewRunId,
-        },
-      });
-      await transaction.reviewMetric.deleteMany({
-        where: {
-          reviewRunId: input.reviewRunId,
-        },
-      });
-
-      const reviewRun = await transaction.reviewRun.update({
-        where: {
-          id: input.reviewRunId,
-        },
-        data: {
-          status: "COMPLETED",
-          summary: input.summary,
-          missingInfoQuestions: input.missingInfoQuestions,
-          nextSteps: input.nextSteps,
-          warnings: input.warnings,
-          overallScore: input.overallScore,
-          readinessIndicator: input.readinessIndicator,
-          rawResponse: input.rawResponse,
-          inputTokens: input.inputTokens,
-          outputTokens: input.outputTokens,
-          totalTokens: input.totalTokens,
-          appCreditsConsumed: input.appCreditsConsumed,
-          completedAt: new Date(),
-          issues: {
-            create: input.issues,
+  public async completeReview(
+    input: ReviewCompletionInput,
+  ): Promise<ReviewRun> {
+    const review = await this.prisma.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        const existingReviewRun = await transaction.reviewRun.findUnique({
+          where: {
+            id: input.reviewRunId,
           },
-          suggestions: {
-            create: input.suggestions,
+          select: {
+            projectId: true,
+            sectionId: true,
           },
-          metrics: {
-            create: input.metrics,
+        });
+
+        if (!existingReviewRun)
+          throw new Error("Review run ${input.reviewRunId} was not found");
+
+        await transaction.reviewIssue.deleteMany({
+          where: {
+            reviewRunId: input.reviewRunId,
           },
-        },
-        include: {
-          section: true,
-          issues: true,
-          suggestions: true,
-          metrics: true,
-        },
-      });
+        });
+        await transaction.reviewSuggestion.deleteMany({
+          where: {
+            reviewRunId: input.reviewRunId,
+          },
+        });
+        await transaction.reviewMetric.deleteMany({
+          where: {
+            reviewRunId: input.reviewRunId,
+          },
+        });
 
-      await transaction.project.update({
-        where: {
-          id: reviewRun.projectId,
-        },
-        data: {
-          status: "IN_REVIEW",
-          lastReviewedAt: new Date(),
-        },
-      });
+        const reviewRun = await transaction.reviewRun.update({
+          where: {
+            id: input.reviewRunId,
+          },
+          data: {
+            status: "COMPLETED",
+            summary: input.summary,
+            missingInfoQuestions: input.missingInfoQuestions,
+            nextSteps: input.nextSteps,
+            warnings: input.warnings,
+            overallScore: input.overallScore,
+            readinessIndicator: input.readinessIndicator,
+            rawResponse: input.rawResponse,
+            inputTokens: input.inputTokens,
+            outputTokens: input.outputTokens,
+            totalTokens: input.totalTokens,
+            appCreditsConsumed: input.appCreditsConsumed,
+            completedAt: new Date(),
+            issues: {
+              create: input.issues.map((issue) => ({
+                ...issue,
+                project: {
+                  connect: { id: existingReviewRun.projectId },
+                },
+                section: {
+                  connect: { id: existingReviewRun.sectionId },
+                },
+              })),
+            },
+            suggestions: {
+              create: input.suggestions,
+            },
+            metrics: {
+              create: input.metrics,
+            },
+          },
+          include: {
+            section: true,
+            issues: true,
+            suggestions: true,
+            metrics: true,
+          },
+        });
 
-      await transaction.projectSection.update({
-        where: {
-          id: reviewRun.sectionId,
-        },
-        data: {
-          status: "IN_REVIEW",
-        },
-      });
+        await transaction.project.update({
+          where: {
+            id: reviewRun.projectId,
+          },
+          data: {
+            status: "IN_REVIEW",
+            lastReviewedAt: new Date(),
+          },
+        });
 
-      return reviewRun;
-    });
+        await transaction.projectSection.update({
+          where: {
+            id: reviewRun.sectionId,
+          },
+          data: {
+            status: "IN_REVIEW",
+          },
+        });
+
+        return reviewRun;
+      },
+    );
 
     return mapReviewRun(review);
   }
 
-  public async listProjectReviews(projectId: string, ownerId: string): Promise<ReviewRun[]> {
+  public async listProjectReviews(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReviewRun[]> {
     const reviews = await this.prisma.reviewRun.findMany({
       where: {
         projectId,
@@ -290,7 +326,10 @@ export class PrismaReviewRepository implements ReviewRepository {
     return reviews.map(mapReviewRun);
   }
 
-  public async findReviewRun(reviewRunId: string, ownerId: string): Promise<ReviewRun | null> {
+  public async findReviewRun(
+    reviewRunId: string,
+    ownerId: string,
+  ): Promise<ReviewRun | null> {
     const review = await this.prisma.reviewRun.findFirst({
       where: {
         id: reviewRunId,
@@ -310,7 +349,10 @@ export class PrismaReviewRepository implements ReviewRepository {
     return review ? mapReviewRun(review) : null;
   }
 
-  public async findIssue(issueId: string, ownerId: string): Promise<ReviewIssue | null> {
+  public async findIssue(
+    issueId: string,
+    ownerId: string,
+  ): Promise<ReviewIssue | null> {
     const issue = await this.prisma.reviewIssue.findFirst({
       where: {
         id: issueId,
@@ -343,7 +385,10 @@ export class PrismaReviewRepository implements ReviewRepository {
     return mapIssue(issue);
   }
 
-  public async listProjectIssues(projectId: string, ownerId: string): Promise<ReviewIssue[]> {
+  public async listProjectIssues(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReviewIssue[]> {
     const issues = await this.prisma.reviewIssue.findMany({
       where: {
         projectId,
@@ -395,37 +440,42 @@ export class PrismaReviewRepository implements ReviewRepository {
   public async saveReadinessSnapshot(
     input: Omit<ReadinessSnapshot, "id" | "createdAt">,
   ): Promise<ReadinessSnapshot> {
-    const snapshot = await this.prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
-      const created = await transaction.readinessSnapshot.create({
-        data: {
-          projectId: input.projectId,
-          overallScore: input.overallScore,
-          status: input.status,
-          summary: input.summary,
-          blockers: input.blockers,
-          strengths: input.strengths,
-          sectionScores: input.sectionScores,
-        },
-      });
+    const snapshot = await this.prisma.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        const created = await transaction.readinessSnapshot.create({
+          data: {
+            projectId: input.projectId,
+            overallScore: input.overallScore,
+            status: input.status,
+            summary: input.summary,
+            blockers: input.blockers,
+            strengths: input.strengths,
+            sectionScores: input.sectionScores,
+          },
+        });
 
-      await transaction.project.update({
-        where: {
-          id: input.projectId,
-        },
-        data: {
-          readinessScore: input.overallScore,
-          status:
-            input.status === "READY_FOR_SUBMISSION" ? "READY" : undefined,
-        },
-      });
+        await transaction.project.update({
+          where: {
+            id: input.projectId,
+          },
+          data: {
+            readinessScore: input.overallScore,
+            status:
+              input.status === "READY_FOR_SUBMISSION" ? "READY" : undefined,
+          },
+        });
 
-      return created;
-    });
+        return created;
+      },
+    );
 
     return mapReadinessSnapshot(snapshot);
   }
 
-  public async getLatestReadiness(projectId: string, ownerId: string): Promise<ReadinessSnapshot | null> {
+  public async getLatestReadiness(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReadinessSnapshot | null> {
     const snapshot = await this.prisma.readinessSnapshot.findFirst({
       where: {
         projectId,
@@ -442,7 +492,10 @@ export class PrismaReviewRepository implements ReviewRepository {
     return snapshot ? mapReadinessSnapshot(snapshot) : null;
   }
 
-  public async getActiveReviewPrompt(): Promise<{ id: string; templateText: string } | null> {
+  public async getActiveReviewPrompt(): Promise<{
+    id: string;
+    templateText: string;
+  } | null> {
     const template = await this.prisma.promptTemplate.findFirst({
       where: {
         code: "case-report-section-review",
