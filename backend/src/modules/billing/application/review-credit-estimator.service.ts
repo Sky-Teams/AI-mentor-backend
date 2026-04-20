@@ -2,9 +2,9 @@ import { encodingForModel, getEncoding, type TiktokenModel } from "js-tiktoken";
 import type {
   Project,
   ProjectSectionKey,
-} from "../../projects/domain/project.ts";
+} from "../../projects/domain/project";
 
-import { sectionReviewSchema } from "../../reviews/infrastructure/openai-section-reviewer.js";
+import { sectionReviewSchema } from "../../reviews/infrastructure/openai-section-reviewer";
 
 export interface ReviewCreditEstimateInput {
   project: Project;
@@ -14,7 +14,7 @@ export interface ReviewCreditEstimateInput {
     content: string;
   };
   promptTemplate: string;
-  guideLineRules: Record<string, unknown>;
+  guidelineRules: Record<string, unknown>;
   model: string;
 }
 
@@ -41,7 +41,7 @@ export class ReviewCreditEstimatorService {
       targetJournal: input.project.targetJournal,
       projectMetadata: input.project.metadata,
       section: input.section,
-      guidelineRules: input.guideLineRules,
+      guidelineRules: input.guidelineRules,
     });
 
     const requestPayload = JSON.stringify({
@@ -73,7 +73,6 @@ export class ReviewCreditEstimatorService {
 
   private countTokens(text: string, model: string): number {
     try {
-      console.log(encodingForModel(model as TiktokenModel).encode(text));
       return encodingForModel(model as TiktokenModel).encode(text).length;
     } catch {
       return getEncoding("cl100k_base").encode(text).length;
