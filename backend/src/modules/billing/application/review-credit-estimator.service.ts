@@ -1,8 +1,5 @@
 import { encodingForModel, getEncoding, type TiktokenModel } from "js-tiktoken";
-import type {
-  Project,
-  ProjectSectionKey,
-} from "../../projects/domain/project";
+import type { Project, ProjectSectionKey } from "../../projects/domain/project";
 
 import { sectionReviewSchema } from "../../reviews/infrastructure/openai-section-reviewer";
 
