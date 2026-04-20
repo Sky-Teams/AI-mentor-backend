@@ -4,10 +4,24 @@ import type { ReviewRepository } from "../../../src/modules/reviews/domain/revie
 import type { ProjectService } from "../../../src/modules/projects/application/project.service";
 import type { SectionReviewer } from "../../../src/modules/reviews/domain/section-reviewer";
 import type { BillingService } from "../../../src/modules/billing/application/billing.service";
+import type { ReviewCreditEstimatorService } from "../../../src/modules/billing/application/review-credit-estimator.service";
+import type { ReadinessSnapshot } from "../../../src/modules/reviews/domain/review";
 
 describe("ReviewService", () => {
   it("returns an existing readiness snapshot without recalculating", async () => {
-    const reviewRepository: jest.Mocked<ReviewRepository> = {
+    const existingSnapshot: ReadinessSnapshot = {
+      id: "snapshot-1",
+      projectId: "project-1",
+      overallScore: 72,
+      status: "READY_FOR_INTERNAL_REVIEW",
+      summary: "Existing readiness",
+      blockers: [],
+      strengths: [],
+      sectionScores: {},
+      createdAt: new Date(),
+    };
+
+    const reviewRepository = {
       createQueuedReview: jest.fn(),
       markReviewProcessing: jest.fn(),
       markReviewFailed: jest.fn(),
@@ -19,20 +33,12 @@ describe("ReviewService", () => {
       listProjectIssues: jest.fn(),
       findSectionForReview: jest.fn(),
       saveReadinessSnapshot: jest.fn(),
-      getLatestReadiness: jest.fn().mockResolvedValue({
-        id: "snapshot-1",
-        projectId: "project-1",
-        overallScore: 72,
-        status: "READY_FOR_INTERNAL_REVIEW",
-        summary: "Existing readiness",
-        blockers: [],
-        strengths: [],
-        sectionScores: {},
-        createdAt: new Date(),
-      }),
+      getLatestReadiness: jest
+        .fn<(projectId: string, ownerId: string) => Promise<ReadinessSnapshot | null>>()
+        .mockResolvedValue(existingSnapshot),
       getActiveReviewPrompt: jest.fn(),
       getDefaultGuidelinePack: jest.fn(),
-    };
+    } as unknown as jest.Mocked<ReviewRepository>;
 
     const projectService = {
       getProject: jest.fn(),
@@ -40,12 +46,14 @@ describe("ReviewService", () => {
 
     const sectionReviewer = {} as SectionReviewer;
     const billingService = {} as BillingService;
+    const reviewCreditEstimator = {} as ReviewCreditEstimatorService;
 
     const reviewService = new ReviewService(
       reviewRepository,
       projectService,
       sectionReviewer,
       billingService,
+      reviewCreditEstimator,
     );
 
     const readiness = await reviewService.getReadiness("project-1", "user-1");
