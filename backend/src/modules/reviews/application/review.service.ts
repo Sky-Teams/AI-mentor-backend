@@ -3,9 +3,15 @@ import { REQUIRED_SECTION_KEYS } from "../../../shared/constants/sections";
 import { env } from "../../../shared/config/env";
 import { AppError } from "../../../shared/errors/app-error";
 import type { BillingService } from "../../billing/application/billing.service";
+import type { ReviewCreditEstimatorService } from "../../billing/application/review-credit-estimator.service";
 import type { ProjectService } from "../../projects/application/project.service";
 import type { ProjectSectionKey } from "../../projects/domain/project";
-import type { ReviewIssue, ReviewRun, ReadinessSnapshot, ReadinessStatus } from "../domain/review";
+import type {
+  ReviewIssue,
+  ReviewRun,
+  ReadinessSnapshot,
+  ReadinessStatus,
+} from "../domain/review";
 import type { ReviewRepository } from "../domain/review.repository";
 import type { SectionReviewer } from "../domain/section-reviewer";
 
@@ -22,6 +28,7 @@ export class ReviewService {
     private readonly projectService: ProjectService,
     private readonly sectionReviewer: SectionReviewer,
     private readonly billingService: BillingService,
+    private readonly reviewCreditEstimator: ReviewCreditEstimatorService,
   ) {}
 
   public async triggerSectionReview(input: {
@@ -29,9 +36,16 @@ export class ReviewService {
     ownerId: string;
     sectionKey: ProjectSectionKey;
   }): Promise<ReviewRun> {
-    const project = await this.projectService.getProject(input.projectId, input.ownerId);
+    const project = await this.projectService.getProject(
+      input.projectId,
+      input.ownerId,
+    );
     if (project.status === "ARCHIVED") {
-      throw new AppError("Archived projects cannot be reviewed.", StatusCodes.BAD_REQUEST, "PROJECT_ARCHIVED");
+      throw new AppError(
+        "Archived projects cannot be reviewed.",
+        StatusCodes.BAD_REQUEST,
+        "PROJECT_ARCHIVED",
+      );
     }
 
     const section = await this.reviewRepository.findSectionForReview(
@@ -41,7 +55,11 @@ export class ReviewService {
     );
 
     if (!section) {
-      throw new AppError("Section was not found.", StatusCodes.NOT_FOUND, "SECTION_NOT_FOUND");
+      throw new AppError(
+        "Section was not found.",
+        StatusCodes.NOT_FOUND,
+        "SECTION_NOT_FOUND",
+      );
     }
 
     if (!section.content.trim()) {
@@ -62,18 +80,34 @@ export class ReviewService {
         "When information is missing, ask explicit questions and warn about the gap.",
       ].join("\n");
 
-    const activeGuidelinePack = await this.reviewRepository.getDefaultGuidelinePack();
-    const guidelinePack =
-      activeGuidelinePack?.rules ?? {
-        focus: [
-          "CARE-like completeness",
-          "Clarity and publication readiness",
-          "Ethical statement completeness",
-          "No fabricated facts or citations",
-        ],
-      };
+    const activeGuidelinePack =
+      await this.reviewRepository.getDefaultGuidelinePack();
 
-    await this.billingService.assertCanAffordReview(input.ownerId);
+    const guidelinePack = activeGuidelinePack?.rules ?? {
+      focus: [
+        "CARE-like completeness",
+        "Clarity and publication readiness",
+        "Ethical statement completeness",
+        "No fabricated facts or citations",
+      ],
+    };
+
+    const estimate = this.reviewCreditEstimator.estimate({
+      project,
+      section: {
+        key: section.key,
+        title: section.title,
+        content: section.content,
+      },
+      promptTemplate,
+      guidelineRules: guidelinePack,
+      model: env.OPENAI_MODEL,
+    });
+
+    await this.billingService.assertCanAffordReview(
+      input.ownerId,
+      estimate.estimatedCredits,
+    );
 
     const reviewRun = await this.reviewRepository.createQueuedReview({
       aiModel: env.OPENAI_MODEL,
@@ -98,13 +132,19 @@ export class ReviewService {
         guidelineRules: guidelinePack,
       });
 
-      const billedCredits = await this.billingService.recordSuccessfulReviewUsage({
-        userId: input.ownerId,
-        projectId: input.projectId,
-        reviewRunId: reviewRun.id,
-        model: env.OPENAI_MODEL,
-        usage: execution.usage,
-      });
+      const actualCredits = this.reviewCreditEstimator.calculateActualCredit(
+        execution.usage,
+      );
+
+      const billedCredits =
+        await this.billingService.recordSuccessfulReviewUsage({
+          userId: input.ownerId,
+          projectId: input.projectId,
+          reviewRunId: reviewRun.id,
+          model: env.OPENAI_MODEL,
+          amount: actualCredits,
+          usage: execution.usage,
+        });
 
       const completedReview = await this.reviewRepository.completeReview({
         reviewRunId: reviewRun.id,
@@ -134,27 +174,44 @@ export class ReviewService {
         model: env.OPENAI_MODEL,
       });
 
-      const message = error instanceof Error ? error.message : "Review processing failed.";
+      const message =
+        error instanceof Error ? error.message : "Review processing failed.";
       await this.reviewRepository.markReviewFailed(reviewRun.id, message);
       throw error;
     }
   }
 
-  public async listProjectReviews(projectId: string, ownerId: string): Promise<ReviewRun[]> {
+  public async listProjectReviews(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReviewRun[]> {
     await this.projectService.getProject(projectId, ownerId);
     return this.reviewRepository.listProjectReviews(projectId, ownerId);
   }
 
-  public async getReviewRun(reviewRunId: string, ownerId: string): Promise<ReviewRun> {
-    const review = await this.reviewRepository.findReviewRun(reviewRunId, ownerId);
+  public async getReviewRun(
+    reviewRunId: string,
+    ownerId: string,
+  ): Promise<ReviewRun> {
+    const review = await this.reviewRepository.findReviewRun(
+      reviewRunId,
+      ownerId,
+    );
     if (!review) {
-      throw new AppError("Review run was not found.", StatusCodes.NOT_FOUND, "REVIEW_NOT_FOUND");
+      throw new AppError(
+        "Review run was not found.",
+        StatusCodes.NOT_FOUND,
+        "REVIEW_NOT_FOUND",
+      );
     }
 
     return review;
   }
 
-  public async listProjectIssues(projectId: string, ownerId: string): Promise<ReviewIssue[]> {
+  public async listProjectIssues(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReviewIssue[]> {
     await this.projectService.getProject(projectId, ownerId);
     return this.reviewRepository.listProjectIssues(projectId, ownerId);
   }
@@ -164,16 +221,29 @@ export class ReviewService {
     ownerId: string;
     status: ReviewIssue["status"];
   }): Promise<ReviewIssue> {
-    const issue = await this.reviewRepository.findIssue(input.issueId, input.ownerId);
+    const issue = await this.reviewRepository.findIssue(
+      input.issueId,
+      input.ownerId,
+    );
     if (!issue) {
-      throw new AppError("Issue was not found.", StatusCodes.NOT_FOUND, "ISSUE_NOT_FOUND");
+      throw new AppError(
+        "Issue was not found.",
+        StatusCodes.NOT_FOUND,
+        "ISSUE_NOT_FOUND",
+      );
     }
 
     return this.reviewRepository.updateIssueStatus(input);
   }
 
-  public async getReadiness(projectId: string, ownerId: string): Promise<ReadinessSnapshot> {
-    const existing = await this.reviewRepository.getLatestReadiness(projectId, ownerId);
+  public async getReadiness(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReadinessSnapshot> {
+    const existing = await this.reviewRepository.getLatestReadiness(
+      projectId,
+      ownerId,
+    );
     if (existing) {
       return existing;
     }
@@ -181,9 +251,15 @@ export class ReviewService {
     return this.captureReadinessSnapshot(projectId, ownerId);
   }
 
-  private async captureReadinessSnapshot(projectId: string, ownerId: string): Promise<ReadinessSnapshot> {
+  private async captureReadinessSnapshot(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReadinessSnapshot> {
     const project = await this.projectService.getProject(projectId, ownerId);
-    const issues = await this.reviewRepository.listProjectIssues(projectId, ownerId);
+    const issues = await this.reviewRepository.listProjectIssues(
+      projectId,
+      ownerId,
+    );
 
     const sectionScores = Object.fromEntries(
       (project.sections ?? []).map((section) => {
@@ -200,15 +276,28 @@ export class ReviewService {
     ).length;
 
     const completenessScore =
-      requiredSections.length === 0 ? 0 : Math.round((completedRequiredSections / requiredSections.length) * 60);
+      requiredSections.length === 0
+        ? 0
+        : Math.round(
+            (completedRequiredSections / requiredSections.length) * 60,
+          );
 
     const openIssues = issues.filter((issue) => issue.status === "OPEN");
-    const penalty = openIssues.reduce((total, issue) => total + severityPenalty[issue.severity], 0);
+    const penalty = openIssues.reduce(
+      (total, issue) => total + severityPenalty[issue.severity],
+      0,
+    );
     const qualityScore = Math.max(0, 40 - penalty);
-    const overallScore = Math.max(0, Math.min(100, completenessScore + qualityScore));
+    const overallScore = Math.max(
+      0,
+      Math.min(100, completenessScore + qualityScore),
+    );
 
     let status: ReadinessStatus = "NOT_READY";
-    if (overallScore >= 85 && openIssues.every((issue) => issue.severity !== "CRITICAL")) {
+    if (
+      overallScore >= 85 &&
+      openIssues.every((issue) => issue.severity !== "CRITICAL")
+    ) {
       status = "READY_FOR_SUBMISSION";
     } else if (overallScore >= 65) {
       status = "READY_FOR_INTERNAL_REVIEW";
@@ -225,7 +314,9 @@ export class ReviewService {
           ? "The manuscript is progressing well but still needs a targeted pass on open issues."
           : "The manuscript still has meaningful completeness or quality gaps before submission.",
       blockers: openIssues
-        .filter((issue) => issue.severity === "CRITICAL" || issue.severity === "HIGH")
+        .filter(
+          (issue) => issue.severity === "CRITICAL" || issue.severity === "HIGH",
+        )
         .map((issue) => `${issue.category}: ${issue.title}`),
       strengths: requiredSections
         .filter((section) => section.content.trim().length > 0)
