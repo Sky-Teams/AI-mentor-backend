@@ -19,6 +19,7 @@ export interface JournalDefinition {
   publisher: string;
   description: string;
   manuscriptType: "CASE_REPORT";
+  isDefault?: boolean;
   sections: JournalSectionDefinition[];
   validationRules: {
     checklistName: string;
@@ -29,6 +30,7 @@ export interface JournalDefinition {
 }
 
 export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
+  isDefault: true,
   code: "elsevier-ijscr-scare-2025",
   name: "Elsevier Surgical Case Report (SCARE 2025)",
   publisher: "Elsevier",
