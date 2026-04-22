@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
-import { CASE_REPORT_SECTION_DEFINITIONS } from "../src/shared/constants/sections";
 import { env } from "../src/shared/config/env";
 import type { ProjectSectionKey } from "../src/modules/projects/domain/project";
+import { JOURNALS } from "../src/shared/config/journals";
 
 const prisma = new PrismaClient();
 
@@ -36,88 +36,95 @@ async function upsertUser(input: {
 }
 
 async function main() {
-  const [freePlan, standardPlan, premiumPlan, creditPackPlan] = await Promise.all([
-    prisma.subscriptionPlan.upsert({
-      where: { code: "free" },
-      update: {
-        name: "Free",
-        description: "Starter plan for local demos.",
-        billingModel: "FREE",
-        includedCredits: 50,
-        monthlyPriceCents: 0,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Free",
-        code: "free",
-        description: "Starter plan for local demos.",
-        billingModel: "FREE",
-        includedCredits: 50,
-        monthlyPriceCents: 0,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.subscriptionPlan.upsert({
-      where: { code: "standard-monthly" },
-      update: {
-        name: "Standard",
-        description: "Monthly plan with moderate review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 300,
-        monthlyPriceCents: 4900,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Standard",
-        code: "standard-monthly",
-        description: "Monthly plan with moderate review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 300,
-        monthlyPriceCents: 4900,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.subscriptionPlan.upsert({
-      where: { code: "premium-monthly" },
-      update: {
-        name: "Premium",
-        description: "Monthly plan for heavier AI review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 900,
-        monthlyPriceCents: 12900,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Premium",
-        code: "premium-monthly",
-        description: "Monthly plan for heavier AI review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 900,
-        monthlyPriceCents: 12900,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.subscriptionPlan.upsert({
-      where: { code: "credit-pack-500" },
-      update: {
-        name: "Credit Pack 500",
-        description: "One-time credit pack for extra review demand.",
-        billingModel: "CREDIT_PACK",
-        includedCredits: 500,
-        monthlyPriceCents: 9900,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Credit Pack 500",
-        code: "credit-pack-500",
-        description: "One-time credit pack for extra review demand.",
-        billingModel: "CREDIT_PACK",
-        includedCredits: 500,
-        monthlyPriceCents: 9900,
-        status: "ACTIVE",
-      },
-    }),
-  ]);
+  const selectedJournal =
+    JOURNALS.find((journal) => journal.isDefault === true) ?? JOURNALS[0];
+  if (!selectedJournal) {
+    throw new Error("No journals are configured in JOURNALS.");
+  }
+
+  const [freePlan, standardPlan, premiumPlan, creditPackPlan] =
+    await Promise.all([
+      prisma.subscriptionPlan.upsert({
+        where: { code: "free" },
+        update: {
+          name: "Free",
+          description: "Starter plan for local demos.",
+          billingModel: "FREE",
+          includedCredits: 50,
+          monthlyPriceCents: 0,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Free",
+          code: "free",
+          description: "Starter plan for local demos.",
+          billingModel: "FREE",
+          includedCredits: 50,
+          monthlyPriceCents: 0,
+          status: "ACTIVE",
+        },
+      }),
+      prisma.subscriptionPlan.upsert({
+        where: { code: "standard-monthly" },
+        update: {
+          name: "Standard",
+          description: "Monthly plan with moderate review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 300,
+          monthlyPriceCents: 4900,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Standard",
+          code: "standard-monthly",
+          description: "Monthly plan with moderate review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 300,
+          monthlyPriceCents: 4900,
+          status: "ACTIVE",
+        },
+      }),
+      prisma.subscriptionPlan.upsert({
+        where: { code: "premium-monthly" },
+        update: {
+          name: "Premium",
+          description: "Monthly plan for heavier AI review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 900,
+          monthlyPriceCents: 12900,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Premium",
+          code: "premium-monthly",
+          description: "Monthly plan for heavier AI review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 900,
+          monthlyPriceCents: 12900,
+          status: "ACTIVE",
+        },
+      }),
+      prisma.subscriptionPlan.upsert({
+        where: { code: "credit-pack-500" },
+        update: {
+          name: "Credit Pack 500",
+          description: "One-time credit pack for extra review demand.",
+          billingModel: "CREDIT_PACK",
+          includedCredits: 500,
+          monthlyPriceCents: 9900,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Credit Pack 500",
+          code: "credit-pack-500",
+          description: "One-time credit pack for extra review demand.",
+          billingModel: "CREDIT_PACK",
+          includedCredits: 500,
+          monthlyPriceCents: 9900,
+          status: "ACTIVE",
+        },
+      }),
+    ]);
 
   const admin = await upsertUser({
     email: env.DEFAULT_ADMIN_EMAIL,
@@ -284,7 +291,8 @@ async function main() {
       data: {
         ownerId: testUser.id,
         title: "Seeded Case Report Demo",
-        targetJournal: "BMJ Case Reports",
+        targetJournal: selectedJournal.name,
+        journalCode: selectedJournal.code,
         status: "IN_REVIEW",
         metadata: {
           specialty: "Neurology",
@@ -292,7 +300,8 @@ async function main() {
           patientSex: "Female",
           country: "United States",
           institution: "Regional Academic Hospital",
-          articleGoals: "Demonstrate a rare presentation and diagnostic learning points.",
+          articleGoals:
+            "Demonstrate a rare presentation and diagnostic learning points.",
         },
       },
     }));
@@ -305,7 +314,7 @@ async function main() {
 
   if (existingSections.length === 0) {
     await prisma.projectSection.createMany({
-      data: CASE_REPORT_SECTION_DEFINITIONS.map((section) => ({
+      data: selectedJournal.sections.map((section) => ({
         projectId: project.id,
         key: section.key,
         title: section.title,
@@ -327,8 +336,6 @@ async function main() {
       "This case report describes a rare neurovascular presentation with delayed diagnosis, highlighting key diagnostic reasoning and care lessons.",
     INTRODUCTION:
       "Rare neurovascular presentations can be difficult to recognize early, especially when symptoms overlap with more common benign conditions.",
-    CASE_PRESENTATION:
-      "A 34-year-old woman presented with intermittent neurologic symptoms over two weeks. Initial workup was incomplete and timeline details remain partially documented.",
     DISCUSSION:
       "The discussion outlines diagnostic complexity but still needs clearer comparison with related published cases and stronger explanation of novelty.",
     INFORMED_CONSENT:
@@ -336,7 +343,8 @@ async function main() {
   };
 
   for (const section of sections) {
-    const content = seededSectionContent[section.key as ProjectSectionKey] ?? "";
+    const content =
+      seededSectionContent[section.key as ProjectSectionKey] ?? "";
     await prisma.projectSection.update({
       where: { id: section.id },
       data: {
@@ -460,13 +468,15 @@ async function main() {
                 name: "completeness",
                 score: 70,
                 weight: 40,
-                rationale: "Core discussion present but lacking literature grounding.",
+                rationale:
+                  "Core discussion present but lacking literature grounding.",
               },
               {
                 name: "publication_risk",
                 score: 58,
                 weight: 30,
-                rationale: "Claims may be too strong until references are verified.",
+                rationale:
+                  "Claims may be too strong until references are verified.",
               },
             ],
           },
@@ -613,7 +623,9 @@ async function main() {
   });
 
   console.log("Seed completed.");
-  console.log(`Admin: ${env.DEFAULT_ADMIN_EMAIL} / ${env.DEFAULT_ADMIN_PASSWORD}`);
+  console.log(
+    `Admin: ${env.DEFAULT_ADMIN_EMAIL} / ${env.DEFAULT_ADMIN_PASSWORD}`,
+  );
   console.log("Researcher: researcher@example.com / Research123!");
 }
 
