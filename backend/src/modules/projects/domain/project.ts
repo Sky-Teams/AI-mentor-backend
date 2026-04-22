@@ -75,6 +75,7 @@ export interface SectionVersion {
 export interface Project {
   id: string;
   ownerId: string;
+  journalCode: string;
   manuscriptType: ManuscriptType;
   title: string;
   status: ProjectStatus;
