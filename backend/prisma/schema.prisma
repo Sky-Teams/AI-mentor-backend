@@ -23,23 +23,6 @@ enum ManuscriptType {
   CASE_REPORT
 }
 
-model Journal {
-  id              String         @id @default(cuid())
-  code            String         @unique
-  name            String         @unique
-  publisher       String?
-  description     String?
-  manuscriptType  ManuscriptType @default(CASE_REPORT)
-  sections        Json
-  validationRules Json
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  projects        Project[]
-  isDefault       Boolean        @default(false)
-
-  @@map("journals")
-}
-
 enum ProjectSectionKey {
   TITLE
   KEYWORDS
@@ -217,13 +200,10 @@ model Project {
   reviewIssues       ReviewIssue[]
   readinessSnapshots ReadinessSnapshot[]
   aiUsageLogs        AiUsageLog[]
-  journal            Journal?            @relation(fields: [journalId], references: [id])
-  journalId          String?
   journalCode        String?
 
   @@index([ownerId, updatedAt])
   @@index([status])
-  @@index([journalId])
 }
 
 model ProjectSection {

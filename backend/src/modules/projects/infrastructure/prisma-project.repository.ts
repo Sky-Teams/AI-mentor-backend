@@ -104,7 +104,6 @@ export class PrismaProjectRepository implements ProjectRepository {
             targetJournal: input.targetJournal ?? selectedJournal.name,
             journalCode: selectedJournal.code,
             metadata: input.metadata as Prisma.InputJsonValue | undefined,
-            journalId: null,
           },
         });
 
