@@ -23,6 +23,43 @@ enum ManuscriptType {
   CASE_REPORT
 }
 
+model Journal {
+  id              String                 @id @default(cuid())
+  code            String                 @unique
+  name            String                 @unique
+  publisher       String?
+  description     String?
+  manuscriptType  ManuscriptType         @default(CASE_REPORT)
+  validationRules Json?
+  isDefault       Boolean                @default(false)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  sectionTemplates JournalSectionTemplate[]
+  projects         Project[]
+
+  @@map("journals")
+  @@index([isDefault])
+}
+
+model JournalSectionTemplate {
+  id           String            @id @default(cuid())
+  journalId    String
+  key          ProjectSectionKey
+  title        String
+  sectionOrder Int
+  isOptional   Boolean           @default(false)
+  checklist    Json?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([journalId, key])
+  @@index([journalId, sectionOrder])
+  @@map("journal_section_templates")
+}
+
 enum ProjectSectionKey {
   TITLE
   KEYWORDS
@@ -200,10 +237,12 @@ model Project {
   reviewIssues       ReviewIssue[]
   readinessSnapshots ReadinessSnapshot[]
   aiUsageLogs        AiUsageLog[]
-  journalCode        String?
+  journalId          String?
+  journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
 
   @@index([ownerId, updatedAt])
   @@index([status])
+  @@index([journalId])
 }
 
 model ProjectSection {

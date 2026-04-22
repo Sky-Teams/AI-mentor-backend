@@ -11,12 +11,6 @@ import type {
   UpdateProjectInput,
   UpdateSectionInput,
 } from "../domain/project.repository";
-import { JOURNALS } from "src/shared/config/journals.js";
-
-const DEFAULT_JOURNAL_CODE =
-  JOURNALS.find((j) => j.isDefault === true)?.code ??
-  JOURNALS[0]?.code ??
-  "unknown";
 
 const mapSection = (section: {
   id: string;
@@ -49,7 +43,7 @@ const mapProject = (project: {
   title: string;
   status: Project["status"];
   targetJournal: string | null;
-  journalCode: string | null;
+  journal: { code: string } | null;
   metadata: unknown;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
@@ -70,7 +64,7 @@ const mapProject = (project: {
 }): Project => ({
   id: project.id,
   ownerId: project.ownerId,
-  journalCode: project.journalCode ?? DEFAULT_JOURNAL_CODE,
+  journalCode: project.journal?.code ?? "unknown",
   manuscriptType: project.manuscriptType,
   title: project.title,
   status: project.status,
@@ -87,33 +81,55 @@ export class PrismaProjectRepository implements ProjectRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async createProject(input: CreateProjectInput): Promise<Project> {
-    const selectedJournal = input.journalCode
-      ? JOURNALS.find((j) => j.code === input.journalCode)
-      : (JOURNALS.find((j) => j.isDefault === true) ?? JOURNALS[0]);
+    const journal = input.journalCode
+      ? await this.prisma.journal.findFirst({
+          where: { code: input.journalCode },
+        })
+      : await this.prisma.journal.findFirst({
+          where: { isDefault: true },
+          orderBy: { updatedAt: "desc" },
+        });
 
-    if (!selectedJournal) {
-      throw new Error("Journal not found");
+    if (!journal) {
+      throw new Error(
+        input.journalCode
+          ? `Journal '${input.journalCode}' was not found.`
+          : "No default journal was found.",
+      );
     }
 
     const project = await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
+        const templates = await transaction.journalSectionTemplate.findMany({
+          where: {
+            journalId: journal.id,
+          },
+          orderBy: {
+            sectionOrder: "asc",
+          },
+        });
+
+        if (templates.length === 0) {
+          throw new Error(`Journal '${journal.code}' has no section templates.`);
+        }
+
         const createdProject = await transaction.project.create({
           data: {
             ownerId: input.ownerId,
             title: input.title,
-            targetJournal: input.targetJournal ?? selectedJournal.name,
-            journalCode: selectedJournal.code,
+            targetJournal: input.targetJournal ?? journal.name,
+            journalId: journal.id,
             metadata: input.metadata as Prisma.InputJsonValue | undefined,
           },
         });
 
         await transaction.projectSection.createMany({
-          data: selectedJournal.sections.map((section) => ({
+          data: templates.map((section) => ({
             projectId: createdProject.id,
             key: section.key,
             title: section.title,
-            sectionOrder: section.order,
-            isOptional: section.optional,
+            sectionOrder: section.sectionOrder,
+            isOptional: section.isOptional,
           })),
         });
 
@@ -122,6 +138,9 @@ export class PrismaProjectRepository implements ProjectRepository {
             id: createdProject.id,
           },
           include: {
+            journal: {
+              select: { code: true },
+            },
             sections: {
               orderBy: {
                 sectionOrder: "asc",
@@ -142,6 +161,9 @@ export class PrismaProjectRepository implements ProjectRepository {
         deletedAt: null,
       },
       include: {
+        journal: {
+          select: { code: true },
+        },
         sections: {
           orderBy: {
             sectionOrder: "asc",
@@ -167,6 +189,9 @@ export class PrismaProjectRepository implements ProjectRepository {
         deletedAt: null,
       },
       include: {
+        journal: {
+          select: { code: true },
+        },
         sections: {
           orderBy: {
             sectionOrder: "asc",
@@ -190,6 +215,9 @@ export class PrismaProjectRepository implements ProjectRepository {
         metadata: input.metadata as Prisma.InputJsonValue | undefined,
       },
       include: {
+        journal: {
+          select: { code: true },
+        },
         sections: {
           orderBy: {
             sectionOrder: "asc",
