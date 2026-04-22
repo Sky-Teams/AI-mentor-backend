@@ -1,3 +1,33 @@
+import type { ProjectSectionKey } from "../../modules/projects/domain/project";
+
+export interface JournalChecklistItem {
+  code: string;
+  description: string;
+}
+
+export interface JournalSectionDefinition {
+  key: ProjectSectionKey;
+  title: string;
+  order: number;
+  optional: boolean;
+  checklistItems: JournalChecklistItem[];
+}
+
+export interface JournalDefinition {
+  code: string;
+  name: string;
+  publisher: string;
+  description: string;
+  manuscriptType: "CASE_REPORT";
+  sections: JournalSectionDefinition[];
+  validationRules: {
+    checklistName: string;
+    reviewFocus: string[];
+    submissionRequirements: string[];
+    sourceUrls: string[];
+  };
+}
+
 export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
   code: "elsevier-ijscr-scare-2025",
   name: "Elsevier Surgical Case Report (SCARE 2025)",
