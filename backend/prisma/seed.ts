@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
 import { env } from "../src/shared/config/env";
 import type { ProjectSectionKey } from "../src/modules/projects/domain/project";
-import { JOURNALS } from "../src/shared/config/journals";
 
 const prisma = new PrismaClient();
 
@@ -36,10 +35,11 @@ async function upsertUser(input: {
 }
 
 async function main() {
-  const selectedJournal =
-    JOURNALS.find((journal) => journal.isDefault === true) ?? JOURNALS[0];
+  const selectedJournal = await prisma.journal.findFirst({
+    where: { isDefault: true },
+  });
   if (!selectedJournal) {
-    throw new Error("No journals are configured in JOURNALS.");
+    throw new Error("No default journal found in DB");
   }
 
   const [freePlan, standardPlan, premiumPlan, creditPackPlan] =
@@ -313,13 +313,18 @@ async function main() {
   });
 
   if (existingSections.length === 0) {
+    const templates = await prisma.journalSectionTemplate.findMany({
+      where: { journalId: selectedJournal.id },
+      orderBy: { order: "asc" },
+    });
+
     await prisma.projectSection.createMany({
-      data: selectedJournal.sections.map((section) => ({
+      data: templates.map((t) => ({
         projectId: project.id,
-        key: section.key,
-        title: section.title,
-        sectionOrder: section.order,
-        isOptional: section.optional,
+        key: t.key,
+        title: t.title,
+        sectionOrder: t.order,
+        isOptional: t.isOptional,
       })),
     });
   }

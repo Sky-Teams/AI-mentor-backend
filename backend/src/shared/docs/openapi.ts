@@ -35,7 +35,7 @@ export const openApiSpec = {
         required: ["title"],
         properties: {
           title: { type: "string" },
-          targetJournal: { type: "string" },
+          journalCode: { type: "string" },
           metadata: { type: "object" },
         },
       },
@@ -165,7 +165,7 @@ export const openApiSpec = {
               schema: { $ref: "#/components/schemas/CreateProjectRequest" },
               example: {
                 title: "Rare neurovascular presentation",
-                targetJournal: "BMJ Case Reports",
+                journalCode: "elsevier-ijscr-scare-2025",
                 metadata: {
                   specialty: "Neurology",
                   patientAge: "34 years",
