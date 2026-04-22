@@ -12,7 +12,7 @@ export const sectionParamsSchema = z.object({
 
 export const createProjectSchema = z.object({
   title: z.string().min(3).max(180),
-  targetJournal: z.string().max(180).optional(),
+  journalCode: z.string().min(1).max(100).optional(),
   metadata: z
     .object({
       specialty: z.string().max(120).optional(),
