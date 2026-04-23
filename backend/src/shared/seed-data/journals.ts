@@ -457,4 +457,4 @@ export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
   },
 };
 
-export const JOURNALS: JournalDefinition[] = [ELSEVIER_SCARE_JOURNAL];
+export const JOURNALS: JournalDefinition = ELSEVIER_SCARE_JOURNAL;

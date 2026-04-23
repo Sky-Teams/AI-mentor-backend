@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
-import { CASE_REPORT_SECTION_DEFINITIONS } from "../src/shared/constants/sections";
 import { env } from "../src/shared/config/env";
-import type { ProjectSectionKey } from "../src/modules/projects/domain/project";
+import { type ProjectSectionKey } from "../src/modules/projects/domain/project";
+import { ELSEVIER_SCARE_JOURNAL } from "src/shared/seed-data/journals.js";
 
 const prisma = new PrismaClient();
 
@@ -36,11 +36,57 @@ async function upsertUser(input: {
 }
 
 async function main() {
-  const selectedJournal = await prisma.journal.findFirst({
-    where: { isDefault: true },
+  const j = ELSEVIER_SCARE_JOURNAL;
+
+  // 1. create journal
+  const journal = await prisma.journal.upsert({
+    where: { code: j.code },
+    update: {
+      name: j.name,
+      publisher: j.publisher,
+      description: j.description,
+      manuscriptType: j.manuscriptType,
+      isDefault: j.isDefault,
+      validationRules: j.validationRules,
+    },
+    create: {
+      code: j.code,
+      name: j.name,
+      publisher: j.publisher,
+      description: j.description,
+      manuscriptType: j.manuscriptType,
+      isDefault: j.isDefault,
+      validationRules: j.validationRules,
+    },
   });
-  if (!selectedJournal) {
-    throw new Error("No default journal found in DB");
+
+  // 2. delete old templates + checklist
+  await prisma.journalSectionTemplate.deleteMany({
+    where: { journalId: journal.id },
+  });
+
+  // 3. create sections + checklist items
+  for (const section of j.sections) {
+    const createdSection = await prisma.journalSectionTemplate.create({
+      data: {
+        journalId: journal.id,
+        key: section.key,
+        title: section.title,
+        sectionOrder: section.order,
+        isOptional: section.optional,
+      },
+    });
+
+    // checklist items
+    if (section.checklistItems?.length) {
+      await prisma.journalChecklistItem.createMany({
+        data: section.checklistItems.map((item) => ({
+          sectionId: createdSection.id,
+          code: item.code,
+          description: item.description,
+        })),
+      });
+    }
   }
 
   const [freePlan, standardPlan, premiumPlan, creditPackPlan] =
@@ -292,8 +338,8 @@ async function main() {
       data: {
         ownerId: testUser.id,
         title: "Seeded Case Report Demo",
-        targetJournal: selectedJournal.name,
-        journalCode: selectedJournal.code,
+        targetJournal: journal.name,
+        journalId: journal.id,
         status: "IN_REVIEW",
         metadata: {
           specialty: "Neurology",
@@ -315,9 +361,15 @@ async function main() {
 
   if (existingSections.length === 0) {
     const templates = await prisma.journalSectionTemplate.findMany({
-      where: { journalId: selectedJournal.id },
+      where: { journalId: journal.id },
       orderBy: { sectionOrder: "asc" },
     });
+
+    if (templates.length === 0) {
+      throw new Error(
+        `Default journal '${journal.code}' has no section templates after seed.`,
+      );
+    }
 
     await prisma.projectSection.createMany({
       data: templates.map((t) => ({
