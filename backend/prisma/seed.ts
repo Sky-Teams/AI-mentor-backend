@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
+import { CASE_REPORT_SECTION_DEFINITIONS } from "../src/shared/constants/sections";
 import { env } from "../src/shared/config/env";
 import type { ProjectSectionKey } from "../src/modules/projects/domain/project";
 
@@ -315,7 +316,7 @@ async function main() {
   if (existingSections.length === 0) {
     const templates = await prisma.journalSectionTemplate.findMany({
       where: { journalId: selectedJournal.id },
-      orderBy: { order: "asc" },
+      orderBy: { sectionOrder: "asc" },
     });
 
     await prisma.projectSection.createMany({
@@ -323,7 +324,7 @@ async function main() {
         projectId: project.id,
         key: t.key,
         title: t.title,
-        sectionOrder: t.order,
+        sectionOrder: t.sectionOrder,
         isOptional: t.isOptional,
       })),
     });
