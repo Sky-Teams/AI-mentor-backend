@@ -24,40 +24,26 @@ export interface ReviewCreditEstimate {
 
 export class ReviewCreditEstimatorService {
   public estimate(input: ReviewCreditEstimateInput): ReviewCreditEstimate {
-    const systemPrompt = [
-      input.promptTemplate,
-      "Return only structured JSON that matches the schema.",
-      "Never invent facts, references, patient details, laboratory values, timelines, or outcomes.",
-      "If information is absent, add warnings and missingInfoQuestions instead of guessing.",
-      "Align your reasoning to case report publication and CARE-like completeness.",
-    ].join("\n\n");
+    const systemPrompt = input.promptTemplate;
 
     const userPrompt = JSON.stringify({
       manuscriptType: input.project.manuscriptType,
       projectTitle: input.project.title,
-      targetJournal: input.project.targetJournal,
-      projectMetadata: input.project.metadata,
       section: input.section,
       guidelineRules: input.guidelineRules,
     });
 
     const requestPayload = JSON.stringify({
-      model: input.model,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "case_report_section_review",
-          schema: sectionReviewSchema,
-        },
-      },
+      response_format: sectionReviewSchema,
     });
 
     const estimatedInputTokens = this.countTokens(requestPayload, input.model);
-    const estimatedOutputTokens = 2000;
+    const estimatedOutputTokens = Math.floor(estimatedInputTokens * 1.1);
+
     const estimatedTotalTokens = estimatedInputTokens + estimatedOutputTokens;
 
     return {
