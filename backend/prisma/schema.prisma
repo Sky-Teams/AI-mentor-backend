@@ -30,7 +30,7 @@ model Journal {
   publisher       String?
   description     String?
   manuscriptType  ManuscriptType @default(CASE_REPORT)
-  validationRules Json?
+  rules           String
   isDefault       Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -49,7 +49,7 @@ model JournalSectionTemplate {
   title          String
   sectionOrder   Int
   isOptional     Boolean                @default(false)
-  checklistItems JournalChecklistItem[]
+  description    String 
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
 
@@ -58,17 +58,6 @@ model JournalSectionTemplate {
   @@unique([journalId, key])
   @@index([journalId, sectionOrder])
   @@map("journal_section_templates")
-}
-
-model JournalChecklistItem {
-  id          String @id @default(cuid())
-  sectionId   String
-  code        String
-  description String
-
-  section JournalSectionTemplate @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-
-  @@index([sectionId])
 }
 
 
