@@ -36,88 +36,89 @@ async function upsertUser(input: {
 }
 
 async function main() {
-  const [freePlan, standardPlan, premiumPlan, creditPackPlan] = await Promise.all([
-    prisma.subscriptionPlan.upsert({
-      where: { code: "free" },
-      update: {
-        name: "Free",
-        description: "Starter plan for local demos.",
-        billingModel: "FREE",
-        includedCredits: 50,
-        monthlyPriceCents: 0,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Free",
-        code: "free",
-        description: "Starter plan for local demos.",
-        billingModel: "FREE",
-        includedCredits: 50,
-        monthlyPriceCents: 0,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.subscriptionPlan.upsert({
-      where: { code: "standard-monthly" },
-      update: {
-        name: "Standard",
-        description: "Monthly plan with moderate review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 300,
-        monthlyPriceCents: 4900,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Standard",
-        code: "standard-monthly",
-        description: "Monthly plan with moderate review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 300,
-        monthlyPriceCents: 4900,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.subscriptionPlan.upsert({
-      where: { code: "premium-monthly" },
-      update: {
-        name: "Premium",
-        description: "Monthly plan for heavier AI review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 900,
-        monthlyPriceCents: 12900,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Premium",
-        code: "premium-monthly",
-        description: "Monthly plan for heavier AI review usage.",
-        billingModel: "MONTHLY",
-        includedCredits: 900,
-        monthlyPriceCents: 12900,
-        status: "ACTIVE",
-      },
-    }),
-    prisma.subscriptionPlan.upsert({
-      where: { code: "credit-pack-500" },
-      update: {
-        name: "Credit Pack 500",
-        description: "One-time credit pack for extra review demand.",
-        billingModel: "CREDIT_PACK",
-        includedCredits: 500,
-        monthlyPriceCents: 9900,
-        status: "ACTIVE",
-      },
-      create: {
-        name: "Credit Pack 500",
-        code: "credit-pack-500",
-        description: "One-time credit pack for extra review demand.",
-        billingModel: "CREDIT_PACK",
-        includedCredits: 500,
-        monthlyPriceCents: 9900,
-        status: "ACTIVE",
-      },
-    }),
-  ]);
+  const [freePlan, standardPlan, premiumPlan, creditPackPlan] =
+    await Promise.all([
+      prisma.subscriptionPlan.upsert({
+        where: { code: "free" },
+        update: {
+          name: "Free",
+          description: "Starter plan for local demos.",
+          billingModel: "FREE",
+          includedCredits: 5000,
+          monthlyPriceCents: 0,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Free",
+          code: "free",
+          description: "Starter plan for local demos.",
+          billingModel: "FREE",
+          includedCredits: 5000,
+          monthlyPriceCents: 0,
+          status: "ACTIVE",
+        },
+      }),
+      prisma.subscriptionPlan.upsert({
+        where: { code: "standard-monthly" },
+        update: {
+          name: "Standard",
+          description: "Monthly plan with moderate review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 30000,
+          monthlyPriceCents: 4900,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Standard",
+          code: "standard-monthly",
+          description: "Monthly plan with moderate review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 30000,
+          monthlyPriceCents: 4900,
+          status: "ACTIVE",
+        },
+      }),
+      prisma.subscriptionPlan.upsert({
+        where: { code: "premium-monthly" },
+        update: {
+          name: "Premium",
+          description: "Monthly plan for heavier AI review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 90000,
+          monthlyPriceCents: 12900,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Premium",
+          code: "premium-monthly",
+          description: "Monthly plan for heavier AI review usage.",
+          billingModel: "MONTHLY",
+          includedCredits: 90000,
+          monthlyPriceCents: 12900,
+          status: "ACTIVE",
+        },
+      }),
+      prisma.subscriptionPlan.upsert({
+        where: { code: "credit-pack-500" },
+        update: {
+          name: "Credit Pack 500",
+          description: "One-time credit pack for extra review demand.",
+          billingModel: "CREDIT_PACK",
+          includedCredits: 50000,
+          monthlyPriceCents: 9900,
+          status: "ACTIVE",
+        },
+        create: {
+          name: "Credit Pack 500",
+          code: "credit-pack-500",
+          description: "One-time credit pack for extra review demand.",
+          billingModel: "CREDIT_PACK",
+          includedCredits: 50000,
+          monthlyPriceCents: 9900,
+          status: "ACTIVE",
+        },
+      }),
+    ]);
 
   const admin = await upsertUser({
     email: env.DEFAULT_ADMIN_EMAIL,
@@ -136,14 +137,14 @@ async function main() {
   await prisma.creditWallet.upsert({
     where: { userId: admin.id },
     update: {
-      balance: 1000,
-      lifetimeCreditsGranted: 1000,
+      balance: 1000000,
+      lifetimeCreditsGranted: 1000000,
       lifetimeCreditsConsumed: 0,
     },
     create: {
       userId: admin.id,
-      balance: 1000,
-      lifetimeCreditsGranted: 1000,
+      balance: 1000000,
+      lifetimeCreditsGranted: 1000000,
       lifetimeCreditsConsumed: 0,
     },
   });
@@ -151,15 +152,15 @@ async function main() {
   await prisma.creditWallet.upsert({
     where: { userId: testUser.id },
     update: {
-      balance: 275,
-      lifetimeCreditsGranted: 300,
-      lifetimeCreditsConsumed: 25,
+      balance: 27500,
+      lifetimeCreditsGranted: 30000,
+      lifetimeCreditsConsumed: 2500,
     },
     create: {
       userId: testUser.id,
-      balance: 275,
-      lifetimeCreditsGranted: 300,
-      lifetimeCreditsConsumed: 25,
+      balance: 27500,
+      lifetimeCreditsGranted: 30000,
+      lifetimeCreditsConsumed: 2500,
     },
   });
 
@@ -292,7 +293,8 @@ async function main() {
           patientSex: "Female",
           country: "United States",
           institution: "Regional Academic Hospital",
-          articleGoals: "Demonstrate a rare presentation and diagnostic learning points.",
+          articleGoals:
+            "Demonstrate a rare presentation and diagnostic learning points.",
         },
       },
     }));
@@ -336,7 +338,8 @@ async function main() {
   };
 
   for (const section of sections) {
-    const content = seededSectionContent[section.key as ProjectSectionKey] ?? "";
+    const content =
+      seededSectionContent[section.key as ProjectSectionKey] ?? "";
     await prisma.projectSection.update({
       where: { id: section.id },
       data: {
@@ -408,7 +411,7 @@ async function main() {
           inputTokens: 1810,
           outputTokens: 520,
           totalTokens: 2330,
-          appCreditsConsumed: 25,
+          appCreditsConsumed: 2500,
           startedAt: new Date(),
           completedAt: new Date(),
           rawResponse: {
@@ -460,13 +463,15 @@ async function main() {
                 name: "completeness",
                 score: 70,
                 weight: 40,
-                rationale: "Core discussion present but lacking literature grounding.",
+                rationale:
+                  "Core discussion present but lacking literature grounding.",
               },
               {
                 name: "publication_risk",
                 score: 58,
                 weight: 30,
-                rationale: "Claims may be too strong until references are verified.",
+                rationale:
+                  "Claims may be too strong until references are verified.",
               },
             ],
           },
@@ -484,7 +489,7 @@ async function main() {
           technicalInputTokens: 1810,
           technicalOutputTokens: 520,
           technicalTotalTokens: 2330,
-          billedCredits: 25,
+          billedCredits: 2500,
         },
       });
 
@@ -505,7 +510,7 @@ async function main() {
             userId: testUser.id,
             type: "DEDUCTION",
             source: "AI_REVIEW",
-            amount: -25,
+            amount: -2500,
             balanceAfter: wallet.balance,
             relatedReviewRunId: reviewRun.id,
             description: "Seeded completed AI review",
@@ -613,7 +618,9 @@ async function main() {
   });
 
   console.log("Seed completed.");
-  console.log(`Admin: ${env.DEFAULT_ADMIN_EMAIL} / ${env.DEFAULT_ADMIN_PASSWORD}`);
+  console.log(
+    `Admin: ${env.DEFAULT_ADMIN_EMAIL} / ${env.DEFAULT_ADMIN_PASSWORD}`,
+  );
   console.log("Researcher: researcher@example.com / Research123!");
 }
 

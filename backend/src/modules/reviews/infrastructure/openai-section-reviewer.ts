@@ -31,7 +31,7 @@ const metricSchema = z.object({
   rationale: z.string().min(1).nullable(),
 });
 
-const sectionReviewSchema = z.object({
+export const sectionReviewSchema = z.object({
   summary: z.string().min(1),
   issues: z.array(issueSchema),
   missingInfoQuestions: z.array(z.string().min(1)),
@@ -50,9 +50,15 @@ export class OpenAiSectionReviewer implements SectionReviewer {
     timeout: env.OPENAI_TIMEOUT_MS,
   });
 
-  public async reviewSection(context: ReviewContext): Promise<ReviewExecutionResult> {
+  public async reviewSection(
+    context: ReviewContext,
+  ): Promise<ReviewExecutionResult> {
     if (!env.OPENAI_API_KEY) {
-      throw new AppError("OPENAI_API_KEY is missing.", 500, "OPENAI_NOT_CONFIGURED");
+      throw new AppError(
+        "OPENAI_API_KEY is missing.",
+        500,
+        "OPENAI_NOT_CONFIGURED",
+      );
     }
 
     const systemPrompt = [
@@ -88,17 +94,27 @@ export class OpenAiSectionReviewer implements SectionReviewer {
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      response_format: zodResponseFormat(sectionReviewSchema, "case_report_section_review"),
+      response_format: zodResponseFormat(
+        sectionReviewSchema,
+        "case_report_section_review",
+      ),
     });
 
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {
-      throw new AppError("OpenAI review response could not be parsed.", 502, "OPENAI_PARSE_ERROR");
+      throw new AppError(
+        "OpenAI review response could not be parsed.",
+        502,
+        "OPENAI_PARSE_ERROR",
+      );
     }
 
     return {
       result: parsed,
-      rawResponse: JSON.parse(JSON.stringify(response)) as Record<string, unknown>,
+      rawResponse: JSON.parse(JSON.stringify(response)) as Record<
+        string,
+        unknown
+      >,
       usage: {
         inputTokens: response.usage?.prompt_tokens ?? 0,
         outputTokens: response.usage?.completion_tokens ?? 0,

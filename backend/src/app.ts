@@ -40,6 +40,7 @@ import { CitationService } from "./modules/citations/application/citation.servic
 import { CitationFormatterService } from "./modules/citations/application/formatter.service";
 import { PrismaCitationRepository } from "./modules/citations/infrastructure/prisma-citation-repository";
 import { MLAFormatter } from "./modules/citations/infrastructure/MLAFormatter";
+import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -60,11 +61,13 @@ export const createApp = (): express.Express => {
   );
   const projectService = new ProjectService(projectRepository);
   const billingService = new BillingService(billingRepository);
+  const reviewCreditEstimator = new ReviewCreditEstimatorService();
   const reviewService = new ReviewService(
     reviewRepository,
     projectService,
     new OpenAiSectionReviewer(),
     billingService,
+    reviewCreditEstimator,
   );
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
