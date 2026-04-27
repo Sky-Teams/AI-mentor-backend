@@ -33,6 +33,7 @@ import { AdminService } from "./modules/admin/application/admin.service";
 import { AdminController } from "./modules/admin/interfaces/admin.controller";
 import { createAdminRouter } from "./modules/admin/interfaces/admin.routes";
 import { createHealthRouter } from "./modules/health/interfaces/health.routes";
+import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -45,14 +46,20 @@ export const createApp = (): express.Express => {
   const reviewRepository = new PrismaReviewRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
 
-  const authService = new AuthService(authRepository, passwordHasher, tokenService);
+  const authService = new AuthService(
+    authRepository,
+    passwordHasher,
+    tokenService,
+  );
   const projectService = new ProjectService(projectRepository);
   const billingService = new BillingService(billingRepository);
+  const reviewCreditEstimator = new ReviewCreditEstimatorService();
   const reviewService = new ReviewService(
     reviewRepository,
     projectService,
     new OpenAiSectionReviewer(),
     billingService,
+    reviewCreditEstimator,
   );
   const adminService = new AdminService(adminRepository);
 
@@ -85,11 +92,26 @@ export const createApp = (): express.Express => {
   }
 
   app.use(`${env.API_PREFIX}/health`, createHealthRouter());
-  app.use(`${env.API_PREFIX}/auth`, createAuthRouter(authController, tokenService));
-  app.use(`${env.API_PREFIX}/projects`, createProjectRouter(projectController, tokenService));
-  app.use(`${env.API_PREFIX}`, createReviewRouter(reviewController, tokenService));
-  app.use(`${env.API_PREFIX}/billing`, createBillingRouter(billingController, tokenService));
-  app.use(`${env.API_PREFIX}/admin`, createAdminRouter(adminController, tokenService));
+  app.use(
+    `${env.API_PREFIX}/auth`,
+    createAuthRouter(authController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/projects`,
+    createProjectRouter(projectController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}`,
+    createReviewRouter(reviewController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/billing`,
+    createBillingRouter(billingController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/admin`,
+    createAdminRouter(adminController, tokenService),
+  );
 
   app.use(createErrorHandler(logger));
   return app;
