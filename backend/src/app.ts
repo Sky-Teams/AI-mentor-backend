@@ -33,6 +33,13 @@ import { AdminService } from "./modules/admin/application/admin.service";
 import { AdminController } from "./modules/admin/interfaces/admin.controller";
 import { createAdminRouter } from "./modules/admin/interfaces/admin.routes";
 import { createHealthRouter } from "./modules/health/interfaces/health.routes";
+import { createCitationRouter } from "./modules/citations/interface/citation.routes";
+import { CitationController } from "./modules/citations/interface/citation.controller";
+import { APAFormatter } from "./modules/citations/infrastructure/APAFormatter";
+import { CitationService } from "./modules/citations/application/citation.service";
+import { CitationFormatterService } from "./modules/citations/application/formatter.service";
+import { PrismaCitationRepository } from "./modules/citations/infrastructure/prisma-citation-repository";
+import { MLAFormatter } from "./modules/citations/infrastructure/MLAFormatter";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -43,9 +50,14 @@ export const createApp = (): express.Express => {
   const projectRepository = new PrismaProjectRepository(prisma);
   const billingRepository = new PrismaBillingRepository(prisma);
   const reviewRepository = new PrismaReviewRepository(prisma);
+  const citationRepository = new PrismaCitationRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
 
-  const authService = new AuthService(authRepository, passwordHasher, tokenService);
+  const authService = new AuthService(
+    authRepository,
+    passwordHasher,
+    tokenService,
+  );
   const projectService = new ProjectService(projectRepository);
   const billingService = new BillingService(billingRepository);
   const reviewService = new ReviewService(
@@ -54,12 +66,20 @@ export const createApp = (): express.Express => {
     new OpenAiSectionReviewer(),
     billingService,
   );
+  const apa = new APAFormatter();
+  const mla = new MLAFormatter();
+  const citationFormatterService = new CitationFormatterService(apa, mla);
+  const citationService = new CitationService(
+    citationFormatterService,
+    citationRepository,
+  );
   const adminService = new AdminService(adminRepository);
 
   const authController = new AuthController(authService);
   const projectController = new ProjectController(projectService);
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
+  const citationController = new CitationController(citationService);
   const adminController = new AdminController(adminService);
 
   const app = express();
@@ -85,11 +105,30 @@ export const createApp = (): express.Express => {
   }
 
   app.use(`${env.API_PREFIX}/health`, createHealthRouter());
-  app.use(`${env.API_PREFIX}/auth`, createAuthRouter(authController, tokenService));
-  app.use(`${env.API_PREFIX}/projects`, createProjectRouter(projectController, tokenService));
-  app.use(`${env.API_PREFIX}`, createReviewRouter(reviewController, tokenService));
-  app.use(`${env.API_PREFIX}/billing`, createBillingRouter(billingController, tokenService));
-  app.use(`${env.API_PREFIX}/admin`, createAdminRouter(adminController, tokenService));
+  app.use(
+    `${env.API_PREFIX}/auth`,
+    createAuthRouter(authController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/projects`,
+    createProjectRouter(projectController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}`,
+    createReviewRouter(reviewController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/billing`,
+    createBillingRouter(billingController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/projects/citation`,
+    createCitationRouter(citationController, tokenService),
+  );
+  app.use(
+    `${env.API_PREFIX}/admin`,
+    createAdminRouter(adminController, tokenService),
+  );
 
   app.use(createErrorHandler(logger));
   return app;
