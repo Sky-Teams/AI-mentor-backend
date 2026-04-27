@@ -133,7 +133,6 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
         createdAt: "desc",
       },
     });
-    console.log(paraphrases);
     return paraphrases.map((item) => mapParaphraseRun(item));
   }
 

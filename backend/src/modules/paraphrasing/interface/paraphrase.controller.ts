@@ -63,7 +63,6 @@ export class ParaphraseController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    console.log(request.params)
     const { paraphraseRunId } = request.params as {
       paraphraseRunId: string;
     };
