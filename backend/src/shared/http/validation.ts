@@ -19,7 +19,7 @@ export const validate =
             "Request validation failed.",
             StatusCodes.UNPROCESSABLE_ENTITY,
             "VALIDATION_ERROR",
-            error.flatten(),
+            error.errors.map((err) => err.path.join(".")),
           ),
         );
         return;
