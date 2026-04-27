@@ -138,81 +138,83 @@ enum AiUsageStatus {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  email           String            @unique
-  passwordHash    String
-  fullName        String
-  role            Role              @default(USER)
-  isActive        Boolean           @default(true)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  deletedAt       DateTime?
-  projects        Project[]
-  refreshTokens   RefreshToken[]
-  sectionVersions SectionVersion[]
-  initiatedReviews ReviewRun[]      @relation("ReviewInitiator")
-  resolvedIssues  ReviewIssue[]     @relation("IssueResolver")
-  subscriptions   UserSubscription[]
-  creditWallet    CreditWallet?
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  passwordHash       String
+  fullName           String
+  role               Role                @default(USER)
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  projects           Project[]
+  refreshTokens      RefreshToken[]
+  sectionVersions    SectionVersion[]
+  initiatedReviews   ReviewRun[]         @relation("ReviewInitiator")
+  resolvedIssues     ReviewIssue[]       @relation("IssueResolver")
+  subscriptions      UserSubscription[]
+  creditWallet       CreditWallet?
   creditTransactions CreditTransaction[]
-  aiUsageLogs     AiUsageLog[]
-  auditLogs       AuditLog[]        @relation("AuditActor")
+  aiUsageLogs        AiUsageLog[]
+  auditLogs          AuditLog[]          @relation("AuditActor")
+  citations          Citation[]
 
   @@index([role, isActive])
 }
 
 model RefreshToken {
-  id         String   @id @default(cuid())
-  userId     String
-  tokenHash  String
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, expiresAt])
 }
 
 model Project {
-  id               String              @id @default(cuid())
-  ownerId          String
-  manuscriptType   ManuscriptType      @default(CASE_REPORT)
-  title            String
-  status           ProjectStatus       @default(DRAFT)
-  targetJournal    String?
-  metadata         Json?
-  readinessScore   Int?
-  lastReviewedAt   DateTime?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  deletedAt        DateTime?
-  owner            User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  sections         ProjectSection[]
-  reviewRuns       ReviewRun[]
-  reviewIssues     ReviewIssue[]
+  id                 String              @id @default(cuid())
+  ownerId            String
+  manuscriptType     ManuscriptType      @default(CASE_REPORT)
+  title              String
+  status             ProjectStatus       @default(DRAFT)
+  targetJournal      String?
+  metadata           Json?
+  readinessScore     Int?
+  lastReviewedAt     DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  owner              User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sections           ProjectSection[]
+  reviewRuns         ReviewRun[]
+  reviewIssues       ReviewIssue[]
   readinessSnapshots ReadinessSnapshot[]
-  aiUsageLogs      AiUsageLog[]
+  aiUsageLogs        AiUsageLog[]
+  citations          Citation[]
 
   @@index([ownerId, updatedAt])
   @@index([status])
 }
 
 model ProjectSection {
-  id             String            @id @default(cuid())
-  projectId      String
-  key            ProjectSectionKey
-  title          String
-  content        String            @default("")
-  sectionOrder   Int
-  isOptional     Boolean           @default(false)
-  status         SectionStatus     @default(NOT_STARTED)
-  lastEditedAt   DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  versions       SectionVersion[]
-  reviewRuns     ReviewRun[]
-  issues         ReviewIssue[]
+  id           String            @id @default(cuid())
+  projectId    String
+  key          ProjectSectionKey
+  title        String
+  content      String            @default("")
+  sectionOrder Int
+  isOptional   Boolean           @default(false)
+  status       SectionStatus     @default(NOT_STARTED)
+  lastEditedAt DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  project      Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  versions     SectionVersion[]
+  reviewRuns   ReviewRun[]
+  issues       ReviewIssue[]
 
   @@unique([projectId, key])
   @@index([projectId, sectionOrder])
@@ -234,15 +236,15 @@ model SectionVersion {
 }
 
 model ReviewRun {
-  id                   String           @id @default(cuid())
+  id                   String              @id @default(cuid())
   projectId            String
   sectionId            String
   initiatedById        String
   promptTemplateId     String?
   guidelinePackId      String?
-  aiProvider           AiProvider       @default(OPENAI)
+  aiProvider           AiProvider          @default(OPENAI)
   aiModel              String
-  status               ReviewRunStatus  @default(QUEUED)
+  status               ReviewRunStatus     @default(QUEUED)
   summary              String?
   nextSteps            Json?
   missingInfoQuestions Json?
@@ -254,20 +256,20 @@ model ReviewRun {
   inputTokens          Int?
   outputTokens         Int?
   totalTokens          Int?
-  appCreditsConsumed   Int              @default(0)
+  appCreditsConsumed   Int                 @default(0)
   startedAt            DateTime?
   completedAt          DateTime?
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  project              Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  section              ProjectSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  initiatedBy          User             @relation("ReviewInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  project              Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section              ProjectSection      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  initiatedBy          User                @relation("ReviewInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
   issues               ReviewIssue[]
   suggestions          ReviewSuggestion[]
   metrics              ReviewMetric[]
   usageLog             AiUsageLog?
-  promptTemplate       PromptTemplate?  @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
-  guidelinePack        GuidelinePack?   @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  promptTemplate       PromptTemplate?     @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
+  guidelinePack        GuidelinePack?      @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
   creditTransactions   CreditTransaction[]
 
   @@index([projectId, createdAt])
@@ -276,7 +278,7 @@ model ReviewRun {
 }
 
 model ReviewIssue {
-  id            String        @id @default(cuid())
+  id            String         @id @default(cuid())
   reviewRunId   String
   projectId     String
   sectionId     String
@@ -286,15 +288,15 @@ model ReviewIssue {
   description   String
   reason        String
   fixSuggestion String
-  status        IssueStatus   @default(OPEN)
+  status        IssueStatus    @default(OPEN)
   resolvedAt    DateTime?
   resolvedById  String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  reviewRun     ReviewRun     @relation(fields: [reviewRunId], references: [id], onDelete: Cascade)
-  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  reviewRun     ReviewRun      @relation(fields: [reviewRunId], references: [id], onDelete: Cascade)
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   section       ProjectSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  resolvedBy    User?         @relation("IssueResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedBy    User?          @relation("IssueResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
 
   @@index([projectId, status, severity])
   @@index([sectionId, status])
@@ -380,19 +382,19 @@ model PromptTemplate {
 }
 
 model SubscriptionPlan {
-  id                     String                 @id @default(cuid())
-  name                   String
-  code                   String                 @unique
-  description            String?
-  billingModel           PlanBillingModel
-  monthlyPriceCents      Int?
-  includedCredits        Int                    @default(0)
+  id                      String                 @id @default(cuid())
+  name                    String
+  code                    String                 @unique
+  description             String?
+  billingModel            PlanBillingModel
+  monthlyPriceCents       Int?
+  includedCredits         Int                    @default(0)
   overageCreditPriceCents Int?
-  features               Json?
-  status                 SubscriptionPlanStatus @default(ACTIVE)
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
-  subscriptions          UserSubscription[]
+  features                Json?
+  status                  SubscriptionPlanStatus @default(ACTIVE)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  subscriptions           UserSubscription[]
 
   @@index([status, billingModel])
 }
@@ -431,20 +433,20 @@ model CreditWallet {
 }
 
 model CreditTransaction {
-  id                String                  @id @default(cuid())
-  walletId          String
-  userId            String
-  type              CreditTransactionType
-  source            CreditTransactionSource
-  amount            Int
-  balanceAfter      Int
-  description       String?
+  id                 String                  @id @default(cuid())
+  walletId           String
+  userId             String
+  type               CreditTransactionType
+  source             CreditTransactionSource
+  amount             Int
+  balanceAfter       Int
+  description        String?
   relatedReviewRunId String?
-  metadata          Json?
-  createdAt         DateTime                @default(now())
-  wallet            CreditWallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviewRun         ReviewRun?              @relation(fields: [relatedReviewRunId], references: [id], onDelete: SetNull)
+  metadata           Json?
+  createdAt          DateTime                @default(now())
+  wallet             CreditWallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewRun          ReviewRun?              @relation(fields: [relatedReviewRunId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([relatedReviewRunId])
@@ -487,4 +489,98 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+enum CitationType {
+  BOOK
+  WEBSITE
+  JOURNAL
+  REPORT
+}
+
+model BookCitation {
+  id             String    @id @default(cuid())
+  citationId     String    @unique
+  citation       Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title          String
+  authors        Json
+  datePublished  DateTime?
+  publisher      String
+  page           String
+  edition        String?
+  volumeNumber   Int?
+  placePublished String?
+  isbn           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model WebsiteCitation {
+  id            String    @id @default(cuid())
+  citationId    String    @unique
+  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title         String
+  authors       Json
+  websiteName   String
+  url           String
+  dateAccess    DateTime
+  datePublished DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model JournalCitation {
+  id            String    @id @default(cuid())
+  citationId    String    @unique
+  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title         String
+  authors       Json
+  journalName   String
+  page          String
+  volumeNumber  Int?
+  issueNumber   Int?
+  doi           String?
+  datePublished DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model ReportCitation {
+  id            String    @id @default(cuid())
+  citationId    String    @unique
+  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title         String
+  authors       Json
+  datePublished DateTime?
+  publisher     String?
+  url           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model Citation {
+  id              String           @id @default(cuid())
+  userId          String
+  projectId       String
+  type            CitationType
+  book            BookCitation?
+  createdAt       DateTime         @default(now())
+  websiteCitation WebsiteCitation?
+  journalCitation JournalCitation?
+  reportCitation  ReportCitation?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime         @updatedAt
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([type, createdAt])
 }
