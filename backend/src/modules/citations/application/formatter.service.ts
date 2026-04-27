@@ -16,7 +16,7 @@ export class CitationFormatterService {
         return this.mla.format(citation);
       default:
         throw new AppError(
-          `Unsupported format type`,
+          "Unsupported format type",
           404,
           "UNSUPPORTED_FORMAT_TYPE",
         );
