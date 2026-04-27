@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { env } from "../../../shared/config/env";
 import { AppError } from "../../../shared/errors/app-error";
 import type { BillingService } from "../../billing/application/billing.service";
+import type { ReviewCreditEstimatorService } from "../../billing/application/review-credit-estimator.service";
 import type { ProjectService } from "../../projects/application/project.service";
 import type {
   ReviewIssue,
@@ -25,6 +26,7 @@ export class ReviewService {
     private readonly projectService: ProjectService,
     private readonly sectionReviewer: SectionReviewer,
     private readonly billingService: BillingService,
+    private readonly reviewCreditEstimator: ReviewCreditEstimatorService,
   ) {}
 
   public async triggerSectionReview(input: {
@@ -89,7 +91,22 @@ export class ReviewService {
       ],
     };
 
-    await this.billingService.assertCanAffordReview(input.ownerId);
+    const estimate = this.reviewCreditEstimator.estimate({
+      project,
+      section: {
+        key: section.key,
+        title: section.title,
+        content: section.content,
+      },
+      promptTemplate,
+      guidelineRules: guidelinePack,
+      model: env.OPENAI_MODEL,
+    });
+
+    await this.billingService.assertCanAffordReview(
+      input.ownerId,
+      estimate.estimatedCredits,
+    );
 
     const reviewRun = await this.reviewRepository.createQueuedReview({
       aiModel: env.OPENAI_MODEL,
@@ -114,12 +131,17 @@ export class ReviewService {
         guidelineRules: guidelinePack,
       });
 
+      const actualCredits = this.reviewCreditEstimator.calculateActualCredit(
+        execution.usage,
+      );
+
       const billedCredits =
         await this.billingService.recordSuccessfulReviewUsage({
           userId: input.ownerId,
           projectId: input.projectId,
           reviewRunId: reviewRun.id,
           model: env.OPENAI_MODEL,
+          amount: actualCredits,
           usage: execution.usage,
         });
 

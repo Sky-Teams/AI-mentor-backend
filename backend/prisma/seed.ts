@@ -45,7 +45,7 @@ async function main() {
           name: "Free",
           description: "Starter plan for local demos.",
           billingModel: "FREE",
-          includedCredits: 50,
+          includedCredits: 5000,
           monthlyPriceCents: 0,
           status: "ACTIVE",
         },
@@ -54,7 +54,7 @@ async function main() {
           code: "free",
           description: "Starter plan for local demos.",
           billingModel: "FREE",
-          includedCredits: 50,
+          includedCredits: 5000,
           monthlyPriceCents: 0,
           status: "ACTIVE",
         },
@@ -65,7 +65,7 @@ async function main() {
           name: "Standard",
           description: "Monthly plan with moderate review usage.",
           billingModel: "MONTHLY",
-          includedCredits: 300,
+          includedCredits: 30000,
           monthlyPriceCents: 4900,
           status: "ACTIVE",
         },
@@ -74,7 +74,7 @@ async function main() {
           code: "standard-monthly",
           description: "Monthly plan with moderate review usage.",
           billingModel: "MONTHLY",
-          includedCredits: 300,
+          includedCredits: 30000,
           monthlyPriceCents: 4900,
           status: "ACTIVE",
         },
@@ -85,7 +85,7 @@ async function main() {
           name: "Premium",
           description: "Monthly plan for heavier AI review usage.",
           billingModel: "MONTHLY",
-          includedCredits: 900,
+          includedCredits: 90000,
           monthlyPriceCents: 12900,
           status: "ACTIVE",
         },
@@ -94,7 +94,7 @@ async function main() {
           code: "premium-monthly",
           description: "Monthly plan for heavier AI review usage.",
           billingModel: "MONTHLY",
-          includedCredits: 900,
+          includedCredits: 90000,
           monthlyPriceCents: 12900,
           status: "ACTIVE",
         },
@@ -105,7 +105,7 @@ async function main() {
           name: "Credit Pack 500",
           description: "One-time credit pack for extra review demand.",
           billingModel: "CREDIT_PACK",
-          includedCredits: 500,
+          includedCredits: 50000,
           monthlyPriceCents: 9900,
           status: "ACTIVE",
         },
@@ -114,7 +114,7 @@ async function main() {
           code: "credit-pack-500",
           description: "One-time credit pack for extra review demand.",
           billingModel: "CREDIT_PACK",
-          includedCredits: 500,
+          includedCredits: 50000,
           monthlyPriceCents: 9900,
           status: "ACTIVE",
         },
@@ -138,14 +138,14 @@ async function main() {
   await prisma.creditWallet.upsert({
     where: { userId: admin.id },
     update: {
-      balance: 1000,
-      lifetimeCreditsGranted: 1000,
+      balance: 1000000,
+      lifetimeCreditsGranted: 1000000,
       lifetimeCreditsConsumed: 0,
     },
     create: {
       userId: admin.id,
-      balance: 1000,
-      lifetimeCreditsGranted: 1000,
+      balance: 1000000,
+      lifetimeCreditsGranted: 1000000,
       lifetimeCreditsConsumed: 0,
     },
   });
@@ -153,15 +153,15 @@ async function main() {
   await prisma.creditWallet.upsert({
     where: { userId: testUser.id },
     update: {
-      balance: 275,
-      lifetimeCreditsGranted: 300,
-      lifetimeCreditsConsumed: 25,
+      balance: 27500,
+      lifetimeCreditsGranted: 30000,
+      lifetimeCreditsConsumed: 2500,
     },
     create: {
       userId: testUser.id,
-      balance: 275,
-      lifetimeCreditsGranted: 300,
-      lifetimeCreditsConsumed: 25,
+      balance: 27500,
+      lifetimeCreditsGranted: 30000,
+      lifetimeCreditsConsumed: 2500,
     },
   });
 
@@ -409,7 +409,9 @@ async function main() {
     }
   }
 
-  const discussionSection = sections.find((section) => section.key === "DISCUSSION");
+  const discussionSection = sections.find(
+    (section) => section.key === "DISCUSSION",
+  );
   if (discussionSection) {
     const existingReview = await prisma.reviewRun.findFirst({
       where: {
@@ -448,7 +450,7 @@ async function main() {
           inputTokens: 1810,
           outputTokens: 520,
           totalTokens: 2330,
-          appCreditsConsumed: 25,
+          appCreditsConsumed: 2500,
           startedAt: new Date(),
           completedAt: new Date(),
           rawResponse: {
@@ -526,7 +528,7 @@ async function main() {
           technicalInputTokens: 1810,
           technicalOutputTokens: 520,
           technicalTotalTokens: 2330,
-          billedCredits: 25,
+          billedCredits: 2500,
         },
       });
 
@@ -547,7 +549,7 @@ async function main() {
             userId: testUser.id,
             type: "DEDUCTION",
             source: "AI_REVIEW",
-            amount: -25,
+            amount: -2500,
             balanceAfter: wallet.balance,
             relatedReviewRunId: reviewRun.id,
             description: "Seeded completed AI review",
