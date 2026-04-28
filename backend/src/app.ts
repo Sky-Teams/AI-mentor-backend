@@ -109,6 +109,10 @@ export const createApp = (): express.Express => {
     `${env.API_PREFIX}/auth`,
     createAuthRouter(authController, tokenService),
   );
+   app.use(
+    `${env.API_PREFIX}/projects/paraphrase`,
+    createParaphraseRouter(paraphraseController, tokenService),
+  );
   app.use(
     `${env.API_PREFIX}/projects`,
     createProjectRouter(projectController, tokenService),
@@ -120,10 +124,6 @@ export const createApp = (): express.Express => {
   app.use(
     `${env.API_PREFIX}/billing`,
     createBillingRouter(billingController, tokenService),
-  );
-  app.use(
-    `${env.API_PREFIX}/paraphrase`,
-    createParaphraseRouter(paraphraseController, tokenService),
   );
   app.use(
     `${env.API_PREFIX}/admin`,
