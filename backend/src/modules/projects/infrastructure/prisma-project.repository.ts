@@ -11,6 +11,7 @@ import type {
   UpdateProjectInput,
   UpdateSectionInput,
 } from "../domain/project.repository";
+import { AppError } from "src/shared/errors/app-error.js";
 
 const mapSection = (section: {
   id: string;
@@ -90,13 +91,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           orderBy: { updatedAt: "desc" },
         });
 
-    if (!journal) {
-      throw new Error(
-        input.journalCode
-          ? `Journal '${input.journalCode}' was not found.`
-          : "No default journal was found.",
-      );
-    }
+    if (!journal) throw new AppError(`Journal not found.`);
 
     const project = await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
@@ -110,7 +105,9 @@ export class PrismaProjectRepository implements ProjectRepository {
         });
 
         if (templates.length === 0) {
-          throw new Error(`Journal '${journal.code}' has no section templates.`);
+          throw new Error(
+            `Journal '${journal.code}' has no section templates.`,
+          );
         }
 
         const createdProject = await transaction.project.create({
