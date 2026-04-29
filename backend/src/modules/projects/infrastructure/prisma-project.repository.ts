@@ -99,13 +99,12 @@ export class PrismaProjectRepository implements ProjectRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async createProject(input: CreateProjectInput): Promise<Project> {
-    const journal = input.journalCode
+    const journal = input.targetJournal
       ? await this.prisma.journal.findFirst({
-          where: { code: input.journalCode },
+          where: { name: input.targetJournal },
         })
       : await this.prisma.journal.findFirst({
           where: { isDefault: true },
-          orderBy: { updatedAt: "desc" },
         });
 
     if (!journal) throw new AppError(`Journal not found.`);
