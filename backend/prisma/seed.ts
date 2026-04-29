@@ -270,16 +270,22 @@ async function main() {
   const paraphrasePromptTemplate = await prisma.promptTemplate.upsert({
     where: { code: "case_report_section_paraphrase" },
     update: {
-      name: "Case Report Section Review",
-      type: "SECTION_REVIEW",
+      name: "Case Report Section Paraphrase",
+     type: "SECTION_PARAPHRASE",
       version: 1,
       status: "ACTIVE",
       templateText: [
-        "You are an expert medical writing mentor for case report publication.",
-        "Review exactly one manuscript section.",
-        "Return structured feedback only.",
-        "Never fabricate clinical facts, references, patient details, or outcomes.",
-        "If a section is incomplete, explain the gap and ask precise missing-information questions.",
+        `You are an expert publication mentor for medical case reports.
+        Task:
+        Paraphrase the text.
+        Rules:
+        - Preserve meaning
+        - Do not add new facts
+        - Do not hallucinate
+        - Tone: {{tone}}
+        Text:
+        """{{content}}"""
+        `,
       ].join("\n"),
       responseSchema: {
         schemaVersion: 1,
