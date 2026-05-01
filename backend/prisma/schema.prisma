@@ -525,7 +525,7 @@ model BookCitation {
   authors        Json
   datePublished  DateTime?
   publisher      String
-  page           String
+  page           String?
   edition        String?
   volumeNumber   Int?
   placePublished String?
@@ -559,7 +559,7 @@ model JournalCitation {
   title         String
   authors       Json
   journalName   String
-  page          String
+  page          String?
   volumeNumber  Int?
   issueNumber   Int?
   doi           String?
