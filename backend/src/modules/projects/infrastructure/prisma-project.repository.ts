@@ -1,5 +1,4 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
-
 import type {
   Project,
   ProjectSection,
@@ -371,6 +370,25 @@ export class PrismaProjectRepository implements ProjectRepository {
       where: {
         projectId,
         key: sectionKey,
+        project: {
+          ownerId,
+          deletedAt: null,
+        },
+      },
+    });
+
+    return section ? mapSection(section) : null;
+  }
+
+  public async findSectionById(
+    sectionId: string,
+    ownerId: string,
+    projectId: string,
+  ): Promise<ProjectSection | null> {
+    const section = await this.prisma.projectSection.findFirst({
+      where: {
+        id: sectionId,
+        projectId,
         project: {
           ownerId,
           deletedAt: null,
