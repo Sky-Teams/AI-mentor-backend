@@ -37,7 +37,7 @@ const mapWebsiteCitation = (input: {
 }): BaseCitationOutPut => ({
   id: input.id,
   citationId: input.citationId,
-  type: "BOOK",
+  type: "WEBSITE",
   title: input.title,
   authors: input.authors as Authors[],
 });
@@ -57,7 +57,7 @@ const mapJournalCitation = (input: {
 }): BaseCitationOutPut => ({
   id: input.id,
   citationId: input.citationId,
-  type: "BOOK",
+  type: "JOURNAL",
   title: input.title,
   authors: input.authors as Authors[],
 });
@@ -74,7 +74,7 @@ const mapReportCitation = (input: {
 }): BaseCitationOutPut => ({
   id: input.id,
   citationId: input.citationId,
-  type: "BOOK",
+  type: "REPORT",
   title: input.title,
   authors: input.authors as Authors[],
 });
