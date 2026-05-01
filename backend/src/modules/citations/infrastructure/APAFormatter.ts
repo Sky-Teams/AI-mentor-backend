@@ -1,18 +1,18 @@
 import { AppError } from "src/shared/errors/app-error";
 import {
-  Bookcitation,
-  CitaionFormatter,
+  BookCitation,
+  CitationFormatter,
   Citation,
   JournalCitation,
   ReportCitation,
   WebsiteCitation,
 } from "../domain/citation";
 
-export class APAFormatter implements CitaionFormatter {
+export class APAFormatter implements CitationFormatter {
   public async format(citation: Citation): Promise<string> {
     switch (citation.type) {
       case "BOOK":
-        return this.formatBook(citation as Bookcitation);
+        return this.formatBook(citation as BookCitation);
       case "WEBSITE":
         return this.formatWebsite(citation as WebsiteCitation);
       case "JOURNAL":
@@ -28,11 +28,10 @@ export class APAFormatter implements CitaionFormatter {
     }
   }
 
-  private async formatBook(c: Bookcitation) {
+  private async formatBook(c: BookCitation) {
     const authors = await this.formateAuthors(c.authors);
     const year = this.getYear(c.datePublished);
     const edition = c.edition ? `${c.edition}, ` : "";
-    console.log(c);
     
     const volume = c.volumeNumber ? `Vol. ${c.volumeNumber}, ` : "";
     return `${authors}. (${year}). ${c.title}: ${volume} (${edition} p.${c.page}) ${c.publisher ? c.publisher + "." : ""}`;
@@ -47,7 +46,6 @@ export class APAFormatter implements CitaionFormatter {
   private async formatJournal(c: JournalCitation) {
     const authors = await this.formateAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    const volume = c.volumeNumber ? `vol. ${c.volumeNumber}, ` : "";
     return `${authors}. (${year}). ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}, ${c.page}.`;
   }
 
