@@ -1,4 +1,4 @@
-export type CitationFormatter =
+export type CitationFormateTypes =
   | "APA"
   | "MLA"
   | "Chicago"
@@ -21,7 +21,7 @@ export interface BaseCitation {
   datePublished: Date;
 }
 
-export type Bookcitation = BaseCitation & {
+export type BookCitation = BaseCitation & {
   type: "BOOK";
   publisher: string;
   placePublished?: string;
@@ -54,17 +54,17 @@ export type ReportCitation = BaseCitation & {
 };
 
 export type Citation =
-  | Bookcitation
+  | BookCitation
   | WebsiteCitation
   | JournalCitation
   | ReportCitation;
 
 export interface FormatCitationInput {
   citation: Citation;
-  style: CitationFormatter;
+  style: CitationFormateTypes;
 }
 
-export interface CitaionFormatter {
+export interface CitationFormatter {
   format(citation: Citation): Promise<string>;
 }
 

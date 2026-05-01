@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+import { z } from "zod";
 
 const AuthorSchema = z.object({
   firstName: z.string().min(1),
@@ -19,7 +19,7 @@ const WebsiteSchema = z.object({
   type: z.literal("WEBSITE"),
   url: z.string().url(),
   websiteName: z.string().min(1),
-  dateAccess: z.string().optional(),
+  dateAccess: z.coerce.date(),
 });
 
 const JournalSchema = z.object({
@@ -38,7 +38,7 @@ const ReportSchema = z.object({
 const BaseCitation = z.object({
   authors: z.array(AuthorSchema).min(1),
   title: z.string().min(1),
-  datePublished: z.string().min(1),
+  datePublished: z.coerce.date(),
 });
 
 export const CreateCitationSchema = z.object({
