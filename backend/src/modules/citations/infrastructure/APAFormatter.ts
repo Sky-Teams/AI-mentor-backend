@@ -29,48 +29,51 @@ export class APAFormatter implements CitationFormatter {
   }
 
   private async formatBook(c: BookCitation) {
-    const authors = await this.formateAuthors(c.authors);
+    const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    const edition = c.edition ? `${c.edition}, ` : "";
-    
-    const volume = c.volumeNumber ? `Vol. ${c.volumeNumber}, ` : "";
-    return `${authors}. (${year}). ${c.title}: ${volume} (${edition} p.${c.page}) ${c.publisher ? c.publisher + "." : ""}`;
+    const edition = c.edition ? `${c.edition}` : "";
+    const volume = c.volumeNumber ? `Vol. ${c.volumeNumber}` : "";
+    return `${authors} (${year}). ${c.title} ${edition || volume ? "(" + edition + (volume && edition ? ", " : "") + volume + ")" : ""} ${c.publisher ? c.publisher + "." : ""}`;
   }
 
   private async formatWebsite(c: WebsiteCitation) {
-    const authors = await this.formateAuthors(c.authors);
+    const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
     return `${authors}. (${year}, ${c.datePublished.getMonth()} ${c.datePublished.getDay()}). ${c.title}. ${c.websiteName}. ${c.url} `;
   }
 
   private async formatJournal(c: JournalCitation) {
-    const authors = await this.formateAuthors(c.authors);
+    const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors}. (${year}). ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}, ${c.page}.`;
+    return `${authors} (${year}). ${c.title}. ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}${c.page ? ", "+ c.page + "." : ""} ${c.doi ? c.doi : ""}`;
   }
 
   private async formatReport(c: ReportCitation) {
-    const authors = await this.formateAuthors(c.authors);
+    const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors}. (${year}). ${c.title} `;
+    return `${authors} (${year}). ${c.title}. ${c.publisher ? c.publisher + "." : ""} ${c.url ? c.url : ""}`;
   }
 
-  public async formateAuthors(authors: any) {
-    let authorsArray: any[] = [];
-    if (authors.length === 1) {
-      return `${authors.lastName}, ${
-        authors.firstName.charAt(0).toUpperCase() + "."
-      }`;
-    } else {
-      authorsArray = Object.values(authors);
-    }
-    const authorList = authorsArray.map((author) => {
-      return `${author.lastName}, ${author.firstName.charAt(0).toUpperCase() + "."}`;
+  public async formatAuthors(authors: any) {
+    const authorsArray = Object.values(authors);
+
+    const formatted = authorsArray.map((author: any) => {
+      const initials = author.firstName
+        .split(" ")
+        .map((n: string) => n.charAt(0).toUpperCase() + ".")
+        .join(" ");
+
+      return `${author.lastName}, ${initials}`;
     });
-    const lastAuthor = authorList.pop();
-    return `${authorList.join(", ")} & ${lastAuthor}`;
-  }
 
+    if (formatted.length === 1) {
+      return formatted[0];
+    }
+
+    const lastAuthor = formatted.pop();
+    return `${formatted.join(", ")} & ${lastAuthor}`;
+  }
+  
   private getYear(dateInput: any): string {
     const date = new Date(dateInput);
     return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "n.d.";

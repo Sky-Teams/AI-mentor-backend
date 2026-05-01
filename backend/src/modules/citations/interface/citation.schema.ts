@@ -10,7 +10,7 @@ const BookSchema = z.object({
   publisher: z.string().min(1),
   placePublished: z.string().optional(),
   isbn: z.string().optional(),
-  page: z.string(),
+  page: z.string().optional(),
   volumeNumber: z.number().optional(),
   edition: z.string().optional(),
 });
@@ -27,7 +27,7 @@ const JournalSchema = z.object({
   journalName: z.string().min(1),
   volumeNumber: z.number().optional(),
   issueNumber: z.number().optional(),
-  page: z.string().min(1),
+  page: z.string().optional(),
   doi: z.string().optional(),
 });
 const ReportSchema = z.object({

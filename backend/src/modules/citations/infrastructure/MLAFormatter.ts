@@ -1,18 +1,18 @@
 import { AppError } from "src/shared/errors/app-error";
 import {
-  Bookcitation,
-  CitaionFormatter,
+  BookCitation,
+  CitationFormatter,
   Citation,
   JournalCitation,
   ReportCitation,
   WebsiteCitation,
 } from "../domain/citation";
 
-export class MLAFormatter implements CitaionFormatter {
+export class MLAFormatter implements CitationFormatter {
   public async format(citation: Citation): Promise<string> {
     switch (citation.type) {
       case "BOOK":
-        return this.formatBook(citation as Bookcitation);
+        return this.formatBook(citation as BookCitation);
       case "WEBSITE":
         return this.formatWebsite(citation as WebsiteCitation);
       case "JOURNAL":
@@ -28,17 +28,17 @@ export class MLAFormatter implements CitaionFormatter {
     }
   }
 
-  private async formatBook(c: Bookcitation) {
+  private async formatBook(c: BookCitation) {
     const authors = await this.formateAuthors(c.authors);
     const edition = c.edition ? `${c.edition}, ` : "";
     const volume = c.volumeNumber ? `Vol. ${c.volumeNumber}, ` : "";
-    return `${authors}. ${c.title}. ${this.getYear(c.datePublished)}. ${edition}${volume} ${c.publisher ? c.publisher + "." : ""} p.${c.page}`;
+    return `${authors}. ${c.title}. ${edition}${volume} ${c.publisher ? c.publisher + ", " : ""} ${this.getYear(c.datePublished)}.`;
   }
 
   private async formatWebsite(c: WebsiteCitation) {
     const authors = await this.formateAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors}. " ${c.title}." ${year ? year + ", " : ""}${c.websiteName}, ${c.url}.`;
+    return `${authors}. " ${c.title}." ${c.websiteName}, ${c.datePublished.getDay()} ${c.datePublished.getMonth()}, ${year}, ${c.url}.`;
   }
 
   private async formatJournal(c: JournalCitation) {
@@ -46,12 +46,12 @@ export class MLAFormatter implements CitaionFormatter {
     const volume = c.volumeNumber ? `vol. ${c.volumeNumber}, ` : "";
     const issue = c.issueNumber ? `no. ${c.issueNumber}, ` : "";
     const year = this.getYear(c.datePublished);
-    return `${authors}. "${c.title}." ${year ? year + ", " : ""}${c.journalName}, ${volume}${issue}${this.getYear(c.datePublished)}`;
+    return `${authors}. "${c.title}." ${c.journalName}, ${volume}${issue} ${year ? year : ""}${c.page ? " , pp." + c.page : ""}${c.doi ? " , " + c.doi : ""}.`;
   }
 
   private async formatReport(c: ReportCitation) {
     const authors = await this.formateAuthors(c.authors);
-    return `${authors}. ${c.title}. ${this.getYear(c.datePublished)}.`;
+    return `${authors}. ${c.title}. ${c.publisher ? c.publisher + ", " : ""} ${this.getYear(c.datePublished)}.`;
   }
 
   public async formateAuthors(authors: any): Promise<string> {
