@@ -40,6 +40,11 @@ import { CitationService } from "./modules/citations/application/citation.servic
 import { CitationFormatterService } from "./modules/citations/application/formatter.service";
 import { PrismaCitationRepository } from "./modules/citations/infrastructure/prisma-citation-repository";
 import { MLAFormatter } from "./modules/citations/infrastructure/MLAFormatter";
+import { ParaphraseController } from "./modules/paraphrasing/interface/paraphrase.controller";
+import { ParaphraseService } from "./modules/paraphrasing/application/paraphrase.service";
+import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructure/prisma-paraphrase.repository";
+import { OpenAiSectionParaphrase } from "./modules/paraphrasing/infrastructure/openai-section-paraphrase";
+import { createParaphraseRouter } from "./modules/paraphrasing/interface/paraphrase.routes";
 import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
 
 export const createApp = (): express.Express => {
@@ -53,6 +58,7 @@ export const createApp = (): express.Express => {
   const reviewRepository = new PrismaReviewRepository(prisma);
   const citationRepository = new PrismaCitationRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
+  const paraphraseRepository = new PrismaParaphraseRepository(prisma);
 
   const authService = new AuthService(
     authRepository,
@@ -77,6 +83,12 @@ export const createApp = (): express.Express => {
     citationRepository,
   );
   const adminService = new AdminService(adminRepository);
+  const paraphraseService = new ParaphraseService(
+    paraphraseRepository,
+    projectService,
+    billingService,
+    new OpenAiSectionParaphrase(),
+  );
 
   const authController = new AuthController(authService);
   const projectController = new ProjectController(projectService);
@@ -84,6 +96,7 @@ export const createApp = (): express.Express => {
   const billingController = new BillingController(billingService);
   const citationController = new CitationController(citationService);
   const adminController = new AdminController(adminService);
+  const paraphraseController = new ParaphraseController(paraphraseService);
 
   const app = express();
   app.disable("x-powered-by");
@@ -111,6 +124,10 @@ export const createApp = (): express.Express => {
   app.use(
     `${env.API_PREFIX}/auth`,
     createAuthRouter(authController, tokenService),
+  );
+   app.use(
+    `${env.API_PREFIX}/projects/paraphrase`,
+    createParaphraseRouter(paraphraseController, tokenService),
   );
   app.use(
     `${env.API_PREFIX}/projects`,

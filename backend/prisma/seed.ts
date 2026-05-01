@@ -267,6 +267,55 @@ async function main() {
     },
   });
 
+  const paraphrasePromptTemplate = await prisma.promptTemplate.upsert({
+    where: { code: "case_report_section_paraphrase" },
+    update: {
+      name: "Case Report Section Paraphrase",
+     type: "SECTION_PARAPHRASE",
+      version: 1,
+      status: "ACTIVE",
+      templateText: [
+        `You are an expert publication mentor for medical case reports.
+        Task:
+        Paraphrase the text.
+        Rules:
+        - Preserve meaning
+        - Do not add new facts
+        - Do not hallucinate
+        - Tone: {{tone}}
+        Text:
+        """{{content}}"""
+        `,
+      ].join("\n"),
+      responseSchema: {
+        schemaVersion: 1,
+      },
+    },
+    create: {
+      name: "Case Report Section Paraphrase",
+      code: "case_report_section_paraphrase",
+      type: "SECTION_PARAPHRASE",
+      version: 1,
+      status: "ACTIVE",
+      templateText: [
+        `You are an expert publication mentor for medical case reports.
+        Task:
+        Paraphrase the text.
+        Rules:
+        - Preserve meaning
+        - Do not add new facts
+        - Do not hallucinate
+        - Tone: {{tone}}
+        Text:
+        """{{content}}"""
+        `,
+      ].join("\n"),
+      responseSchema: {
+        schemaVersion: 1,
+      },
+    },
+  });
+
   const existingProject = await prisma.project.findFirst({
     where: {
       ownerId: testUser.id,

@@ -1,5 +1,25 @@
-export const planBillingModels = ["FREE", "MONTHLY", "CREDIT_PACK", "HYBRID"] as const;
+import { env } from "src/shared/config/env";
+
+export const planBillingModels = [
+  "FREE",
+  "MONTHLY",
+  "CREDIT_PACK",
+  "HYBRID",
+] as const;
 export type PlanBillingModel = (typeof planBillingModels)[number];
+export type AiOperation = "REVIEW" | "PARAPHRASE";
+export const OPERATION_CONFIG = {
+  REVIEW: {
+    cost: env.APP_REVIEW_CREDIT_COST,
+    label: "review",
+    source: "AI_REVIEW",
+  },
+  PARAPHRASE: {
+    cost: env.APP_PARAPHRASE_CREDIT_COST,
+    label: "paraphrase",
+    source: "AI_PARAPHRASE",
+  },
+};
 
 export const subscriptionStatuses = [
   "ACTIVE",
@@ -56,7 +76,13 @@ export interface CreditTransaction {
   walletId: string;
   userId: string;
   type: CreditTransactionType;
-  source: "SUBSCRIPTION" | "AI_REVIEW" | "ADMIN_ADJUSTMENT" | "PURCHASE" | "MANUAL";
+  source:
+    | "SUBSCRIPTION"
+    | "AI_REVIEW"
+    | "AI_PARAPHRASE"
+    | "ADMIN_ADJUSTMENT"
+    | "PURCHASE"
+    | "MANUAL";
   amount: number;
   balanceAfter: number;
   description: string | null;

@@ -27,12 +27,24 @@ export interface UpdateSectionInput {
 export interface ProjectRepository {
   createProject(input: CreateProjectInput): Promise<Project>;
   listProjectsByOwner(ownerId: string): Promise<Project[]>;
-  findProjectByIdForOwner(projectId: string, ownerId: string): Promise<Project | null>;
+  findProjectByIdForOwner(
+    projectId: string,
+    ownerId: string,
+  ): Promise<Project | null>;
   updateProject(input: UpdateProjectInput): Promise<Project>;
   archiveProject(projectId: string, ownerId: string): Promise<void>;
   updateSectionContent(input: UpdateSectionInput): Promise<{
     section: ProjectSection;
     version: SectionVersion;
   }>;
-  findSectionByKey(projectId: string, ownerId: string, sectionKey: ProjectSection["key"]): Promise<ProjectSection | null>;
+  findSectionByKey(
+    projectId: string,
+    ownerId: string,
+    sectionKey: ProjectSection["key"],
+  ): Promise<ProjectSection | null>;
+  findSectionById(
+    sectionId: string,
+    ownerId: string,
+    projectId: string,
+  ): Promise<ProjectSection | null>;
 }
