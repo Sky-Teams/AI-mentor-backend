@@ -7,7 +7,8 @@ export interface ParaphraseContext {
   tone?: ToneType;
   preservedWords?: string[];
   lengthStrategy?: LengthStrategy;
-  promptTemplate: string;
+  promptTemplate?: string;
+  guidLinePackId?: string
 }
 
 export interface ParaphraseExecutionResult {
