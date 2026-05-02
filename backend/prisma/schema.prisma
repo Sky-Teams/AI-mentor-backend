@@ -78,6 +78,11 @@ enum GuidelinePackStatus {
   ARCHIVED
 }
 
+enum GuideLineType {
+  PARAPHRASE
+  REVIEW
+}
+
 enum PromptTemplateType {
   SECTION_REVIEW
   SYSTEM_GUARDRAIL
@@ -356,6 +361,7 @@ model ReadinessSnapshot {
 model GuidelinePack {
   id             String              @id @default(cuid())
   name           String
+  type           GuideLineType       @default(REVIEW)
   code           String              @unique
   version        String
   description    String?
@@ -368,6 +374,7 @@ model GuidelinePack {
   updatedAt      DateTime            @updatedAt
   archivedAt     DateTime?
   reviewRuns     ReviewRun[]
+  paraphraseRuns ParaphraseRun[]
 
   @@index([status, isDefault])
 }
@@ -541,6 +548,8 @@ model ParaphraseRun {
   creditTransactions CreditTransaction[]
   promptTemplate     PromptTemplate?       @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
   aiUsageLog         AiUsageLog?
+  guidelinePackId    String?
+  guidelinePack      GuidelinePack?        @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
 
   @@index([projectId, createdAt])
   @@index([sectionId, createdAt])
