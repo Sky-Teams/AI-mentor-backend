@@ -39,6 +39,7 @@ export interface ParaphraseRepository {
     lengthStrategy?: LengthStrategy;
     aiModel: string;
     promptTemplateId?: string;
+    guidelinePackId?: string
   }): Promise<ParaphraseRun>;
   markParaphraseProcessing(paraphraseRunId: string): Promise<void>;
   markParaphraseFailed(
