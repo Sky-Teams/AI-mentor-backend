@@ -69,6 +69,15 @@ export const openApiSpec = {
           },
         },
       },
+      TriggerParaphraseRequest: {
+        type: "object",
+        require: ["sectionId"],
+        properties: {
+          tone: { type: "string" },
+          preservedWords: { type: "array" },
+          lengthStrategy: { type: "string" },
+        },
+      },
     },
   },
   security: [{ bearerAuth: [] }],
@@ -174,21 +183,42 @@ export const openApiSpec = {
     "/projects/{projectId}": {
       get: {
         summary: "Get a project with sections",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Project detail" },
         },
       },
       patch: {
         summary: "Update project metadata or status",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Project updated" },
         },
       },
       delete: {
         summary: "Archive a project",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Project archived" },
         },
@@ -198,8 +228,18 @@ export const openApiSpec = {
       get: {
         summary: "Get a project section",
         parameters: [
-          { in: "path", name: "projectId", required: true, schema: { type: "string" } },
-          { in: "path", name: "sectionKey", required: true, schema: { type: "string" } },
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+          {
+            in: "path",
+            name: "sectionKey",
+            required: true,
+            schema: { type: "string" },
+          },
         ],
         responses: {
           "200": { description: "Section detail" },
@@ -208,8 +248,18 @@ export const openApiSpec = {
       put: {
         summary: "Update section content and create a version",
         parameters: [
-          { in: "path", name: "projectId", required: true, schema: { type: "string" } },
-          { in: "path", name: "sectionKey", required: true, schema: { type: "string" } },
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+          {
+            in: "path",
+            name: "sectionKey",
+            required: true,
+            schema: { type: "string" },
+          },
         ],
         requestBody: {
           required: true,
@@ -227,14 +277,28 @@ export const openApiSpec = {
     "/projects/{projectId}/reviews": {
       get: {
         summary: "List reviews for a project",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Review history" },
         },
       },
       post: {
         summary: "Trigger AI review for a section",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         requestBody: {
           required: true,
           content: {
@@ -252,7 +316,14 @@ export const openApiSpec = {
     "/projects/{projectId}/issues": {
       get: {
         summary: "List issues for a project",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Project issues" },
         },
@@ -261,7 +332,14 @@ export const openApiSpec = {
     "/projects/{projectId}/readiness": {
       get: {
         summary: "Get the latest readiness snapshot",
-        parameters: [{ in: "path", name: "projectId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Readiness summary" },
         },
@@ -270,7 +348,14 @@ export const openApiSpec = {
     "/reviews/{reviewRunId}": {
       get: {
         summary: "Get a review run in detail",
-        parameters: [{ in: "path", name: "reviewRunId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "reviewRunId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         responses: {
           "200": { description: "Review detail" },
         },
@@ -279,7 +364,14 @@ export const openApiSpec = {
     "/issues/{issueId}": {
       patch: {
         summary: "Update issue status",
-        parameters: [{ in: "path", name: "issueId", required: true, schema: { type: "string" } }],
+        parameters: [
+          {
+            in: "path",
+            name: "issueId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
         requestBody: {
           required: true,
           content: {
@@ -290,6 +382,77 @@ export const openApiSpec = {
         },
         responses: {
           "200": { description: "Issue updated" },
+        },
+      },
+    },
+    "/projects/paraphrase/{projectId}": {
+      post: {
+        summary: "Trigger AI paraphrase for a section",
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/TriggerParaphraseRequest" },
+              example: { sectionId: "cmonxwyaw0004u1186fsjdmm3" },
+            },
+          },
+        },
+        responses: {
+          "202": { description: "Paraphrase triggered" },
+        },
+      },
+    },
+    "/projects/paraphrase": {
+      post: {
+        summary: "Get paraphrase by sectionId",
+        parameters: [
+          {
+            in: "path",
+            name: ["projectId", "sectionId"],
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "202": { description: "Paraphrase section" },
+        },
+      },
+    },
+    "/projects/paraphrase/{paraphraseRunId}": {
+      get: {
+        summary: "Get a paraphrase by id",
+        parameters: [
+          {
+            in: "path",
+            name: "paraphraseRunId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "202": { description: "Paraphrase details" },
+        },
+      },
+      delete: {
+        summary: "Get a paraphrase by id",
+        parameters: [
+          {
+            in: "path",
+            name: "paraphraseRunId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "202": { description: "Paraphrase removed" },
         },
       },
     },
