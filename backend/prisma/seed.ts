@@ -184,6 +184,7 @@ async function main() {
   const guidelinePack = await prisma.guidelinePack.upsert({
     where: { code: "care-case-report-v1" },
     update: {
+      type: "REVIEW",
       name: "CARE-like Case Report Guidance",
       version: "1.0.0",
       description: "Baseline case report completeness and safety rules.",
@@ -200,6 +201,7 @@ async function main() {
       isDefault: true,
     },
     create: {
+      type: "REVIEW",
       name: "CARE-like Case Report Guidance",
       code: "care-case-report-v1",
       version: "1.0.0",
@@ -212,6 +214,45 @@ async function main() {
           "Informed consent statement",
           "No fabricated citations",
           "Explicit missing data warnings",
+        ],
+      },
+      isDefault: true,
+    },
+  });
+
+  await prisma.guidelinePack.upsert({
+    where: { code: "section-paraphrase-v1" },
+    update: {
+      type: "PARAPHRASE",
+      name: "Paraphrasing Guidance",
+      version: "1.0.0",
+      description: "Rules for safe and accurate paraphrasing.",
+      status: "ACTIVE",
+      rules: {
+        mustCheck: [
+          "Preserve original meaning",
+          "Do not add new information",
+          "Avoid plagiarism",
+          "Maintain academic tone",
+          "Improve clarity",
+        ],
+      },
+      isDefault: true,
+    },
+    create: {
+      type: "PARAPHRASE",
+      name: "Paraphrasing Guidance",
+      code: "section-paraphrase-v1",
+      version: "1.0.0",
+      description: "Rules for safe and accurate paraphrasing.",
+      status: "ACTIVE",
+      rules: {
+        mustCheck: [
+          "Preserve original meaning",
+          "Do not add new information",
+          "Avoid plagiarism",
+          "Maintain academic tone",
+          "Improve clarity",
         ],
       },
       isDefault: true,
@@ -271,7 +312,7 @@ async function main() {
     where: { code: "case_report_section_paraphrase" },
     update: {
       name: "Case Report Section Paraphrase",
-     type: "SECTION_PARAPHRASE",
+      type: "SECTION_PARAPHRASE",
       version: 1,
       status: "ACTIVE",
       templateText: [
