@@ -7,7 +7,6 @@ export interface ToneType {
 
 export interface LengthStrategy {
   SHORTEN: "Make the text significantly more concise by removing fluff.";
-  EXPAND: "Elaborate more on the ideas and use more descriptive language.";
   MAINTAIN: "Maintain approximately the same length as the original text.";
 }
 
