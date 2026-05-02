@@ -14,6 +14,9 @@ import { StatusCodes } from "http-status-codes";
 import { BillingService } from "src/modules/billing/application/billing.service";
 import { env } from "src/shared/config/env";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
+import { CreditEstimatorService } from "src/modules/billing/application/credit-estimator.service";
+import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-paraphrase";
+import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
 
 export class ParaphraseService {
   public constructor(
@@ -21,6 +24,8 @@ export class ParaphraseService {
     private readonly projectService: ProjectService,
     private readonly billingService: BillingService,
     private readonly sectionParaphrase: SectionParaphrase,
+    private readonly CreditEstimator: CreditEstimatorService,
+    private readonly reviewRepository: ReviewRepository,
   ) {}
 
   public async triggerSectionParaphrase(input: {
@@ -67,7 +72,38 @@ export class ParaphraseService {
           section.content,
         );
 
-    await this.billingService.assertCanAfford(input.ownerId, "PARAPHRASE");
+    const GuidelinePack =
+      await this.reviewRepository.getDefaultGuidelinePack("PARAPHRASE");
+    const guidelinePack = GuidelinePack?.rules ?? {
+      focus: [
+        "Preserve original meaning",
+        "Do not add new information",
+        "Avoid plagiarism",
+        "Maintain academic tone",
+        "Improve clarity",
+      ],
+    };
+
+    const estimate = this.CreditEstimator.estimate(
+      {
+        project,
+        section: {
+          key: section.key,
+          title: section.title,
+          content: section.content,
+        },
+        promptTemplate,
+        guidelineRules: guidelinePack,
+        model: env.OPENAI_MODEL,
+      },
+      AiParaphraseResponseSchema,
+    );
+
+    await this.billingService.assertCanAfford(
+      input.ownerId,
+      estimate.estimatedCredits,
+      "PARAPHRASE",
+    );
 
     const paraphraseRun =
       await this.paraphraseRepository.createQueuedParaphrase({
@@ -80,6 +116,7 @@ export class ParaphraseService {
         lengthStrategy: input.lengthStrategy,
         aiModel: env.OPENAI_MODEL,
         promptTemplateId: activePrompt?.id,
+        guidelinePackId: GuidelinePack?.id,
       });
 
     await this.paraphraseRepository.markParaphraseProcessing(paraphraseRun.id);
@@ -92,7 +129,12 @@ export class ParaphraseService {
         preservedWords: input.preservedWords,
         lengthStrategy: input.lengthStrategy,
         promptTemplate: promptTemplate,
+        guidLinePackId: GuidelinePack?.id,
       });
+
+      const actualCredits = this.CreditEstimator.calculateActualCredit(
+        execution.usage,
+      );
 
       const billedCredits = await this.billingService.recordSuccess({
         userId: input.ownerId,
@@ -101,7 +143,7 @@ export class ParaphraseService {
         projectId: input.projectId,
         model: env.OPENAI_MODEL,
         usage: execution.usage,
-        amount: execution.usage.totalTokens,
+        amount: actualCredits,
       });
 
       const completeParaphrase =
