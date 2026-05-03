@@ -46,7 +46,7 @@ import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructur
 import { OpenAiSectionParaphrase } from "./modules/paraphrasing/infrastructure/openai-section-paraphrase";
 import { createParaphraseRouter } from "./modules/paraphrasing/interface/paraphrase.routes";
 import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
-import { PrismaUserRepository } from "./modules/users/domain/prisma-user.repository";
+import { PrismaUserRepository } from "./modules/users/infrastructure/prisma-user.repository";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();

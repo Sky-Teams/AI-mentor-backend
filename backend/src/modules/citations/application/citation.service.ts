@@ -1,6 +1,5 @@
 import { UserRepository } from "src/modules/users/domain/user";
 import {
-  BaseCitationOutPut,
   Citation,
   CitationFormatter,
 } from "../domain/citation";
