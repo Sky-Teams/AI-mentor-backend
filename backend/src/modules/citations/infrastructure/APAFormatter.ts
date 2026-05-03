@@ -39,13 +39,15 @@ export class APAFormatter implements CitationFormatter {
   private async formatWebsite(c: WebsiteCitation) {
     const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors}. (${year}, ${c.datePublished.getMonth()} ${c.datePublished.getDay()}). ${c.title}. ${c.websiteName}. ${c.url} `;
+    const month = c.datePublished.toLocaleString("en-US", { month: "long" });
+    const day = c.datePublished.getDate();
+    return `${authors} (${year}, ${month} ${day}). ${c.title}. ${c.websiteName}. ${c.url}`;
   }
 
   private async formatJournal(c: JournalCitation) {
     const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors} (${year}). ${c.title}. ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}${c.page ? ", "+ c.page + "." : ""} ${c.doi ? c.doi : ""}`;
+    return `${authors} (${year}). ${c.title}. ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}${c.page ? ", pp. " + c.page + "." : ""} ${c.doi ? c.doi : ""}`;
   }
 
   private async formatReport(c: ReportCitation) {
@@ -73,7 +75,7 @@ export class APAFormatter implements CitationFormatter {
     const lastAuthor = formatted.pop();
     return `${formatted.join(", ")} & ${lastAuthor}`;
   }
-  
+
   private getYear(dateInput: any): string {
     const date = new Date(dateInput);
     return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "n.d.";

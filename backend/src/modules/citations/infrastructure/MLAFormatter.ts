@@ -38,7 +38,9 @@ export class MLAFormatter implements CitationFormatter {
   private async formatWebsite(c: WebsiteCitation) {
     const authors = await this.formateAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors}. " ${c.title}." ${c.websiteName}, ${c.datePublished.getDay()} ${c.datePublished.getMonth()}, ${year}, ${c.url}.`;
+    const month = c.datePublished.toLocaleString("en-US", { month: "long" });
+    const day = c.datePublished.getDate();
+    return `${authors}. " ${c.title}." ${c.websiteName}, ${day} ${month} ${year}, ${c.url}`;
   }
 
   private async formatJournal(c: JournalCitation) {
