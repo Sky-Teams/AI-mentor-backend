@@ -4,7 +4,9 @@ import { z } from "zod";
 dotenv.config();
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   PORT: z.coerce.number().default(3000),
   API_PREFIX: z.string().default("/api/v1"),
   DATABASE_URL: z.string().min(1),
@@ -18,9 +20,13 @@ const envSchema = z.object({
   OPENAI_MODEL: z.string().default("gpt-5-mini"),
   OPENAI_TIMEOUT_MS: z.coerce.number().default(45000),
   OPENAI_REVIEW_TEMPERATURE: z.coerce.number().min(0).max(1).default(0.2),
+  OPENAI_PARAPHRASE_TEMPERATURE: z.coerce.number().min(0).max(1).default(0.4),
   APP_REVIEW_CREDIT_COST: z.coerce.number().int().positive().default(25),
+  APP_PARAPHRASE_CREDIT_COST: z.coerce.number().int().positive().default(10),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
-  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
+  LOG_LEVEL: z
+    .enum(["fatal", "error", "warn", "info", "debug", "trace"])
+    .default("info"),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000),
   RATE_LIMIT_MAX: z.coerce.number().default(120),
   SWAGGER_ENABLED: z.coerce.boolean().default(true),

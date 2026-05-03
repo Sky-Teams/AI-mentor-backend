@@ -302,4 +302,23 @@ export class PrismaProjectRepository implements ProjectRepository {
 
     return section ? mapSection(section) : null;
   }
+
+  public async findSectionById(
+    sectionId: string,
+    ownerId: string,
+    projectId: string,
+  ): Promise<ProjectSection | null> {
+    const section = await this.prisma.projectSection.findFirst({
+      where: {
+        id: sectionId,
+        projectId,
+        project: {
+          ownerId,
+          deletedAt: null,
+        },
+      },
+    });
+
+    return section ? mapSection(section) : null;
+  }
 }
