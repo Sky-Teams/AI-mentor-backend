@@ -114,7 +114,7 @@ export class PrismaAdminRepository implements AdminRepository {
             version: input.version,
             description: input.description,
             status: input.status,
-            rules: input.rules,
+            rules: input.rules as Prisma.InputJsonValue,
             isDefault: input.isDefault,
           },
         });
@@ -127,7 +127,7 @@ export class PrismaAdminRepository implements AdminRepository {
           version: input.version,
           description: input.description,
           status: input.status,
-          rules: input.rules,
+          rules: input.rules as Prisma.InputJsonValue,
           isDefault: input.isDefault,
         },
       });
@@ -167,10 +167,10 @@ export class PrismaAdminRepository implements AdminRepository {
             description: input.description,
             type: input.type,
             version: input.version,
-            status: input.status,
-            templateText: input.templateText,
-            responseSchema: input.responseSchema,
-            config: input.config,
+           status: input.status,
+           templateText: input.templateText,
+            responseSchema: input.responseSchema as Prisma.InputJsonValue | undefined,
+            config: input.config as Prisma.InputJsonValue | undefined,
           },
         })
       : await this.prisma.promptTemplate.create({
@@ -182,8 +182,8 @@ export class PrismaAdminRepository implements AdminRepository {
             version: input.version ?? 1,
             status: input.status,
             templateText: input.templateText,
-            responseSchema: input.responseSchema,
-            config: input.config,
+            responseSchema: input.responseSchema as Prisma.InputJsonValue | undefined,
+            config: input.config as Prisma.InputJsonValue | undefined,
           },
         });
 

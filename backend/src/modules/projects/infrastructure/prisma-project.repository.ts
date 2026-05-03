@@ -86,7 +86,7 @@ export class PrismaProjectRepository implements ProjectRepository {
             ownerId: input.ownerId,
             title: input.title,
             targetJournal: input.targetJournal,
-            metadata: input.metadata,
+            metadata: input.metadata as Prisma.InputJsonValue | undefined,
           },
         });
 
@@ -170,7 +170,7 @@ export class PrismaProjectRepository implements ProjectRepository {
         title: input.title,
         targetJournal: input.targetJournal,
         status: input.status,
-        metadata: input.metadata,
+        metadata: input.metadata as Prisma.InputJsonValue | undefined,
       },
       include: {
         sections: {
