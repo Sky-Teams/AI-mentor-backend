@@ -1,7 +1,12 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
 import type { SubscriptionPlan } from "../../billing/domain/billing";
 import type { AdminRepository } from "../domain/admin.repository";
-import type { AdminUsageUserSummary, GuidelinePack, PromptTemplate, PlanUpsertInput } from "../domain/admin";
+import type {
+  AdminUsageUserSummary,
+  GuidelinePack,
+  PromptTemplate,
+  PlanUpsertInput,
+} from "../domain/admin";
 
 const mapGuidelinePack = (guidelinePack: {
   id: string;
@@ -45,7 +50,8 @@ const mapPromptTemplate = (template: {
   version: template.version,
   status: template.status,
   templateText: template.templateText,
-  responseSchema: (template.responseSchema as Record<string, unknown> | null) ?? null,
+  responseSchema:
+    (template.responseSchema as Record<string, unknown> | null) ?? null,
   config: (template.config as Record<string, unknown> | null) ?? null,
 });
 
@@ -90,48 +96,50 @@ export class PrismaAdminRepository implements AdminRepository {
     rules: Record<string, unknown>;
     isDefault: boolean;
   }): Promise<GuidelinePack> {
-    const guidelinePack = await this.prisma.$transaction(async (transaction: Prisma.TransactionClient) => {
-      if (input.isDefault) {
-        await transaction.guidelinePack.updateMany({
-          where: {
-            isDefault: true,
-            NOT: input.id ? { id: input.id } : undefined,
-          },
-          data: {
-            isDefault: false,
-          },
-        });
-      }
+    const guidelinePack = await this.prisma.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        if (input.isDefault) {
+          await transaction.guidelinePack.updateMany({
+            where: {
+              isDefault: true,
+              NOT: input.id ? { id: input.id } : undefined,
+            },
+            data: {
+              isDefault: false,
+            },
+          });
+        }
 
-      if (input.id) {
-        return transaction.guidelinePack.update({
-          where: {
-            id: input.id,
-          },
+        if (input.id) {
+          return transaction.guidelinePack.update({
+            where: {
+              id: input.id,
+            },
+            data: {
+              name: input.name,
+              code: input.code,
+              version: input.version,
+              description: input.description,
+              status: input.status,
+              rules: input.rules as Prisma.InputJsonValue,
+              isDefault: input.isDefault,
+            },
+          });
+        }
+
+        return transaction.guidelinePack.create({
           data: {
             name: input.name,
             code: input.code,
             version: input.version,
             description: input.description,
             status: input.status,
-            rules: input.rules,
+            rules: input.rules as Prisma.InputJsonValue,
             isDefault: input.isDefault,
           },
         });
-      }
-
-      return transaction.guidelinePack.create({
-        data: {
-          name: input.name,
-          code: input.code,
-          version: input.version,
-          description: input.description,
-          status: input.status,
-          rules: input.rules,
-          isDefault: input.isDefault,
-        },
-      });
-    });
+      },
+    );
 
     return mapGuidelinePack(guidelinePack);
   }
@@ -169,8 +177,8 @@ export class PrismaAdminRepository implements AdminRepository {
             version: input.version,
             status: input.status,
             templateText: input.templateText,
-            responseSchema: input.responseSchema,
-            config: input.config,
+            responseSchema: input.responseSchema as Prisma.InputJsonValue,
+            config: input.config as Prisma.InputJsonValue,
           },
         })
       : await this.prisma.promptTemplate.create({
@@ -182,8 +190,8 @@ export class PrismaAdminRepository implements AdminRepository {
             version: input.version ?? 1,
             status: input.status,
             templateText: input.templateText,
-            responseSchema: input.responseSchema,
-            config: input.config,
+            responseSchema: input.responseSchema as Prisma.InputJsonValue,
+            config: input.config as Prisma.InputJsonValue,
           },
         });
 
@@ -243,27 +251,34 @@ export class PrismaAdminRepository implements AdminRepository {
       },
     });
 
-    return users.map((user: {
-      id: string;
-      email: string;
-      fullName: string;
-      role: "USER" | "ADMIN";
-      creditWallet: { balance: number } | null;
-      aiUsageLogs: Array<{ technicalTotalTokens: number; billedCredits: number }>;
-    }) => ({
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      role: user.role,
-      walletBalance: user.creditWallet?.balance ?? 0,
-      totalTechnicalTokens: user.aiUsageLogs.reduce(
-        (total: number, usage: { technicalTotalTokens: number }) => total + usage.technicalTotalTokens,
-        0,
-      ),
-      totalBilledCredits: user.aiUsageLogs.reduce(
-        (total: number, usage: { billedCredits: number }) => total + usage.billedCredits,
-        0,
-      ),
-    }));
+    return users.map(
+      (user: {
+        id: string;
+        email: string;
+        fullName: string;
+        role: "USER" | "ADMIN";
+        creditWallet: { balance: number } | null;
+        aiUsageLogs: Array<{
+          technicalTotalTokens: number;
+          billedCredits: number;
+        }>;
+      }) => ({
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        walletBalance: user.creditWallet?.balance ?? 0,
+        totalTechnicalTokens: user.aiUsageLogs.reduce(
+          (total: number, usage: { technicalTotalTokens: number }) =>
+            total + usage.technicalTotalTokens,
+          0,
+        ),
+        totalBilledCredits: user.aiUsageLogs.reduce(
+          (total: number, usage: { billedCredits: number }) =>
+            total + usage.billedCredits,
+          0,
+        ),
+      }),
+    );
   }
 }

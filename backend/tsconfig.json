@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "CommonJS",
     "lib": ["ES2022"],
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "allowJs": false,
     "strict": true,
     "noImplicitOverride": true,
