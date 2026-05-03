@@ -8,6 +8,7 @@ import type {
   ReviewExecutionResult,
   SectionReviewer,
 } from "../domain/section-reviewer";
+import { AiSectionReviewResult } from "src/modules/reviews/domain/review.js";
 
 const issueSchema = z.object({
   category: z.string().min(1),
@@ -110,7 +111,14 @@ export class OpenAiSectionReviewer implements SectionReviewer {
     }
 
     return {
-      result: parsed,
+      result: {
+        ...parsed,
+        metrics: parsed.metrics.map((metric) => ({
+          ...metric,
+          weight: metric.weight ?? undefined,
+          rationale: metric.rationale ?? undefined,
+        })),
+      } satisfies AiSectionReviewResult,
       rawResponse: JSON.parse(JSON.stringify(response)) as Record<
         string,
         unknown

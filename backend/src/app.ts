@@ -87,7 +87,7 @@ export const createApp = (): express.Express => {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN.split(","),
+      origin: "*",
       credentials: true,
     }),
   );
