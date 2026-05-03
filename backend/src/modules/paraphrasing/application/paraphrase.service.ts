@@ -17,6 +17,7 @@ import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
 import { CreditEstimatorService } from "src/modules/billing/application/credit-estimator.service";
 import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-paraphrase";
 import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
+import { UserRepository } from "src/modules/users/domain/user";
 
 export class ParaphraseService {
   public constructor(
@@ -26,6 +27,7 @@ export class ParaphraseService {
     private readonly sectionParaphrase: SectionParaphrase,
     private readonly CreditEstimator: CreditEstimatorService,
     private readonly reviewRepository: ReviewRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   public async triggerSectionParaphrase(input: {
@@ -36,6 +38,7 @@ export class ParaphraseService {
     preservedWords?: string[];
     lengthStrategy?: LengthStrategy;
   }): Promise<ParaphraseRun> {
+    await this.userRepository.getUserById(input.ownerId);
     const project = await this.projectService.getProject(
       input.projectId,
       input.ownerId,
@@ -187,6 +190,7 @@ export class ParaphraseService {
     sectionId: string,
     ownerId: string,
   ): Promise<ParaphraseRun[]> {
+    await this.userRepository.getUserById(ownerId);
     await this.projectService.getProject(projectId, ownerId);
     await this.projectService.getSectionById(sectionId, ownerId, projectId);
     const paraphrase = await this.paraphraseRepository.listSectionParaphrase(
@@ -201,6 +205,7 @@ export class ParaphraseService {
     paraphraseRunId: string,
     ownerId: string,
   ): Promise<ParaphraseRun> {
+    await this.userRepository.getUserById(ownerId);
     const paraphrase = await this.paraphraseRepository.findParaphraseRun(
       paraphraseRunId,
       ownerId,
@@ -220,6 +225,7 @@ export class ParaphraseService {
     paraphraseRunId: string,
     ownerId: string,
   ): Promise<void> {
+    await this.userRepository.getUserById(ownerId);
     const paraphrase = await this.paraphraseRepository.findParaphraseRun(
       paraphraseRunId,
       ownerId,

@@ -39,6 +39,7 @@ import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructur
 import { OpenAiSectionParaphrase } from "./modules/paraphrasing/infrastructure/openai-section-paraphrase";
 import { createParaphraseRouter } from "./modules/paraphrasing/interface/paraphrase.routes";
 import { CreditEstimatorService } from "./modules/billing/application/credit-estimator.service";
+import { PrismaUserRepository } from "./modules/users/infrastructure/prisma-user.repository";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -51,6 +52,7 @@ export const createApp = (): express.Express => {
   const reviewRepository = new PrismaReviewRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
   const paraphraseRepository = new PrismaParaphraseRepository(prisma);
+  const userRepository = new PrismaUserRepository(prisma);
 
   const authService = new AuthService(
     authRepository,
@@ -75,6 +77,7 @@ export const createApp = (): express.Express => {
     new OpenAiSectionParaphrase(),
     CreditEstimator,
     reviewRepository,
+    userRepository,
   );
 
   const authController = new AuthController(authService);

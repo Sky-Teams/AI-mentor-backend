@@ -14,3 +14,7 @@ export interface User {
 export interface UserWithPassword extends User {
   passwordHash: string;
 }
+
+export interface UserRepository {
+  getUserById(userId: string): Promise<User>;
+}
