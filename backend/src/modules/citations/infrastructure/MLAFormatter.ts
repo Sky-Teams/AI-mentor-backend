@@ -53,7 +53,7 @@ export class MLAFormatter implements CitationFormatter {
 
   private async formatReport(c: ReportCitation) {
     const authors = await this.formateAuthors(c.authors);
-    return `${authors}. ${c.title}. ${c.publisher ? c.publisher + ", " : ""} ${this.getYear(c.datePublished)}.`;
+    return `${authors}. ${c.title}. ${c.publisher ? c.publisher + ", " : ""}${this.getYear(c.datePublished)}.`;
   }
 
   public async formateAuthors(authors: any): Promise<string> {

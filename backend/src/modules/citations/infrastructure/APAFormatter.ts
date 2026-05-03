@@ -47,13 +47,13 @@ export class APAFormatter implements CitationFormatter {
   private async formatJournal(c: JournalCitation) {
     const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors} (${year}). ${c.title}. ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}${c.page ? ", pp. " + c.page + "." : ""} ${c.doi ? c.doi : ""}`;
+    return `${authors} (${year}). ${c.title}. ${c.journalName}${c.volumeNumber ? `, ${c.volumeNumber}` : ""} ${c.issueNumber ? `(${c.issueNumber})` : ""}${c.page ? ", pp. " + c.page + "." : ""}${c.doi ? " " + c.doi : ""}`;
   }
 
   private async formatReport(c: ReportCitation) {
     const authors = await this.formatAuthors(c.authors);
     const year = this.getYear(c.datePublished);
-    return `${authors} (${year}). ${c.title}. ${c.publisher ? c.publisher + "." : ""} ${c.url ? c.url : ""}`;
+    return `${authors} (${year}). ${c.title}.${c.publisher ? " " + c.publisher + "." : ""}${c.url ? " " + c.url : ""}`;
   }
 
   public async formatAuthors(authors: any) {
