@@ -115,7 +115,10 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
     }
 
     return {
-      result: parsed,
+      result: {
+        ...parsed,
+        originalText: content.originalText,
+      },
       rawResponse: JSON.parse(JSON.stringify(response)) as Record<
         string,
         unknown

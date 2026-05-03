@@ -419,9 +419,7 @@ async function main() {
     }
   }
 
-  const discussionSection = sections.find(
-    (section: { key: ProjectSectionKey }) => section.key === "DISCUSSION",
-  );
+  const discussionSection = sections.find((section) => section.key === "DISCUSSION");
   if (discussionSection) {
     const existingReview = await prisma.reviewRun.findFirst({
       where: {
