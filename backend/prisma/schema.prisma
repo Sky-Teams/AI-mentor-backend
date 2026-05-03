@@ -82,6 +82,7 @@ enum PromptTemplateType {
   SECTION_REVIEW
   SYSTEM_GUARDRAIL
   FOLLOW_UP
+  SECTION_PARAPHRASE
 }
 
 enum PromptTemplateStatus {
@@ -122,6 +123,7 @@ enum CreditTransactionType {
 enum CreditTransactionSource {
   SUBSCRIPTION
   AI_REVIEW
+  AI_PARAPHRASE
   ADMIN_ADJUSTMENT
   PURCHASE
   MANUAL
@@ -137,61 +139,71 @@ enum AiUsageStatus {
   SKIPPED
 }
 
+enum paraphraseRunStatuses {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 model User {
-  id              String            @id @default(cuid())
-  email           String            @unique
-  passwordHash    String
-  fullName        String
-  role            Role              @default(USER)
-  isActive        Boolean           @default(true)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  deletedAt       DateTime?
-  projects        Project[]
-  refreshTokens   RefreshToken[]
-  sectionVersions SectionVersion[]
-  initiatedReviews ReviewRun[]      @relation("ReviewInitiator")
-  resolvedIssues  ReviewIssue[]     @relation("IssueResolver")
-  subscriptions   UserSubscription[]
-  creditWallet    CreditWallet?
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  passwordHash       String
+  fullName           String
+  role               Role                @default(USER)
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  projects           Project[]
+  refreshTokens      RefreshToken[]
+  sectionVersions    SectionVersion[]
+  initiatedReviews   ReviewRun[]         @relation("ReviewInitiator")
+  resolvedIssues     ReviewIssue[]       @relation("IssueResolver")
+  subscriptions      UserSubscription[]
+  creditWallet       CreditWallet?
   creditTransactions CreditTransaction[]
-  aiUsageLogs     AiUsageLog[]
-  auditLogs       AuditLog[]        @relation("AuditActor")
+  aiUsageLogs        AiUsageLog[]
+  auditLogs          AuditLog[]          @relation("AuditActor")
+  paraphraseRuns     ParaphraseRun[]     @relation("ParaphraseInitiator")
 
   @@index([role, isActive])
 }
 
 model RefreshToken {
-  id         String   @id @default(cuid())
-  userId     String
-  tokenHash  String
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, expiresAt])
 }
 
 model Project {
-  id               String              @id @default(cuid())
-  ownerId          String
-  manuscriptType   ManuscriptType      @default(CASE_REPORT)
-  title            String
-  status           ProjectStatus       @default(DRAFT)
-  targetJournal    String?
-  metadata         Json?
-  readinessScore   Int?
-  lastReviewedAt   DateTime?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  deletedAt        DateTime?
-  owner            User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  sections         ProjectSection[]
-  reviewRuns       ReviewRun[]
-  reviewIssues     ReviewIssue[]
+  id                 String              @id @default(cuid())
+  ownerId            String
+  manuscriptType     ManuscriptType      @default(CASE_REPORT)
+  title              String
+  status             ProjectStatus       @default(DRAFT)
+  targetJournal      String?
+  metadata           Json?
+  readinessScore     Int?
+  lastReviewedAt     DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  deletedAt          DateTime?
+  owner              User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sections           ProjectSection[]
+  reviewRuns         ReviewRun[]
+  reviewIssues       ReviewIssue[]
   readinessSnapshots ReadinessSnapshot[]
-  aiUsageLogs      AiUsageLog[]
+  aiUsageLogs        AiUsageLog[]
+  paraphraseRuns     ParaphraseRun[]
 
   @@index([ownerId, updatedAt])
   @@index([status])
@@ -213,6 +225,7 @@ model ProjectSection {
   versions       SectionVersion[]
   reviewRuns     ReviewRun[]
   issues         ReviewIssue[]
+  paraphraseRuns ParaphraseRun[]
 
   @@unique([projectId, key])
   @@index([projectId, sectionOrder])
@@ -234,15 +247,15 @@ model SectionVersion {
 }
 
 model ReviewRun {
-  id                   String           @id @default(cuid())
+  id                   String              @id @default(cuid())
   projectId            String
   sectionId            String
   initiatedById        String
   promptTemplateId     String?
   guidelinePackId      String?
-  aiProvider           AiProvider       @default(OPENAI)
+  aiProvider           AiProvider          @default(OPENAI)
   aiModel              String
-  status               ReviewRunStatus  @default(QUEUED)
+  status               ReviewRunStatus     @default(QUEUED)
   summary              String?
   nextSteps            Json?
   missingInfoQuestions Json?
@@ -254,20 +267,20 @@ model ReviewRun {
   inputTokens          Int?
   outputTokens         Int?
   totalTokens          Int?
-  appCreditsConsumed   Int              @default(0)
+  appCreditsConsumed   Int                 @default(0)
   startedAt            DateTime?
   completedAt          DateTime?
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  project              Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  section              ProjectSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  initiatedBy          User             @relation("ReviewInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  project              Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section              ProjectSection      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  initiatedBy          User                @relation("ReviewInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
   issues               ReviewIssue[]
   suggestions          ReviewSuggestion[]
   metrics              ReviewMetric[]
   usageLog             AiUsageLog?
-  promptTemplate       PromptTemplate?  @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
-  guidelinePack        GuidelinePack?   @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  promptTemplate       PromptTemplate?     @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
+  guidelinePack        GuidelinePack?      @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
   creditTransactions   CreditTransaction[]
 
   @@index([projectId, createdAt])
@@ -276,7 +289,7 @@ model ReviewRun {
 }
 
 model ReviewIssue {
-  id            String        @id @default(cuid())
+  id            String         @id @default(cuid())
   reviewRunId   String
   projectId     String
   sectionId     String
@@ -286,15 +299,15 @@ model ReviewIssue {
   description   String
   reason        String
   fixSuggestion String
-  status        IssueStatus   @default(OPEN)
+  status        IssueStatus    @default(OPEN)
   resolvedAt    DateTime?
   resolvedById  String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  reviewRun     ReviewRun     @relation(fields: [reviewRunId], references: [id], onDelete: Cascade)
-  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  reviewRun     ReviewRun      @relation(fields: [reviewRunId], references: [id], onDelete: Cascade)
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   section       ProjectSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  resolvedBy    User?         @relation("IssueResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedBy    User?          @relation("IssueResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
 
   @@index([projectId, status, severity])
   @@index([sectionId, status])
@@ -375,24 +388,25 @@ model PromptTemplate {
   updatedAt      DateTime             @updatedAt
   archivedAt     DateTime?
   reviewRuns     ReviewRun[]
+  paraphraseRuns ParaphraseRun[]
 
   @@index([type, status])
 }
 
 model SubscriptionPlan {
-  id                     String                 @id @default(cuid())
-  name                   String
-  code                   String                 @unique
-  description            String?
-  billingModel           PlanBillingModel
-  monthlyPriceCents      Int?
-  includedCredits        Int                    @default(0)
+  id                      String                 @id @default(cuid())
+  name                    String
+  code                    String                 @unique
+  description             String?
+  billingModel            PlanBillingModel
+  monthlyPriceCents       Int?
+  includedCredits         Int                    @default(0)
   overageCreditPriceCents Int?
-  features               Json?
-  status                 SubscriptionPlanStatus @default(ACTIVE)
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
-  subscriptions          UserSubscription[]
+  features                Json?
+  status                  SubscriptionPlanStatus @default(ACTIVE)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  subscriptions           UserSubscription[]
 
   @@index([status, billingModel])
 }
@@ -431,45 +445,50 @@ model CreditWallet {
 }
 
 model CreditTransaction {
-  id                String                  @id @default(cuid())
-  walletId          String
-  userId            String
-  type              CreditTransactionType
-  source            CreditTransactionSource
-  amount            Int
-  balanceAfter      Int
-  description       String?
-  relatedReviewRunId String?
-  metadata          Json?
-  createdAt         DateTime                @default(now())
-  wallet            CreditWallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviewRun         ReviewRun?              @relation(fields: [relatedReviewRunId], references: [id], onDelete: SetNull)
+  id                     String                  @id @default(cuid())
+  walletId               String
+  userId                 String
+  type                   CreditTransactionType
+  source                 CreditTransactionSource
+  amount                 Int
+  balanceAfter           Int
+  description            String?
+  relatedReviewRunId     String?
+  relatedParaphraseRunId String?
+  metadata               Json?
+  createdAt              DateTime                @default(now())
+  wallet                 CreditWallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewRun              ReviewRun?              @relation(fields: [relatedReviewRunId], references: [id], onDelete: SetNull)
+  paraphraseRun          ParaphraseRun?          @relation(fields: [relatedParaphraseRunId], references: [id])
 
   @@index([userId, createdAt])
   @@index([relatedReviewRunId])
+  @@index([relatedParaphraseRunId])
 }
 
 model AiUsageLog {
-  id                    String        @id @default(cuid())
+  id                    String         @id @default(cuid())
   userId                String
   projectId             String?
-  reviewRunId           String?       @unique
-  provider              AiProvider    @default(OPENAI)
+  reviewRunId           String?        @unique
+  paraphraseRunId       String?        @unique
+  provider              AiProvider     @default(OPENAI)
   model                 String
   operation             String
   status                AiUsageStatus
-  technicalInputTokens  Int           @default(0)
-  technicalOutputTokens Int           @default(0)
-  technicalTotalTokens  Int           @default(0)
-  billedCredits         Int           @default(0)
-  costEstimateUsd       Decimal?      @db.Decimal(10, 4)
+  technicalInputTokens  Int            @default(0)
+  technicalOutputTokens Int            @default(0)
+  technicalTotalTokens  Int            @default(0)
+  billedCredits         Int            @default(0)
+  costEstimateUsd       Decimal?       @db.Decimal(10, 4)
   latencyMs             Int?
   requestHash           String?
-  createdAt             DateTime      @default(now())
-  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project               Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  reviewRun             ReviewRun?    @relation(fields: [reviewRunId], references: [id], onDelete: SetNull)
+  createdAt             DateTime       @default(now())
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project               Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  reviewRun             ReviewRun?     @relation(fields: [reviewRunId], references: [id], onDelete: SetNull)
+  paraphraseRun         ParaphraseRun? @relation(fields: [paraphraseRunId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([projectId, createdAt])
@@ -487,4 +506,42 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+model ParaphraseRun {
+  id                 String                @id @default(cuid())
+  projectId          String
+  sectionId          String
+  initiatedById      String
+  originalText       String
+  paraphrasedText    String
+  tone               String
+  preservedWords     Json?
+  lengthStrategy     String?
+  changes            Json?
+  metrics            Json?
+  aiProvider         AiProvider            @default(OPENAI)
+  grammarTips        Json?
+  status             paraphraseRunStatuses @default(QUEUED)
+  aiModel            String
+  promptTemplateId   String?
+  rawResponse        Json?
+  errorMessage       String?
+  inputTokens        Int?
+  outputTokens       Int?
+  totalTokens        Int?
+  appCreditsConsumed Float                 @default(0)
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  project            Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  section            ProjectSection        @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  initiatedBy        User                  @relation("ParaphraseInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
+  creditTransactions CreditTransaction[]
+  promptTemplate     PromptTemplate?       @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
+  aiUsageLog         AiUsageLog?
+
+  @@index([projectId, createdAt])
+  @@index([sectionId, createdAt])
 }

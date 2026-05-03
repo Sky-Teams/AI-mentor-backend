@@ -19,10 +19,20 @@ export class ProjectService {
     return this.projectRepository.listProjectsByOwner(ownerId);
   }
 
-  public async getProject(projectId: string, ownerId: string): Promise<Project> {
-    const project = await this.projectRepository.findProjectByIdForOwner(projectId, ownerId);
+  public async getProject(
+    projectId: string,
+    ownerId: string,
+  ): Promise<Project> {
+    const project = await this.projectRepository.findProjectByIdForOwner(
+      projectId,
+      ownerId,
+    );
     if (!project) {
-      throw new AppError("Project was not found.", StatusCodes.NOT_FOUND, "PROJECT_NOT_FOUND");
+      throw new AppError(
+        "Project was not found.",
+        StatusCodes.NOT_FOUND,
+        "PROJECT_NOT_FOUND",
+      );
     }
 
     return project;
@@ -33,7 +43,10 @@ export class ProjectService {
     return this.projectRepository.updateProject(input);
   }
 
-  public async archiveProject(projectId: string, ownerId: string): Promise<void> {
+  public async archiveProject(
+    projectId: string,
+    ownerId: string,
+  ): Promise<void> {
     await this.getProject(projectId, ownerId);
     await this.projectRepository.archiveProject(projectId, ownerId);
   }
@@ -44,7 +57,11 @@ export class ProjectService {
   }> {
     const project = await this.getProject(input.projectId, input.ownerId);
     if (project.status === "ARCHIVED") {
-      throw new AppError("Archived projects cannot be edited.", StatusCodes.BAD_REQUEST, "PROJECT_ARCHIVED");
+      throw new AppError(
+        "Archived projects cannot be edited.",
+        StatusCodes.BAD_REQUEST,
+        "PROJECT_ARCHIVED",
+      );
     }
 
     await this.getSection(input.projectId, input.ownerId, input.sectionKey);
@@ -60,11 +77,40 @@ export class ProjectService {
     ownerId: string,
     sectionKey: ProjectSection["key"],
   ): Promise<ProjectSection> {
-    const section = await this.projectRepository.findSectionByKey(projectId, ownerId, sectionKey);
+    const section = await this.projectRepository.findSectionByKey(
+      projectId,
+      ownerId,
+      sectionKey,
+    );
     if (!section) {
-      throw new AppError("Section was not found.", StatusCodes.NOT_FOUND, "SECTION_NOT_FOUND");
+      throw new AppError(
+        "Section was not found.",
+        StatusCodes.NOT_FOUND,
+        "SECTION_NOT_FOUND",
+      );
     }
 
+    return section;
+  }
+
+  public async getSectionById(
+    sectionId: string,
+    projectId: string,
+    ownerId: string,
+  ): Promise<ProjectSection> {
+    const section = await this.projectRepository.findSectionById(
+      sectionId,
+      projectId,
+      ownerId,
+    );
+
+    if (!section) {
+      throw new AppError(
+        "Section not found",
+        StatusCodes.NOT_FOUND,
+        "SECTION_NOT_FOUND",
+      );
+    }
     return section;
   }
 }

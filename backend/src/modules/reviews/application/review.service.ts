@@ -167,9 +167,10 @@ export class ReviewService {
       await this.captureReadinessSnapshot(input.projectId, input.ownerId);
       return completedReview;
     } catch (error) {
-      await this.billingService.recordFailedReviewUsage({
+      await this.billingService.recordFailed({
         userId: input.ownerId,
         projectId: input.projectId,
+        operation: "REVIEW",
         reviewRunId: reviewRun.id,
         model: env.OPENAI_MODEL,
       });
