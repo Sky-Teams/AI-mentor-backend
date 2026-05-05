@@ -16,6 +16,9 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "types": ["node", "jest"]
   },
   "include": ["src", "prisma", "tests", "jest.config.ts"],
