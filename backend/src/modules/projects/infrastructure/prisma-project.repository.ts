@@ -78,7 +78,10 @@ const mapProject = (project: {
         guidelinePack: project.journal.guidelinePack
           ? {
               id: project.journal.guidelinePack.id,
-              rules: project.journal.guidelinePack.rules,
+              rules: project.journal.guidelinePack.rules as Record<
+                string,
+                unknown
+              >,
             }
           : null,
       }

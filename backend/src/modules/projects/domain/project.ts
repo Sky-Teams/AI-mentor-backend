@@ -1,5 +1,3 @@
-import { Prisma } from "@prisma/client";
-
 export const projectStatuses = [
   "DRAFT",
   "IN_REVIEW",
@@ -54,7 +52,7 @@ export interface Journal {
   code: string;
   guidelinePack: {
     id?: string;
-    rules: Prisma.JsonValue | null;
+    rules: Record<string, unknown>;
   } | null;
 }
 

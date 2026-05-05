@@ -82,7 +82,7 @@ export class ReviewService {
       project.journal?.guidelinePack ??
       (await this.reviewRepository.getDefaultGuidelinePack());
 
-    const guidelinePack = activeGuidelinePack?.rules ?? {
+    const fallbackGuidelineRules: Record<string, unknown> = {
       focus: [
         "CARE-like completeness",
         "Clarity and publication readiness",
@@ -90,6 +90,9 @@ export class ReviewService {
         "No fabricated facts or citations",
       ],
     };
+
+    const guidelineRules =
+      activeGuidelinePack?.rules ?? fallbackGuidelineRules;
 
     const estimate = this.reviewCreditEstimator.estimate({
       project,
@@ -99,7 +102,7 @@ export class ReviewService {
         content: section.content,
       },
       promptTemplate,
-      guidelineRules: guidelinePack,
+      guidelineRules,
       model: env.OPENAI_MODEL,
     });
 
@@ -128,7 +131,7 @@ export class ReviewService {
           content: section.content,
         },
         promptTemplate,
-        guidelineRules: guidelinePack,
+        guidelineRules,
       });
 
       const actualCredits = this.reviewCreditEstimator.calculateActualCredit(
