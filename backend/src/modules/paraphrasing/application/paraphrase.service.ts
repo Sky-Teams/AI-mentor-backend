@@ -14,6 +14,7 @@ import { StatusCodes } from "http-status-codes";
 import { BillingService } from "src/modules/billing/application/billing.service";
 import { env } from "src/shared/config/env";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
+import { toneTypeDescriptions } from "../domain/paraphrase";
 
 export class ParaphraseService {
   public constructor(
@@ -58,11 +59,12 @@ export class ParaphraseService {
 
     const activePrompt =
       await this.paraphraseRepository.getActiveParaphrasePrompt();
+    const toneText = `${toneTypeDescriptions[input.tone]}`;
     const promptTemplate = activePrompt?.templateText
       ? activePrompt.templateText
-          .replace("{{tone}}", `${input.tone}`)
+          .replace("{{tone}}", toneText)
           .replace("{{content}}", section.content)
-      : PROMPT_TEMPLATE.PARAPHRSE.replace("{{tone}}", `${input.tone}`).replace(
+      : PROMPT_TEMPLATE.PARAPHRSE.replace("{{tone}}", toneText).replace(
           "{{content}}",
           section.content,
         );

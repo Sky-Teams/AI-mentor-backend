@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Prisma } from "@prisma/client";
 import {
   ParaphraseCompletionInput,
   ParaphraseRepository,
@@ -103,10 +103,10 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
       data: {
         status: "COMPLETED",
         paraphrasedText: input.paraphrasedText,
-        changes: input.changes,
-        metrics: input.metrics,
-        grammarTips: input.grammarTips,
-        rawResponse: input.rawResponse,
+        changes: input.changes as Prisma.InputJsonValue,
+        metrics: input.metrics as Prisma.InputJsonValue,
+        grammarTips: input.grammarTips as Prisma.InputJsonValue,
+        rawResponse: input.rawResponse as Prisma.InputJsonValue,
         inputTokens: input.inputTokens,
         outputTokens: input.outputTokens,
         totalTokens: input.totalTokens,

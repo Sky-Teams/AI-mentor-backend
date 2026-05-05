@@ -76,13 +76,7 @@ export interface CreditTransaction {
   walletId: string;
   userId: string;
   type: CreditTransactionType;
-  source:
-    | "SUBSCRIPTION"
-    | "AI_REVIEW"
-    | "AI_PARAPHRASE"
-    | "ADMIN_ADJUSTMENT"
-    | "PURCHASE"
-    | "MANUAL";
+  source: "SUBSCRIPTION" | "AI_REVIEW" | "AI_PARAPHRASE" | "ADMIN_ADJUSTMENT" | "PURCHASE" | "MANUAL";
   amount: number;
   balanceAfter: number;
   description: string | null;
