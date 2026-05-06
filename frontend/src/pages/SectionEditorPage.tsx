@@ -29,9 +29,7 @@ export const SectionEditorPage = () => {
   }, [projectId, sectionKey]);
 
   const latestSectionReview = useMemo(
-    () =>
-      reviews.find((review) => review.sectionKey === sectionKey) ??
-      null,
+    () => reviews.find((review) => review.sectionKey === sectionKey) ?? null,
     [reviews, sectionKey],
   );
 
@@ -72,10 +70,19 @@ export const SectionEditorPage = () => {
         </div>
 
         <div className="button-row">
-          <button className="secondary-button" onClick={handleSave} type="button">
+          <button
+            className="secondary-button"
+            onClick={handleSave}
+            type="button"
+          >
             {isSaving ? "Saving..." : "Save Draft"}
           </button>
-          <button className="primary-button" onClick={handleReview} type="button">
+          <button
+            className="primary-button"
+            onClick={handleReview}
+            type="button"
+            disabled={content.length === 0}
+          >
             {isReviewing ? "Reviewing..." : "Trigger Review"}
           </button>
         </div>
