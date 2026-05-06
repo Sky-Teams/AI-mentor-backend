@@ -217,6 +217,11 @@ textarea {
   color: white;
 }
 
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
 .primary-button:hover {
   background: var(--accent-strong);
 }
