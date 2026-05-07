@@ -1,11 +1,30 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Field } from "../components/Field";
 import { projectsApi } from "../services/api/projects";
+import { journalsApi } from "../services/api/journal";
 
 export const CreateProjectPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [journals, setJournals] = useState<any[]>([]);
+  const [journalsLoading, setJournalsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadJournals = async () => {
+      try {
+        const data = await journalsApi.list();
+        setJournals(data);
+      } catch (err: any) {
+        console.log(err?.message ?? err);
+      } finally {
+        setJournalsLoading(false);
+      }
+    };
+
+    loadJournals();
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,7 +62,16 @@ export const CreateProjectPage = () => {
         </Field>
 
         <Field label="Target journal">
-          <input name="targetJournal" placeholder="BMJ Case Reports" type="text" />
+          <select name="targetJournal" required disabled={journalsLoading}>
+            <option value="" disabled>
+              {journalsLoading ? "Loading journals..." : "Select a journal"}
+            </option>
+            {journals.map((j) => (
+              <option key={j.id} value={j.name}>
+                {j.name}
+              </option>
+            ))}
+          </select>
         </Field>
 
         <div className="form-grid">
