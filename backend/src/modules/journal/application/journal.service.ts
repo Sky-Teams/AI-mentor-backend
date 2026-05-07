@@ -3,7 +3,11 @@ import { JournalRepository } from "src/modules/journal/domain/journal.repository
 export class JournalService {
   public constructor(private readonly journalRepository: JournalRepository) {}
 
-  public async listJournals() {
+  public async getAllJournals() {
     return this.journalRepository.findAll();
+  }
+
+  public async getJournalById(journalId: string) {
+    return this.journalRepository.findById(journalId);
   }
 }
