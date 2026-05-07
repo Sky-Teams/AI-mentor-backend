@@ -58,7 +58,12 @@ export const CreateProjectPage = () => {
 
       <form className="card stack" onSubmit={handleSubmit}>
         <Field label="Project title">
-          <input name="title" placeholder="Rare cardiac presentation with..." required type="text" />
+          <input
+            name="title"
+            placeholder="Rare cardiac presentation with..."
+            required
+            type="text"
+          />
         </Field>
 
         <Field label="Target journal">
@@ -67,7 +72,7 @@ export const CreateProjectPage = () => {
               {journalsLoading ? "Loading journals..." : "Select a journal"}
             </option>
             {journals.map((j) => (
-              <option key={j.id} value={j.name}>
+              <option key={j.id} value={j.id}>
                 {j.name}
               </option>
             ))}
@@ -90,7 +95,11 @@ export const CreateProjectPage = () => {
         </div>
 
         <Field label="Institution">
-          <input name="institution" placeholder="University Hospital" type="text" />
+          <input
+            name="institution"
+            placeholder="University Hospital"
+            type="text"
+          />
         </Field>
 
         <Field label="Article goals">
@@ -101,7 +110,11 @@ export const CreateProjectPage = () => {
           />
         </Field>
 
-        <button className="primary-button" disabled={isSubmitting} type="submit">
+        <button
+          className="primary-button"
+          disabled={isSubmitting}
+          type="submit"
+        >
           {isSubmitting ? "Creating..." : "Create project"}
         </button>
       </form>
