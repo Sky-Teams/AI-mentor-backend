@@ -1,15 +1,25 @@
-export interface ToneType {
-  SIMPLE: "Use basic, everyday vocabulary. Avoid jargon. Short sentences only. NO complex words";
-  ACADEMIC: "Use formal, precise, and sophisticated vocabulary. Maintain an objective and professional perspective. Use terms appropriate for research and formal reports.";
-  CASUAL: "Use friendly, conversational, and relaxed language. Contractions (like 'it's', 'don't') are encouraged. Write as if speaking to a friend.";
-  NATURAL: "Use standard, well-balanced language that sounds like a native speaker. Neither too formal nor too simple.";
-}
+export const toneTypes = ["SIMPLE", "ACADEMIC", "CASUAL", "NATURAL"] as const;
+export type ToneType = (typeof toneTypes)[number];
 
-export interface LengthStrategy {
-  SHORTEN: "Make the text significantly more concise by removing fluff.";
-  EXPAND: "Elaborate more on the ideas and use more descriptive language.";
-  MAINTAIN: "Maintain approximately the same length as the original text.";
-}
+export const toneTypeDescriptions: Record<ToneType, string> = {
+  SIMPLE:
+    "Use basic, everyday vocabulary. Avoid jargon. Short sentences only. NO complex words",
+  ACADEMIC:
+    "Use formal, precise, and sophisticated vocabulary. Maintain an objective and professional perspective. Use terms appropriate for research and formal reports.",
+  CASUAL:
+    "Use friendly, conversational, and relaxed language. Contractions (like 'it's', 'don't') are encouraged. Write as if speaking to a friend.",
+  NATURAL:
+    "Use standard, well-balanced language that sounds like a native speaker. Neither too formal nor too simple.",
+};
+
+export const lengthStrategies = ["SHORTEN", "EXPAND", "MAINTAIN"] as const;
+export type LengthStrategy = (typeof lengthStrategies)[number];
+
+export const lengthStrategyDescriptions: Record<LengthStrategy, string> = {
+  SHORTEN: "Make the text significantly more concise by removing fluff.",
+  EXPAND: "Elaborate more on the ideas and use more descriptive language.",
+  MAINTAIN: "Maintain approximately the same length as the original text.",
+};
 
 export const paraphraseRunStatuses = [
   "QUEUED",

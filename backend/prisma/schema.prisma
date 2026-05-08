@@ -23,18 +23,42 @@ enum ManuscriptType {
   CASE_REPORT
 }
 
-enum ProjectSectionKey {
-  TITLE
-  ABSTRACT
-  KEYWORDS
-  INTRODUCTION
-  CASE_PRESENTATION
-  DISCUSSION
-  CONCLUSION
-  PATIENT_PERSPECTIVE
-  INFORMED_CONSENT
-  REFERENCES
-  COVER_LETTER
+model Journal {
+  id              String         @id @default(cuid())
+  code            String         @unique
+  name            String         @unique
+  publisher       String?
+  description     String?
+  manuscriptType  ManuscriptType @default(CASE_REPORT)
+  guidelinePackId String?
+  guidelinePack   GuidelinePack? @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  isDefault       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  sectionTemplates JournalSectionTemplate[]
+  projects         Project[]
+
+  @@index([isDefault])
+  @@map("journals")
+}
+
+model JournalSectionTemplate {
+  id           String   @id @default(cuid())
+  journalId    String
+  key          String
+  title        String
+  sectionOrder Int
+  isOptional   Boolean  @default(false)
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([journalId, key])
+  @@index([journalId, sectionOrder])
+  @@map("journal_section_templates")
 }
 
 enum SectionStatus {
@@ -205,16 +229,19 @@ model Project {
   readinessSnapshots ReadinessSnapshot[]
   aiUsageLogs        AiUsageLog[]
   citations          Citation[]
+  journalId          String?
+  journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
   paraphraseRuns     ParaphraseRun[]
 
   @@index([ownerId, updatedAt])
   @@index([status])
+  @@index([journalId])
 }
 
 model ProjectSection {
   id             String            @id @default(cuid())
   projectId      String
-  key            ProjectSectionKey
+  key            String
   title          String
   content        String            @default("")
   sectionOrder   Int
@@ -370,6 +397,7 @@ model GuidelinePack {
   updatedAt      DateTime            @updatedAt
   archivedAt     DateTime?
   reviewRuns     ReviewRun[]
+  journals       Journal[]
 
   @@index([status, isDefault])
 }

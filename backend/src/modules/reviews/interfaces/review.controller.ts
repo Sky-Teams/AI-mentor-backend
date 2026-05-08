@@ -2,7 +2,6 @@ import { StatusCodes } from "http-status-codes";
 import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ReviewService } from "../application/review.service";
-import type { ProjectSectionKey } from "../../projects/domain/project";
 import type { ReviewIssue } from "../domain/review";
 
 export class ReviewController {
@@ -13,7 +12,7 @@ export class ReviewController {
     const reviewRun = await this.reviewService.triggerSectionReview({
       ownerId: request.auth!.userId,
       projectId,
-      sectionKey: request.body.sectionKey as ProjectSectionKey,
+      sectionKey: request.body.sectionKey as string,
     });
     response.status(StatusCodes.ACCEPTED).json(successResponse(reviewRun));
   }

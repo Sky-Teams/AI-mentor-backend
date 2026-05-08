@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { projectSectionKeys, projectStatuses } from "../domain/project";
+import { projectStatuses } from "../domain/project";
 
 export const projectIdParamsSchema = z.object({
   projectId: z.string().min(1),
@@ -7,12 +7,12 @@ export const projectIdParamsSchema = z.object({
 
 export const sectionParamsSchema = z.object({
   projectId: z.string().min(1),
-  sectionKey: z.enum(projectSectionKeys),
+  sectionKey: z.string().min(1),
 });
 
 export const createProjectSchema = z.object({
   title: z.string().min(3).max(180),
-  targetJournal: z.string().max(180).optional(),
+  targetJournal: z.string().max(100),
   metadata: z
     .object({
       specialty: z.string().max(120).optional(),

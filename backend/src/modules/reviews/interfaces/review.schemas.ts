@@ -1,13 +1,12 @@
 import { z } from "zod";
 import { issueStatuses } from "../domain/review";
-import { projectSectionKeys } from "../../projects/domain/project";
 
 export const reviewProjectParamsSchema = z.object({
   projectId: z.string().min(1),
 });
 
 export const triggerReviewSchema = z.object({
-  sectionKey: z.enum(projectSectionKeys),
+  sectionKey: z.string().min(1),
 });
 
 export const reviewRunParamsSchema = z.object({

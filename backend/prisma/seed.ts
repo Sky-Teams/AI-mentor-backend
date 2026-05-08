@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
-import { CASE_REPORT_SECTION_DEFINITIONS } from "../src/shared/constants/sections";
 import { env } from "../src/shared/config/env";
-import type { ProjectSectionKey } from "../src/modules/projects/domain/project";
+import { ELSEVIER_SCARE_JOURNAL } from "../src/shared/seed-data/journals";
+
+const j = ELSEVIER_SCARE_JOURNAL;
 
 const prisma = new PrismaClient();
 
@@ -182,38 +183,22 @@ async function main() {
   });
 
   const guidelinePack = await prisma.guidelinePack.upsert({
-    where: { code: "care-case-report-v1" },
+    where: { code: j.code },
     update: {
       name: "CARE-like Case Report Guidance",
       version: "1.0.0",
       description: "Baseline case report completeness and safety rules.",
       status: "ACTIVE",
-      rules: {
-        mustCheck: [
-          "Clear case novelty",
-          "Complete patient timeline",
-          "Informed consent statement",
-          "No fabricated citations",
-          "Explicit missing data warnings",
-        ],
-      },
+      rules: { text: j.guidelinePack },
       isDefault: true,
     },
     create: {
       name: "CARE-like Case Report Guidance",
-      code: "care-case-report-v1",
+      code: j.code,
       version: "1.0.0",
       description: "Baseline case report completeness and safety rules.",
       status: "ACTIVE",
-      rules: {
-        mustCheck: [
-          "Clear case novelty",
-          "Complete patient timeline",
-          "Informed consent statement",
-          "No fabricated citations",
-          "Explicit missing data warnings",
-        ],
-      },
+      rules: { text: j.guidelinePack },
       isDefault: true,
     },
   });
@@ -271,7 +256,7 @@ async function main() {
     where: { code: "case_report_section_paraphrase" },
     update: {
       name: "Case Report Section Paraphrase",
-     type: "SECTION_PARAPHRASE",
+      type: "SECTION_PARAPHRASE",
       version: 1,
       status: "ACTIVE",
       templateText: [
@@ -316,6 +301,51 @@ async function main() {
     },
   });
 
+  //  create journal
+  const journal = await prisma.journal.upsert({
+    where: { code: j.code },
+    update: {
+      name: j.name,
+      publisher: j.publisher,
+      description: j.description,
+      manuscriptType: j.manuscriptType,
+      isDefault: j.isDefault,
+      guidelinePack: {
+        connect: { id: guidelinePack.id },
+      },
+    },
+    create: {
+      code: j.code,
+      name: j.name,
+      publisher: j.publisher,
+      description: j.description,
+      manuscriptType: j.manuscriptType,
+      isDefault: j.isDefault,
+      guidelinePack: {
+        connect: { id: guidelinePack.id },
+      },
+    },
+  });
+
+  //  delete old templates
+  await prisma.journalSectionTemplate.deleteMany({
+    where: { journalId: journal.id },
+  });
+
+  // create sections
+  for (const section of j.sections) {
+    const createdSection = await prisma.journalSectionTemplate.create({
+      data: {
+        journalId: journal.id,
+        key: section.key,
+        title: section.title,
+        sectionOrder: section.order,
+        isOptional: section.optional,
+        description: section.description,
+      },
+    });
+  }
+
   const existingProject = await prisma.project.findFirst({
     where: {
       ownerId: testUser.id,
@@ -334,7 +364,8 @@ async function main() {
       data: {
         ownerId: testUser.id,
         title: "Seeded Case Report Demo",
-        targetJournal: "BMJ Case Reports",
+        targetJournal: journal.name,
+        journalId: journal.id,
         status: "IN_REVIEW",
         metadata: {
           specialty: "Neurology",
@@ -355,13 +386,24 @@ async function main() {
   });
 
   if (existingSections.length === 0) {
+    const templates = await prisma.journalSectionTemplate.findMany({
+      where: { journalId: journal.id },
+      orderBy: { sectionOrder: "asc" },
+    });
+
+    if (templates.length === 0) {
+      throw new Error(
+        `Default journal '${journal.code}' has no section templates after seed.`,
+      );
+    }
+
     await prisma.projectSection.createMany({
-      data: CASE_REPORT_SECTION_DEFINITIONS.map((section) => ({
+      data: templates.map((t) => ({
         projectId: project.id,
-        key: section.key,
-        title: section.title,
-        sectionOrder: section.order,
-        isOptional: section.optional,
+        key: t.key,
+        title: t.title,
+        sectionOrder: t.sectionOrder,
+        isOptional: t.isOptional,
       })),
     });
   }
@@ -372,14 +414,12 @@ async function main() {
     },
   });
 
-  const seededSectionContent: Partial<Record<ProjectSectionKey, string>> = {
+  const seededSectionContent: Record<string, string> = {
     TITLE: "A rare neurovascular presentation after delayed diagnosis",
     ABSTRACT:
       "This case report describes a rare neurovascular presentation with delayed diagnosis, highlighting key diagnostic reasoning and care lessons.",
     INTRODUCTION:
       "Rare neurovascular presentations can be difficult to recognize early, especially when symptoms overlap with more common benign conditions.",
-    CASE_PRESENTATION:
-      "A 34-year-old woman presented with intermittent neurologic symptoms over two weeks. Initial workup was incomplete and timeline details remain partially documented.",
     DISCUSSION:
       "The discussion outlines diagnostic complexity but still needs clearer comparison with related published cases and stronger explanation of novelty.",
     INFORMED_CONSENT:
@@ -387,8 +427,7 @@ async function main() {
   };
 
   for (const section of sections) {
-    const content =
-      seededSectionContent[section.key as ProjectSectionKey] ?? "";
+    const content = seededSectionContent[section.key] ?? "";
     await prisma.projectSection.update({
       where: { id: section.id },
       data: {
@@ -420,7 +459,7 @@ async function main() {
   }
 
   const discussionSection = sections.find(
-    (section: { key: ProjectSectionKey }) => section.key === "DISCUSSION",
+    (section) => section.key === "DISCUSSION",
   );
   if (discussionSection) {
     const existingReview = await prisma.reviewRun.findFirst({
@@ -437,7 +476,7 @@ async function main() {
           sectionId: discussionSection.id,
           initiatedById: testUser.id,
           promptTemplateId: promptTemplate.id,
-          guidelinePackId: guidelinePack.id,
+          guidelinePackId: journal.guidelinePackId,
           aiModel: "gpt-5-mini",
           status: "COMPLETED",
           summary:
@@ -630,7 +669,7 @@ async function main() {
       },
       {
         actorUserId: admin.id,
-        entityType: "GuidelinePack",
+        entityType: "guidelinePack",
         entityId: guidelinePack.id,
         action: "SEED_UPSERT",
         metadata: { source: "seed" },

@@ -1,25 +1,19 @@
-export const projectStatuses = ["DRAFT", "IN_REVIEW", "READY", "ARCHIVED"] as const;
+export const projectStatuses = [
+  "DRAFT",
+  "IN_REVIEW",
+  "READY",
+  "ARCHIVED",
+] as const;
 export type ProjectStatus = (typeof projectStatuses)[number];
 export type ManuscriptType = "CASE_REPORT";
 
-export const sectionStatuses = ["NOT_STARTED", "DRAFT", "IN_REVIEW", "READY"] as const;
-export type SectionStatus = (typeof sectionStatuses)[number];
-
-export const projectSectionKeys = [
-  "TITLE",
-  "ABSTRACT",
-  "KEYWORDS",
-  "INTRODUCTION",
-  "CASE_PRESENTATION",
-  "DISCUSSION",
-  "CONCLUSION",
-  "PATIENT_PERSPECTIVE",
-  "INFORMED_CONSENT",
-  "REFERENCES",
-  "COVER_LETTER",
+export const sectionStatuses = [
+  "NOT_STARTED",
+  "DRAFT",
+  "IN_REVIEW",
+  "READY",
 ] as const;
-
-export type ProjectSectionKey = (typeof projectSectionKeys)[number];
+export type SectionStatus = (typeof sectionStatuses)[number];
 
 export interface CaseReportMetadata {
   journalTarget?: string;
@@ -34,7 +28,7 @@ export interface CaseReportMetadata {
 export interface ProjectSection {
   id: string;
   projectId: string;
-  key: ProjectSectionKey;
+  key: string;
   title: string;
   content: string;
   sectionOrder: number;
@@ -54,13 +48,23 @@ export interface SectionVersion {
   createdAt: Date;
 }
 
+export interface Journal {
+  code: string;
+  guidelinePack: {
+    id?: string;
+    rules: Record<string, unknown>;
+  } | null;
+}
+
 export interface Project {
   id: string;
   ownerId: string;
+  journalCode: string;
+  targetJournal: string | null;
+  journal?: Journal | null;
   manuscriptType: ManuscriptType;
   title: string;
   status: ProjectStatus;
-  targetJournal: string | null;
   metadata: CaseReportMetadata | null;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
