@@ -1,5 +1,3 @@
-import type { ProjectSectionKey } from "../../projects/domain/project";
-
 export const reviewRunStatuses = ["QUEUED", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED"] as const;
 export type ReviewRunStatus = (typeof reviewRunStatuses)[number];
 
@@ -68,7 +66,7 @@ export interface ReviewRun {
   errorMessage: string | null;
   createdAt: Date;
   completedAt: Date | null;
-  sectionKey?: ProjectSectionKey;
+  sectionKey?: string;
   issues?: ReviewIssue[];
   suggestions?: ReviewSuggestion[];
   metrics?: ReviewMetric[];

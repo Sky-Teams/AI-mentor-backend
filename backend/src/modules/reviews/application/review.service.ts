@@ -1,11 +1,9 @@
 import { StatusCodes } from "http-status-codes";
-import { REQUIRED_SECTION_KEYS } from "../../../shared/constants/sections";
 import { env } from "../../../shared/config/env";
 import { AppError } from "../../../shared/errors/app-error";
 import type { BillingService } from "../../billing/application/billing.service";
 import type { CreditEstimatorService } from "../../billing/application/credit-estimator.service";
 import type { ProjectService } from "../../projects/application/project.service";
-import type { ProjectSectionKey } from "../../projects/domain/project";
 import type {
   ReviewIssue,
   ReviewRun,
@@ -36,7 +34,7 @@ export class ReviewService {
   public async triggerSectionReview(input: {
     projectId: string;
     ownerId: string;
-    sectionKey: ProjectSectionKey;
+    sectionKey: string;
   }): Promise<ReviewRun> {
     const project = await this.projectService.getProject(
       input.projectId,
@@ -76,9 +74,10 @@ export class ReviewService {
     const promptTemplate = activePrompt?.templateText ?? PROMPT_TEMPLATE.REVIEW;
 
     const activeGuidelinePack =
-      await this.reviewRepository.getDefaultGuidelinePack("REVIEW");
+      project.journal?.guidelinePack ??
+      (await this.reviewRepository.getDefaultGuidelinePack("REVIEW"));
 
-    const guidelinePack = activeGuidelinePack?.rules ?? {
+    const fallbackGuidelineRules: Record<string, unknown> = {
       focus: [
         "CARE-like completeness",
         "Clarity and publication readiness",
@@ -86,6 +85,8 @@ export class ReviewService {
         "No fabricated facts or citations",
       ],
     };
+
+    const guidelineRules = activeGuidelinePack?.rules ?? fallbackGuidelineRules;
 
     const estimate = this.CreditEstimator.estimate(
       {
@@ -96,7 +97,7 @@ export class ReviewService {
           content: section.content,
         },
         promptTemplate,
-        guidelineRules: guidelinePack,
+        guidelineRules,
         model: env.OPENAI_MODEL,
       },
       sectionReviewSchema,
@@ -128,7 +129,7 @@ export class ReviewService {
           content: section.content,
         },
         promptTemplate,
-        guidelineRules: guidelinePack,
+        guidelineRules,
       });
 
       const actualCredits = this.CreditEstimator.calculateActualCredit(
@@ -268,8 +269,8 @@ export class ReviewService {
       }),
     );
 
-    const requiredSections = (project.sections ?? []).filter((section) =>
-      REQUIRED_SECTION_KEYS.includes(section.key),
+    const requiredSections = (project.sections ?? []).filter(
+      (section) => section.isOptional === false,
     );
     const completedRequiredSections = requiredSections.filter(
       (section) => section.content.trim().length > 0,

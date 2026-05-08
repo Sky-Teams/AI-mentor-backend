@@ -5,7 +5,7 @@ import { AnyZodObject } from "zod";
 export interface CreditEstimateInput {
   project: Project;
   section: {
-    key: ProjectSectionKey;
+    key: string;
     title: string;
     content: string;
   };

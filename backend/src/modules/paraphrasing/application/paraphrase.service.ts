@@ -18,6 +18,7 @@ import { CreditEstimatorService } from "src/modules/billing/application/credit-e
 import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-paraphrase";
 import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
 import { UserRepository } from "src/modules/users/domain/user";
+import { toneTypeDescriptions } from "../domain/paraphrase";
 
 export class ParaphraseService {
   public constructor(
@@ -66,11 +67,12 @@ export class ParaphraseService {
 
     const activePrompt =
       await this.paraphraseRepository.getActiveParaphrasePrompt();
+    const toneText = `${toneTypeDescriptions[input.tone]}`;
     const promptTemplate = activePrompt?.templateText
       ? activePrompt.templateText
-          .replace("{{tone}}", `${input.tone}`)
+          .replace("{{tone}}", toneText)
           .replace("{{content}}", section.content)
-      : PROMPT_TEMPLATE.PARAPHRSE.replace("{{tone}}", `${input.tone}`).replace(
+      : PROMPT_TEMPLATE.PARAPHRSE.replace("{{tone}}", toneText).replace(
           "{{content}}",
           section.content,
         );

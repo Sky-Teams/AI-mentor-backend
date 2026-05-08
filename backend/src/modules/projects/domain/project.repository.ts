@@ -4,6 +4,7 @@ export interface CreateProjectInput {
   ownerId: string;
   title: string;
   targetJournal?: string;
+  journalCode?: string;
   metadata?: Record<string, unknown>;
 }
 

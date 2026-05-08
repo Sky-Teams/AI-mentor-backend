@@ -2,7 +2,6 @@ import { StatusCodes } from "http-status-codes";
 import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
-import type { ProjectSectionKey } from "../domain/project";
 
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
@@ -45,7 +44,7 @@ export class ProjectController {
   public async getSection(request: Request, response: Response): Promise<void> {
     const { projectId, sectionKey } = request.params as {
       projectId: string;
-      sectionKey: ProjectSectionKey;
+      sectionKey: string;
     };
     const section = await this.projectService.getSection(
       projectId,
@@ -58,7 +57,7 @@ export class ProjectController {
   public async updateSection(request: Request, response: Response): Promise<void> {
     const { projectId, sectionKey } = request.params as {
       projectId: string;
-      sectionKey: ProjectSectionKey;
+      sectionKey: string;
     };
     const result = await this.projectService.updateSection({
       ownerId: request.auth!.userId,
