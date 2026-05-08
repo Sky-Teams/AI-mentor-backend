@@ -102,7 +102,7 @@ enum GuidelinePackStatus {
   ARCHIVED
 }
 
-enum GuideLineType {
+enum GuidelineType  {
   PARAPHRASE
   REVIEW
 }
@@ -388,7 +388,7 @@ model ReadinessSnapshot {
 model GuidelinePack {
   id             String              @id @default(cuid())
   name           String
-  type           GuideLineType       @default(REVIEW)
+  type           GuidelineType        @default(REVIEW)
   code           String              @unique
   version        String
   description    String?

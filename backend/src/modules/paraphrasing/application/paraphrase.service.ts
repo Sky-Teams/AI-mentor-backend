@@ -72,7 +72,7 @@ export class ParaphraseService {
       ? activePrompt.templateText
           .replace("{{tone}}", toneText)
           .replace("{{content}}", section.content)
-      : PROMPT_TEMPLATE.PARAPHRSE.replace("{{tone}}", toneText).replace(
+      : PROMPT_TEMPLATE.PARAPHRASE.replace("{{tone}}", toneText).replace(
           "{{content}}",
           section.content,
         );
@@ -134,7 +134,7 @@ export class ParaphraseService {
         preservedWords: input.preservedWords,
         lengthStrategy: input.lengthStrategy,
         promptTemplate: promptTemplate,
-        guidLinePackId: GuidelinePack?.id,
+        guidelinePackId: GuidelinePack?.id,
       });
 
       const actualCredits = this.CreditEstimator.calculateActualCredit(

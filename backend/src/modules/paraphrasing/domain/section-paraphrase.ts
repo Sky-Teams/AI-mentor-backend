@@ -8,7 +8,7 @@ export interface ParaphraseContext {
   preservedWords?: string[];
   lengthStrategy?: LengthStrategy;
   promptTemplate?: string;
-  guidLinePackId?: string
+  guidelinePackId?: string
 }
 
 export interface ParaphraseExecutionResult {
