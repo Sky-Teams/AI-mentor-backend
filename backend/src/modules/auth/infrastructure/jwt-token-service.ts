@@ -54,8 +54,10 @@ export class JwtTokenService implements TokenService {
   }
 
   public getRefreshTokenExpiryDate(): Date {
+    const days = parseInt(env.JWT_REFRESH_TTL);
+
     const now = new Date();
-    now.setDate(now.getDate() + 30);
+    now.setDate(now.getDate() + days);
     return now;
   }
 }
