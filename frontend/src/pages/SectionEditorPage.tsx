@@ -36,26 +36,32 @@ export const SectionEditorPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     setStatusMessage(null);
-    await projectsApi.updateSection(projectId, sectionKey, {
-      content,
-      changeSummary: "Updated from internal web UI",
-    });
-    setStatusMessage("Section saved and versioned.");
-    setIsSaving(false);
-    await load();
+    try {
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content,
+        changeSummary: "Updated from internal web UI",
+      });
+      setStatusMessage("Section saved and versioned.");
+      await load();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReview = async () => {
     setIsReviewing(true);
     setStatusMessage(null);
-    await projectsApi.updateSection(projectId, sectionKey, {
-      content,
-      changeSummary: "Saved before AI review",
-    });
-    await reviewsApi.triggerReview(projectId, sectionKey);
-    setStatusMessage("Review triggered. Refreshing review state...");
-    setIsReviewing(false);
-    await load();
+    try {
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content,
+        changeSummary: "Saved before AI review",
+      });
+      await reviewsApi.triggerReview(projectId, sectionKey);
+      setStatusMessage("Review triggered. Refreshing review state...");
+      await load();
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
   return (
