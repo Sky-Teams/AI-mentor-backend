@@ -39,6 +39,10 @@ import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructur
 import { OpenAiSectionParaphrase } from "./modules/paraphrasing/infrastructure/openai-section-paraphrase";
 import { createParaphraseRouter } from "./modules/paraphrasing/interface/paraphrase.routes";
 import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
+import { JournalController } from "src/modules/journal/interface/journal.controller.js";
+import { JournalService } from "src/modules/journal/application/journal.service.js";
+import { createJournalRouter } from "src/modules/journal/interface/journal.routes.js";
+import { PrismaJournalRepository } from "src/modules/journal/infrastructure/prisma-journal.repository.js";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -75,12 +79,16 @@ export const createApp = (): express.Express => {
     new OpenAiSectionParaphrase(),
   );
 
+  const journalRepository = new PrismaJournalRepository(prisma);
+  const journalService = new JournalService(journalRepository);
+
   const authController = new AuthController(authService);
   const projectController = new ProjectController(projectService);
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
   const adminController = new AdminController(adminService);
   const paraphraseController = new ParaphraseController(paraphraseService);
+  const journalController = new JournalController(journalService);
 
   const app = express();
   app.disable("x-powered-by");
@@ -109,7 +117,7 @@ export const createApp = (): express.Express => {
     `${env.API_PREFIX}/auth`,
     createAuthRouter(authController, tokenService),
   );
-   app.use(
+  app.use(
     `${env.API_PREFIX}/projects/paraphrase`,
     createParaphraseRouter(paraphraseController, tokenService),
   );
@@ -128,6 +136,11 @@ export const createApp = (): express.Express => {
   app.use(
     `${env.API_PREFIX}/admin`,
     createAdminRouter(adminController, tokenService),
+  );
+
+  app.use(
+    `${env.API_PREFIX}/journals`,
+    createJournalRouter(journalController, tokenService),
   );
 
   app.use(createErrorHandler(logger));

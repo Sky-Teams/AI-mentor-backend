@@ -29,35 +29,39 @@ export const SectionEditorPage = () => {
   }, [projectId, sectionKey]);
 
   const latestSectionReview = useMemo(
-    () =>
-      reviews.find((review) => review.sectionKey === sectionKey) ??
-      null,
+    () => reviews.find((review) => review.sectionKey === sectionKey) ?? null,
     [reviews, sectionKey],
   );
 
   const handleSave = async () => {
     setIsSaving(true);
     setStatusMessage(null);
-    await projectsApi.updateSection(projectId, sectionKey, {
-      content,
-      changeSummary: "Updated from internal web UI",
-    });
-    setStatusMessage("Section saved and versioned.");
-    setIsSaving(false);
-    await load();
+    try {
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content,
+        changeSummary: "Updated from internal web UI",
+      });
+      setStatusMessage("Section saved and versioned.");
+      await load();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleReview = async () => {
     setIsReviewing(true);
     setStatusMessage(null);
-    await projectsApi.updateSection(projectId, sectionKey, {
-      content,
-      changeSummary: "Saved before AI review",
-    });
-    await reviewsApi.triggerReview(projectId, sectionKey);
-    setStatusMessage("Review triggered. Refreshing review state...");
-    setIsReviewing(false);
-    await load();
+    try {
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content,
+        changeSummary: "Saved before AI review",
+      });
+      await reviewsApi.triggerReview(projectId, sectionKey);
+      setStatusMessage("Review triggered. Refreshing review state...");
+      await load();
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
   return (
@@ -72,10 +76,19 @@ export const SectionEditorPage = () => {
         </div>
 
         <div className="button-row">
-          <button className="secondary-button" onClick={handleSave} type="button">
+          <button
+            className="secondary-button"
+            onClick={handleSave}
+            type="button"
+          >
             {isSaving ? "Saving..." : "Save Draft"}
           </button>
-          <button className="primary-button" onClick={handleReview} type="button">
+          <button
+            className="primary-button"
+            onClick={handleReview}
+            type="button"
+            disabled={content.length === 0}
+          >
             {isReviewing ? "Reviewing..." : "Trigger Review"}
           </button>
         </div>
