@@ -50,3 +50,7 @@ export const CreateCitationSchema = z.object({
   ]),
   style: z.enum(["APA", "MLA"]),
 });
+
+export const citationIdParamsSchema = z.object({
+  citationId: z.string().min(1),
+});
