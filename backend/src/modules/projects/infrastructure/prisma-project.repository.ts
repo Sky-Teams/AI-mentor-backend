@@ -104,7 +104,7 @@ export class PrismaProjectRepository implements ProjectRepository {
   public async createProject(input: CreateProjectInput): Promise<Project> {
     const journal = input.targetJournal
       ? await this.prisma.journal.findFirst({
-          where: { name: input.targetJournal },
+          where: { id: input.targetJournal },
         })
       : await this.prisma.journal.findFirst({
           where: { isDefault: true },
@@ -140,7 +140,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           data: {
             ownerId: input.ownerId,
             title: input.title,
-            targetJournal: input.targetJournal ?? journal.name,
+            targetJournal: journal.name,
             journalId: journal.id,
             metadata: input.metadata as Prisma.InputJsonValue | undefined,
           },
