@@ -46,11 +46,14 @@ export class CitationService {
       result.map((item) => this.citationRepository.GetCitationType(item)),
     );
     return await Promise.all(
-      citation.map( async (item) =>({
+      citation.map(async (item) => ({
         id: item.citation.citationId,
-        formatted: await this.formatterService.format(item.citation, item.type, item.style)
-      })
-      ),
+        formatted: await this.formatterService.format(
+          item.citation,
+          item.type,
+          item.style,
+        ),
+      })),
     );
   }
 
