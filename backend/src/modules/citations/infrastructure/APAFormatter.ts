@@ -6,11 +6,12 @@ import {
   JournalCitation,
   ReportCitation,
   WebsiteCitation,
+  CitationType,
 } from "../domain/citation";
 
 export class APAFormatter implements CitationFormatter {
-  public async format(citation: Citation): Promise<string> {
-    switch (citation.type) {
+  public async format(citation: Citation, type: CitationType): Promise<string> {
+    switch (type) {
       case "BOOK":
         return this.formatBook(citation as BookCitation);
       case "WEBSITE":
