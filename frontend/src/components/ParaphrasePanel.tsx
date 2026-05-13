@@ -23,29 +23,32 @@ export const ParaphrasePanel = ({
 
   const handleParaphrase = async () => {
     if (!projectId) return;
-    const finalWords = inputWords
-      .split(/[,\s]+/)
-      .map((word) => word.trim())
-      .filter((word) => word !== "");
-    setInputWords("");
-    setIsParaphrasing(true);
-    const result = await paraphraseApi.triggerParaphrase({
-      projectId: projectId,
-      sectionId: sectionId,
-      tone: selectedTone.toLocaleUpperCase() as ToneType,
-      lengthStrategy: selectedLength.toLocaleUpperCase() as LengthStrategy,
-      preservedWords: finalWords,
-    });
-    if (result) {
-      setRefreshTrigger((prev) => prev + 1);
+    try {
+      const finalWords = inputWords
+        .split(/[,\s]+/)
+        .map((word) => word.trim())
+        .filter((word) => word !== "");
+      setInputWords("");
+      setIsParaphrasing(true);
+      const result = await paraphraseApi.triggerParaphrase({
+        projectId: projectId,
+        sectionId: sectionId,
+        tone: selectedTone.toLocaleUpperCase() as ToneType,
+        lengthStrategy: selectedLength.toLocaleUpperCase() as LengthStrategy,
+        preservedWords: finalWords,
+      });
+      if (result) {
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    } finally {
+      setIsParaphrasing(false);
     }
-    setIsParaphrasing(false);
   };
 
   const updateTopPanel = (latest: ParaphraseRun[]) => {
-    setLatestParaphrase(latest[0] || null);
+    setLatestParaphrase(latest?.[0] ?? null);
   };
-  const currentData = latestParaphrase || paraphrase;
+  const currentData = latestParaphrase ;
 
   return (
     <div>
@@ -114,7 +117,7 @@ export const ParaphrasePanel = ({
           <div className="">
             <div className="review-layout two-column">
               <div className="card ">
-                <h2>Origina Text</h2>
+                <h2>Original Text</h2>
                 <p>{currentData.originalText}</p>
               </div>
               <div className="card">
@@ -128,7 +131,7 @@ export const ParaphrasePanel = ({
                   <div className="review-grid">
                     <h3>Changes</h3>
                     {currentData.changes?.map((change, index) => (
-                      <ul key={index}>
+                      <ul key={currentData.id || index}>
                         <li>
                           <strong>Original Text: </strong>{" "}
                           {change.originalPhrase}
@@ -148,9 +151,9 @@ export const ParaphrasePanel = ({
               {currentData.grammarTips?.length ? (
                 <>
                   <div className="review-grid">
-                    <h3>Grammer Tips</h3>
+                    <h3>Grammar Tips</h3>
                     {currentData.grammarTips.map((grammer, index) => (
-                      <ul key={index}>
+                      <ul key={currentData.id || index}>
                         <li>
                           <strong>Name: </strong> {grammer.ruleName}
                         </li>
@@ -170,7 +173,7 @@ export const ParaphrasePanel = ({
                   <div className="review-grid">
                     <h3>Metrics</h3>
                     {currentData.metrics.map((metric, index) => (
-                      <ul key={index}>
+                      <ul key={currentData.id || index}>
                         <li>
                           <strong>Name: </strong> {metric.name}
                         </li>
