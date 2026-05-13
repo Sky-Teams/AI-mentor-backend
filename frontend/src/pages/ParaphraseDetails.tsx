@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { ParaphraseRun } from "../types/api";
 import { paraphraseApi } from "../services/api/paraphrase";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const ParaphraseDetails = () => {
   const navigate = useNavigate();
   const [paraphrase, setParaphrase] = useState<ParaphraseRun>();
-  const { paraphraseRunId = "", projectId = "" } = useParams();
+  const { paraphraseRunId = "" } = useParams();
   const [Loading, setIsLoading] = useState(true);
   useEffect(() => {
     const load = async () => {
