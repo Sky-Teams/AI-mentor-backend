@@ -31,7 +31,7 @@ export const ParaphraseList = ({
         );
         setParaphrase(data);
         onListChange(data);
-      } catch (error) {
+      } finally {
         setIsLoading(false);
       }
     };
@@ -44,14 +44,18 @@ export const ParaphraseList = ({
 
   const deleteParaphrase = async (id: string) => {
     try {
+      setIsLoading(true);
       await paraphraseApi.deleteParaphrase(id);
       setOpenMenu(null);
       const newList = paraphrase.filter((item) => item.id !== id);
       setParaphrase(newList);
       onListChange(newList);
       alert("One Item deleted");
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      setIsLoading(false);
+      console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,7 +64,7 @@ export const ParaphraseList = ({
       <div className="paraphrase-header">
         <h3>Paraphrase History</h3>
       </div>
-      {!isLoading ? (
+      {isLoading ? (
         <div>Loading...</div>
       ) : (
         paraphrase.map((p, index) => (
