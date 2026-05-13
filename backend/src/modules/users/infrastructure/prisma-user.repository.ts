@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+import { User, UserRepository } from "../domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
-import { User, UserRepository } from "../domain/user";
 
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaClient) {}

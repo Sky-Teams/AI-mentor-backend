@@ -196,6 +196,7 @@ model User {
   creditTransactions CreditTransaction[]
   aiUsageLogs        AiUsageLog[]
   auditLogs          AuditLog[]          @relation("AuditActor")
+  citations          Citation[]
   paraphraseRuns     ParaphraseRun[]     @relation("ParaphraseInitiator")
 
   @@index([role, isActive])
@@ -232,6 +233,7 @@ model Project {
   reviewIssues       ReviewIssue[]
   readinessSnapshots ReadinessSnapshot[]
   aiUsageLogs        AiUsageLog[]
+  citations          Citation[]
   journalId          String?
   journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
   paraphraseRuns     ParaphraseRun[]
@@ -541,6 +543,100 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+enum CitationType {
+  BOOK
+  WEBSITE
+  JOURNAL
+  REPORT
+}
+
+model BookCitation {
+  id             String    @id @default(cuid())
+  citationId     String    @unique
+  citation       Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title          String
+  authors        Json
+  datePublished  DateTime?
+  publisher      String
+  page           String?
+  edition        String?
+  volumeNumber   Int?
+  placePublished String?
+  isbn           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model WebsiteCitation {
+  id            String    @id @default(cuid())
+  citationId    String    @unique
+  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title         String
+  authors       Json
+  websiteName   String
+  url           String
+  dateAccess    DateTime
+  datePublished DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model JournalCitation {
+  id            String    @id @default(cuid())
+  citationId    String    @unique
+  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title         String
+  authors       Json
+  journalName   String
+  page          String?
+  volumeNumber  Int?
+  issueNumber   Int?
+  doi           String?
+  datePublished DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model ReportCitation {
+  id            String    @id @default(cuid())
+  citationId    String    @unique
+  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
+  title         String
+  authors       Json
+  datePublished DateTime?
+  publisher     String?
+  url           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([title])
+}
+
+model Citation {
+  id              String           @id @default(cuid())
+  userId          String
+  projectId       String
+  type            CitationType
+  book            BookCitation?
+  createdAt       DateTime         @default(now())
+  websiteCitation WebsiteCitation?
+  journalCitation JournalCitation?
+  reportCitation  ReportCitation?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime         @updatedAt
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([type, createdAt])
 }
 
 model ParaphraseRun {
