@@ -17,7 +17,7 @@ export const SectionEditorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [paraphraseRuns, setParaphraseRuns] = useState<ParaphraseRun[]>([]);
-  const [sectionId, setSectionId] = useState<string>(String);
+  const [sectionId, setSectionId] = useState("");
 
   const load = async () => {
     const [sectionData, reviewData] = await Promise.all([
