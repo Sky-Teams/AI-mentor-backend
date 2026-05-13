@@ -34,7 +34,7 @@ const grammarTipsSchema = z.object({
   explanation: z.string().min(1),
   example: z.string().optional(),
 });
-const AiParaphraseResponseSchema = z.object({
+export const AiParaphraseResponseSchema = z.object({
   paraphrasedText: z.string().min(1),
   tone: z.enum(TONE_VALUES).default("SIMPLE"),
   lengthStrategy: z.enum(LENGTH_VALUES).default("SHORTEN"),

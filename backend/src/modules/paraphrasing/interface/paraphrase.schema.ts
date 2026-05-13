@@ -1,6 +1,6 @@
 import { z } from "zod";
 export const TONE_VALUES = ["SIMPLE", "ACADEMIC", "CASUAL", "NATURAL"] as const;
-export const LENGTH_VALUES = ["SHORTEN", "EXPAND", "MAINTAIN"] as const;
+export const LENGTH_VALUES = ["SHORTEN", "MAINTAIN"] as const;
 
 export const paraphraseSchema = z.object({
   sectionId: z.string().min(1),

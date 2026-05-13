@@ -1,5 +1,3 @@
-import { env } from "src/shared/config/env";
-
 export const planBillingModels = [
   "FREE",
   "MONTHLY",
@@ -10,12 +8,10 @@ export type PlanBillingModel = (typeof planBillingModels)[number];
 export type AiOperation = "REVIEW" | "PARAPHRASE";
 export const OPERATION_CONFIG = {
   REVIEW: {
-    cost: env.APP_REVIEW_CREDIT_COST,
     label: "review",
     source: "AI_REVIEW",
   },
   PARAPHRASE: {
-    cost: env.APP_PARAPHRASE_CREDIT_COST,
     label: "paraphrase",
     source: "AI_PARAPHRASE",
   },
