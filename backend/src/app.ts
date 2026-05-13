@@ -33,12 +33,24 @@ import { AdminService } from "./modules/admin/application/admin.service";
 import { AdminController } from "./modules/admin/interfaces/admin.controller";
 import { createAdminRouter } from "./modules/admin/interfaces/admin.routes";
 import { createHealthRouter } from "./modules/health/interfaces/health.routes";
+import { createCitationRouter } from "./modules/citations/interface/citation.routes";
+import { CitationController } from "./modules/citations/interface/citation.controller";
+import { APAFormatter } from "./modules/citations/infrastructure/APAFormatter";
+import { CitationService } from "./modules/citations/application/citation.service";
+import { CitationFormatterService } from "./modules/citations/application/formatter.service";
+import { PrismaCitationRepository } from "./modules/citations/infrastructure/prisma-citation-repository";
+import { MLAFormatter } from "./modules/citations/infrastructure/MLAFormatter";
 import { ParaphraseController } from "./modules/paraphrasing/interface/paraphrase.controller";
 import { ParaphraseService } from "./modules/paraphrasing/application/paraphrase.service";
 import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructure/prisma-paraphrase.repository";
 import { OpenAiSectionParaphrase } from "./modules/paraphrasing/infrastructure/openai-section-paraphrase";
 import { createParaphraseRouter } from "./modules/paraphrasing/interface/paraphrase.routes";
 import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
+import { PrismaUserRepository } from "./modules/users/infrastructure/prisma-user.repository";
+import { JournalController } from "src/modules/journal/interface/journal.controller.js";
+import { JournalService } from "src/modules/journal/application/journal.service.js";
+import { createJournalRouter } from "src/modules/journal/interface/journal.routes.js";
+import { PrismaJournalRepository } from "src/modules/journal/infrastructure/prisma-journal.repository.js";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -49,8 +61,10 @@ export const createApp = (): express.Express => {
   const projectRepository = new PrismaProjectRepository(prisma);
   const billingRepository = new PrismaBillingRepository(prisma);
   const reviewRepository = new PrismaReviewRepository(prisma);
+  const citationRepository = new PrismaCitationRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
   const paraphraseRepository = new PrismaParaphraseRepository(prisma);
+  const userRepositiry = new PrismaUserRepository(prisma);
 
   const authService = new AuthService(
     authRepository,
@@ -67,6 +81,15 @@ export const createApp = (): express.Express => {
     billingService,
     reviewCreditEstimator,
   );
+  const apa = new APAFormatter();
+  const mla = new MLAFormatter();
+  const citationFormatterService = new CitationFormatterService(apa, mla);
+  const citationService = new CitationService(
+    citationFormatterService,
+    citationRepository,
+    userRepositiry,
+    projectService
+  );
   const adminService = new AdminService(adminRepository);
   const paraphraseService = new ParaphraseService(
     paraphraseRepository,
@@ -75,19 +98,24 @@ export const createApp = (): express.Express => {
     new OpenAiSectionParaphrase(),
   );
 
+  const journalRepository = new PrismaJournalRepository(prisma);
+  const journalService = new JournalService(journalRepository);
+
   const authController = new AuthController(authService);
   const projectController = new ProjectController(projectService);
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
+  const citationController = new CitationController(citationService);
   const adminController = new AdminController(adminService);
   const paraphraseController = new ParaphraseController(paraphraseService);
+  const journalController = new JournalController(journalService);
 
   const app = express();
   app.disable("x-powered-by");
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN.split(","),
+      origin: "*",
       credentials: true,
     }),
   );
@@ -109,7 +137,7 @@ export const createApp = (): express.Express => {
     `${env.API_PREFIX}/auth`,
     createAuthRouter(authController, tokenService),
   );
-   app.use(
+  app.use(
     `${env.API_PREFIX}/projects/paraphrase`,
     createParaphraseRouter(paraphraseController, tokenService),
   );
@@ -126,8 +154,17 @@ export const createApp = (): express.Express => {
     createBillingRouter(billingController, tokenService),
   );
   app.use(
+    `${env.API_PREFIX}/projects/citation`,
+    createCitationRouter(citationController, tokenService),
+  );
+  app.use(
     `${env.API_PREFIX}/admin`,
     createAdminRouter(adminController, tokenService),
+  );
+
+  app.use(
+    `${env.API_PREFIX}/journals`,
+    createJournalRouter(journalController, tokenService),
   );
 
   app.use(createErrorHandler(logger));

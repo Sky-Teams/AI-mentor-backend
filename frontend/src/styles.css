@@ -39,6 +39,7 @@ a {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -48,12 +49,17 @@ button {
 }
 
 input,
+select,
 textarea {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.85rem 1rem;
   background: var(--surface-strong);
   color: var(--text);
+}
+
+select {
+  appearance: none;
 }
 
 textarea {
@@ -233,6 +239,11 @@ textarea {
 .primary-button {
   background: var(--accent);
   color: white;
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.9;
 }
 
 .primary-button:hover {

@@ -242,7 +242,7 @@ export class PrismaReviewRepository implements ReviewRepository {
             warnings: input.warnings,
             overallScore: input.overallScore,
             readinessIndicator: input.readinessIndicator,
-            rawResponse: input.rawResponse,
+            rawResponse: input.rawResponse as Prisma.InputJsonValue,
             inputTokens: input.inputTokens,
             outputTokens: input.outputTokens,
             totalTokens: input.totalTokens,

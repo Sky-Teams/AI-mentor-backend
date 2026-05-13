@@ -18,7 +18,7 @@ export interface PromptTemplate {
   name: string;
   code: string;
   description: string | null;
-  type: "SECTION_REVIEW" | "SYSTEM_GUARDRAIL" | "FOLLOW_UP";
+  type: "SECTION_REVIEW" | "SYSTEM_GUARDRAIL" | "FOLLOW_UP" | "SECTION_PARAPHRASE";
   version: number;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   templateText: string;

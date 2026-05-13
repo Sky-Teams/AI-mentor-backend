@@ -8,9 +8,6 @@ CREATE TYPE "ProjectStatus" AS ENUM ('DRAFT', 'IN_REVIEW', 'READY', 'ARCHIVED');
 CREATE TYPE "ManuscriptType" AS ENUM ('CASE_REPORT');
 
 -- CreateEnum
-CREATE TYPE "ProjectSectionKey" AS ENUM ('TITLE', 'ABSTRACT', 'KEYWORDS', 'INTRODUCTION', 'CASE_PRESENTATION', 'DISCUSSION', 'CONCLUSION', 'PATIENT_PERSPECTIVE', 'INFORMED_CONSENT', 'REFERENCES', 'COVER_LETTER');
-
--- CreateEnum
 CREATE TYPE "SectionStatus" AS ENUM ('NOT_STARTED', 'DRAFT', 'IN_REVIEW', 'READY');
 
 -- CreateEnum
@@ -56,6 +53,46 @@ CREATE TYPE "AiProvider" AS ENUM ('OPENAI');
 CREATE TYPE "AiUsageStatus" AS ENUM ('SUCCESS', 'FAILED', 'SKIPPED');
 
 -- CreateTable
+CREATE TABLE "journals" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "publisher" TEXT,
+    "description" TEXT,
+    "manuscriptType" "ManuscriptType" NOT NULL DEFAULT 'CASE_REPORT',
+    "validationRules" JSONB,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "journals_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "journal_section_templates" (
+    "id" TEXT NOT NULL,
+    "journalId" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "sectionOrder" INTEGER NOT NULL,
+    "isOptional" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "journal_section_templates_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "JournalChecklistItem" (
+    "id" TEXT NOT NULL,
+    "sectionId" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+
+    CONSTRAINT "JournalChecklistItem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -96,6 +133,7 @@ CREATE TABLE "Project" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
+    "journalId" TEXT,
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
 );
@@ -104,7 +142,7 @@ CREATE TABLE "Project" (
 CREATE TABLE "ProjectSection" (
     "id" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
-    "key" "ProjectSectionKey" NOT NULL,
+    "key" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL DEFAULT '',
     "sectionOrder" INTEGER NOT NULL,
@@ -363,6 +401,24 @@ CREATE TABLE "AuditLog" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "journals_code_key" ON "journals"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "journals_name_key" ON "journals"("name");
+
+-- CreateIndex
+CREATE INDEX "journals_isDefault_idx" ON "journals"("isDefault");
+
+-- CreateIndex
+CREATE INDEX "journal_section_templates_journalId_sectionOrder_idx" ON "journal_section_templates"("journalId", "sectionOrder");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "journal_section_templates_journalId_key_key" ON "journal_section_templates"("journalId", "key");
+
+-- CreateIndex
+CREATE INDEX "JournalChecklistItem_sectionId_idx" ON "JournalChecklistItem"("sectionId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
@@ -376,6 +432,9 @@ CREATE INDEX "Project_ownerId_updatedAt_idx" ON "Project"("ownerId", "updatedAt"
 
 -- CreateIndex
 CREATE INDEX "Project_status_idx" ON "Project"("status");
+
+-- CreateIndex
+CREATE INDEX "Project_journalId_idx" ON "Project"("journalId");
 
 -- CreateIndex
 CREATE INDEX "ProjectSection_projectId_sectionOrder_idx" ON "ProjectSection"("projectId", "sectionOrder");
@@ -462,10 +521,19 @@ CREATE INDEX "AuditLog_entityType_entityId_createdAt_idx" ON "AuditLog"("entityT
 CREATE INDEX "AuditLog_actorUserId_createdAt_idx" ON "AuditLog"("actorUserId", "createdAt");
 
 -- AddForeignKey
+ALTER TABLE "journal_section_templates" ADD CONSTRAINT "journal_section_templates_journalId_fkey" FOREIGN KEY ("journalId") REFERENCES "journals"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JournalChecklistItem" ADD CONSTRAINT "JournalChecklistItem_sectionId_fkey" FOREIGN KEY ("sectionId") REFERENCES "journal_section_templates"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Project" ADD CONSTRAINT "Project_journalId_fkey" FOREIGN KEY ("journalId") REFERENCES "journals"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProjectSection" ADD CONSTRAINT "ProjectSection_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;

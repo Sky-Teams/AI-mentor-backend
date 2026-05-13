@@ -9,6 +9,10 @@ import { env } from "../../../shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { LENGTH_VALUES, TONE_VALUES } from "../interface/paraphrase.schema";
+import {
+  lengthStrategyDescriptions,
+  toneTypeDescriptions,
+} from "../domain/paraphrase";
 
 const changesSchema = z.object({
   originalPhrase: z.string().min(1),
@@ -66,11 +70,14 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
         ? `You MUST keep these words exactly as they are: [${content.preservedWords.join(", ")}]. Do not use synonyms for them.`
         : "";
 
+    const tone = content.tone ?? "SIMPLE";
+    const lengthStrategy = content.lengthStrategy ?? "SHORTEN";
+
     const systemPrompt = [
       `Return only structured JSON that matches the schema.`,
       `TASK: Paraphrase the text based on these specific constraints:`,
-      `1. Tone requirement: ${content.tone}.`,
-      `2. Length strategy: ${content.lengthStrategy}`,
+      `1. Tone requirement: ${toneTypeDescriptions[tone]}.`,
+      `2. Length strategy: ${lengthStrategyDescriptions[lengthStrategy]}.`,
       `3. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
       `4. Preserved Words Rule: ${preservedWordsRule}`,
       `Do not repeat the same information. If a sentence doesn't add new value, merge or delete it`,
@@ -79,18 +86,7 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
       `Do not let the response cut off.`,
     ].join("\n\n");
 
-    const userPrompt = JSON.stringify(
-      {
-        projectId: content.projectId,
-        sectionId: content.sectionId,
-        originalText: content.originalText,
-        tone: content.tone,
-        preservedWords: content.preservedWords,
-        lengthStrategy: content.lengthStrategy,
-      },
-      null,
-      2,
-    );
+    const userPrompt = content.promptTemplate;
 
     const response = await this.client.beta.chat.completions.parse({
       model: env.OPENAI_MODEL,
@@ -115,7 +111,10 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
     }
 
     return {
-      result: parsed,
+      result: {
+        ...parsed,
+        originalText: content.originalText,
+      },
       rawResponse: JSON.parse(JSON.stringify(response)) as Record<
         string,
         unknown
