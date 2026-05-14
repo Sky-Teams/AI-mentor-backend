@@ -185,6 +185,7 @@ async function main() {
   const guidelinePack = await prisma.guidelinePack.upsert({
     where: { code: j.code },
     update: {
+      type: "REVIEW",
       name: "CARE-like Case Report Guidance",
       version: "1.0.0",
       description: "Baseline case report completeness and safety rules.",
@@ -193,12 +194,52 @@ async function main() {
       isDefault: true,
     },
     create: {
+      type: "REVIEW",
       name: "CARE-like Case Report Guidance",
       code: j.code,
       version: "1.0.0",
       description: "Baseline case report completeness and safety rules.",
       status: "ACTIVE",
       rules: { text: j.guidelinePack },
+      isDefault: true,
+    },
+  });
+
+  await prisma.guidelinePack.upsert({
+    where: { code: "section-paraphrase-v1" },
+    update: {
+      type: "PARAPHRASE",
+      name: "Paraphrasing Guidance",
+      version: "1.0.0",
+      description: "Rules for safe and accurate paraphrasing.",
+      status: "ACTIVE",
+      rules: {
+        mustCheck: [
+          "Preserve original meaning",
+          "Do not add new information",
+          "Avoid plagiarism",
+          "Maintain academic tone",
+          "Improve clarity",
+        ],
+      },
+      isDefault: true,
+    },
+    create: {
+      type: "PARAPHRASE",
+      name: "Paraphrasing Guidance",
+      code: "section-paraphrase-v1",
+      version: "1.0.0",
+      description: "Rules for safe and accurate paraphrasing.",
+      status: "ACTIVE",
+      rules: {
+        mustCheck: [
+          "Preserve original meaning",
+          "Do not add new information",
+          "Avoid plagiarism",
+          "Maintain academic tone",
+          "Improve clarity",
+        ],
+      },
       isDefault: true,
     },
   });

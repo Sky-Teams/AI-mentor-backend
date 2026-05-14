@@ -14,6 +14,10 @@ import { StatusCodes } from "http-status-codes";
 import { BillingService } from "src/modules/billing/application/billing.service";
 import { env } from "src/shared/config/env";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
+import { CreditEstimatorService } from "src/modules/billing/application/credit-estimator.service";
+import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-paraphrase";
+import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
+import { UserRepository } from "src/modules/users/domain/user";
 import { toneTypeDescriptions } from "../domain/paraphrase";
 
 export class ParaphraseService {
@@ -22,6 +26,9 @@ export class ParaphraseService {
     private readonly projectService: ProjectService,
     private readonly billingService: BillingService,
     private readonly sectionParaphrase: SectionParaphrase,
+    private readonly CreditEstimator: CreditEstimatorService,
+    private readonly reviewRepository: ReviewRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   public async triggerSectionParaphrase(input: {
@@ -32,6 +39,7 @@ export class ParaphraseService {
     preservedWords?: string[];
     lengthStrategy?: LengthStrategy;
   }): Promise<ParaphraseRun> {
+    await this.userRepository.getUserById(input.ownerId);
     const project = await this.projectService.getProject(
       input.projectId,
       input.ownerId,
@@ -64,12 +72,43 @@ export class ParaphraseService {
       ? activePrompt.templateText
           .replace("{{tone}}", toneText)
           .replace("{{content}}", section.content)
-      : PROMPT_TEMPLATE.PARAPHRSE.replace("{{tone}}", toneText).replace(
+      : PROMPT_TEMPLATE.PARAPHRASE.replace("{{tone}}", toneText).replace(
           "{{content}}",
           section.content,
         );
 
-    await this.billingService.assertCanAfford(input.ownerId, "PARAPHRASE");
+    const GuidelinePack =
+      await this.reviewRepository.getDefaultGuidelinePack("PARAPHRASE");
+    const guidelinePack = GuidelinePack?.rules ?? {
+      focus: [
+        "Preserve original meaning",
+        "Do not add new information",
+        "Avoid plagiarism",
+        "Maintain academic tone",
+        "Improve clarity",
+      ],
+    };
+
+    const estimate = this.CreditEstimator.estimate(
+      {
+        project,
+        section: {
+          key: section.key,
+          title: section.title,
+          content: section.content,
+        },
+        promptTemplate,
+        guidelineRules: guidelinePack,
+        model: env.OPENAI_MODEL,
+      },
+      AiParaphraseResponseSchema,
+    );
+
+    await this.billingService.assertCanAfford(
+      input.ownerId,
+      estimate.estimatedCredits,
+      "PARAPHRASE",
+    );
 
     const paraphraseRun =
       await this.paraphraseRepository.createQueuedParaphrase({
@@ -82,6 +121,7 @@ export class ParaphraseService {
         lengthStrategy: input.lengthStrategy,
         aiModel: env.OPENAI_MODEL,
         promptTemplateId: activePrompt?.id,
+        guidelinePackId: GuidelinePack?.id,
       });
 
     await this.paraphraseRepository.markParaphraseProcessing(paraphraseRun.id);
@@ -94,7 +134,12 @@ export class ParaphraseService {
         preservedWords: input.preservedWords,
         lengthStrategy: input.lengthStrategy,
         promptTemplate: promptTemplate,
+        guidelinePackId: GuidelinePack?.id,
       });
+
+      const actualCredits = this.CreditEstimator.calculateActualCredit(
+        execution.usage,
+      );
 
       const billedCredits = await this.billingService.recordSuccess({
         userId: input.ownerId,
@@ -103,7 +148,7 @@ export class ParaphraseService {
         projectId: input.projectId,
         model: env.OPENAI_MODEL,
         usage: execution.usage,
-        amount: execution.usage.totalTokens,
+        amount: actualCredits,
       });
 
       const completeParaphrase =
@@ -147,6 +192,7 @@ export class ParaphraseService {
     sectionId: string,
     ownerId: string,
   ): Promise<ParaphraseRun[]> {
+    await this.userRepository.getUserById(ownerId);
     await this.projectService.getProject(projectId, ownerId);
     await this.projectService.getSectionById(sectionId, ownerId, projectId);
     const paraphrase = await this.paraphraseRepository.listSectionParaphrase(
@@ -161,6 +207,7 @@ export class ParaphraseService {
     paraphraseRunId: string,
     ownerId: string,
   ): Promise<ParaphraseRun> {
+    await this.userRepository.getUserById(ownerId);
     const paraphrase = await this.paraphraseRepository.findParaphraseRun(
       paraphraseRunId,
       ownerId,
@@ -180,6 +227,7 @@ export class ParaphraseService {
     paraphraseRunId: string,
     ownerId: string,
   ): Promise<void> {
+    await this.userRepository.getUserById(ownerId);
     const paraphrase = await this.paraphraseRepository.findParaphraseRun(
       paraphraseRunId,
       ownerId,
