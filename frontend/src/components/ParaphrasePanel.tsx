@@ -3,14 +3,19 @@ import { paraphraseApi } from "../services/api/paraphrase";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { ParaphraseList } from "./paraphraseList";
+import { projectsApi } from "../services/api/projects";
 
 interface ParaphrasePanelProps {
   paraphrase: ParaphraseRun;
   sectionId: string;
+  content: string;
+  sectionKey: string;
 }
 export const ParaphrasePanel = ({
   paraphrase,
   sectionId,
+  content,
+  sectionKey,
 }: ParaphrasePanelProps) => {
   const { projectId = "" } = useParams();
   const [isParaphrasing, setIsParaphrasing] = useState(false);
@@ -24,6 +29,10 @@ export const ParaphrasePanel = ({
   const handleParaphrase = async () => {
     if (!projectId) return;
     try {
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content,
+        changeSummary: "Saved before AI review",
+      });
       const finalWords = inputWords
         .split(/[,\s]+/)
         .map((word) => word.trim())
@@ -48,7 +57,7 @@ export const ParaphrasePanel = ({
   const updateTopPanel = (latest: ParaphraseRun[]) => {
     setLatestParaphrase(latest?.[0] ?? null);
   };
-  const currentData = latestParaphrase ;
+  const currentData = latestParaphrase;
 
   return (
     <div>

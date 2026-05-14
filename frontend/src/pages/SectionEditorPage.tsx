@@ -146,6 +146,8 @@ export const SectionEditorPage = () => {
         <ParaphrasePanel
           sectionId={sectionId}
           paraphrase={latestSectionParaphrase[0]}
+          content={content}
+          sectionKey={sectionKey}
         />
       )}
     </div>
