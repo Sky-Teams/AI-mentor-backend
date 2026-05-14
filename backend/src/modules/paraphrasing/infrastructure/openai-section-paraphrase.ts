@@ -72,15 +72,19 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
 
     const tone = content.tone ?? "SIMPLE";
     const lengthStrategy = content.lengthStrategy ?? "SHORTEN";
+    const lengthInstruction =
+      lengthStrategy === "MAINTAIN"
+        ? "CRITICAL: Maintain a similar word count and level of detail as the original text. Do not summarize, do not omit facts, and do not delete or merge sentences."
+        : "Rewrite the text to be significantly more concise. If a sentence doesn't add new value, merge or delete it.";
 
     const systemPrompt = [
       `Return only structured JSON that matches the schema.`,
       `TASK: Paraphrase the text based on these specific constraints:`,
       `1. Tone requirement: ${toneTypeDescriptions[tone]}.`,
       `2. Length strategy: ${lengthStrategyDescriptions[lengthStrategy]}.`,
-      `3. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
-      `4. Preserved Words Rule: ${preservedWordsRule}`,
-      `Do not repeat the same information. If a sentence doesn't add new value, merge or delete it`,
+      `3. Length Instruction: ${lengthInstruction}`,
+      `4. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
+      `5. Preserved Words Rule: ${preservedWordsRule}`,
       `Limit the 'changes' array to a maximum of 2 essential items.`,
       `You MUST include 'metrics', 'grammarTips', and 'readabilityScore' keys, even if they contain empty arrays or default values.`,
       `Do not let the response cut off.`,
