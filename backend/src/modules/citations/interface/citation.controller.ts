@@ -18,7 +18,24 @@ export class CitationController {
       formateStyle: style,
       projectId: projectId,
     });
-
     response.status(StatusCodes.ACCEPTED).json(successResponse(result));
+  }
+
+  public async UpdateCitation(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { id, citation, style } = request.body;
+    const { projectId } = request.params as { projectId: string };
+
+    const result = await this.citationService.updateCitation({
+      id,
+      ownerId: request.auth!.userId,
+      projectId,
+      citation,
+      style,
+    });
+
+    response.status(StatusCodes.OK).json(successResponse(result));
   }
 }
