@@ -31,7 +31,7 @@ export const ParaphrasePanel = ({
     try {
       await projectsApi.updateSection(projectId, sectionKey, {
         content,
-        changeSummary: "Saved before AI review",
+        changeSummary: "Saved before AI paraphrase",
       });
       const finalWords = inputWords
         .split(/[,\s]+/)
