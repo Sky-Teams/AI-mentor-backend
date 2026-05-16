@@ -38,4 +38,11 @@ export const projectsApi = {
     >(`/projects/${projectId}/sections/${sectionKey}`, input);
     return unwrap(response.data);
   },
+
+  async delete(projectId: string): Promise<{ archived: boolean }> {
+    const response = await apiClient.delete<ApiSuccessResponse<{ archived: boolean }>>(
+      `/projects/${projectId}`,
+    );
+    return unwrap(response.data);
+  },
 };
