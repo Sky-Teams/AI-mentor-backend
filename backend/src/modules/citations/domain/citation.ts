@@ -1,10 +1,4 @@
-export type CitationFormateTypes =
-  | "APA"
-  | "MLA"
-  | "Chicago"
-  | "IEEE"
-  | "Vancouver"
-  | "Harvard";
+export type CitationFormatType = "APA" | "MLA";
 
 export type CitationType = "BOOK" | "WEBSITE" | "JOURNAL" | "REPORT";
 export interface Authors {
@@ -61,11 +55,11 @@ export type Citation =
 
 export interface FormatCitationInput {
   citation: Citation;
-  style: CitationFormateTypes;
+  style: CitationFormatType;
 }
 
 export interface CitationFormatter {
-  format(citation: Citation): Promise<string>;
+  format(citation: Citation, type: CitationType): Promise<string>;
 }
 
 // Interface for OutPut Citation
@@ -111,3 +105,13 @@ export type CitationCompilation =
   | WebsiteCitationOutPut
   | JournalCitationOutPut
   | ReportCitationOutPut;
+
+export interface CitationOutput {
+  citation: CitationCompilation;
+  style: CitationFormatType;
+  type: CitationType;
+  bookCitation: BookCitation;
+  websiteCitation: WebsiteCitation;
+  journalCitation: JournalCitation;
+  reportCitation: ReportCitation;
+}

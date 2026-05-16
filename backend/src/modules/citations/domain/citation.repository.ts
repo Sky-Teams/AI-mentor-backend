@@ -1,9 +1,19 @@
-import { Citation } from "./citation";
+import { Citation, CitationFormatType, CitationOutput } from "./citation";
 
 export interface CitationRepository {
-  createCitaiotn(input: {
+  createCitation(input: {
     citation: Citation;
     ownerId: string;
     projectId: string;
+    style: CitationFormatType;
   }): Promise<void>;
+  updateCitation(input: {
+    id: string;
+    citation: Citation;
+    style?: CitationFormatType
+  }): Promise<CitationOutput>;
+  GetCitationById(
+    citationId: string,
+    ownerId: string,
+  ): Promise<CitationOutput | null>;
 }

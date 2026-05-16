@@ -41,7 +41,7 @@ const BaseCitation = z.object({
   datePublished: z.coerce.date(),
 });
 
-export const CreateCitationSchema = z.object({
+export const CitationSchema = z.object({
   citation: z.discriminatedUnion("type", [
     BaseCitation.merge(BookSchema),
     BaseCitation.merge(WebsiteSchema),
@@ -49,4 +49,8 @@ export const CreateCitationSchema = z.object({
     BaseCitation.merge(ReportSchema),
   ]),
   style: z.enum(["APA", "MLA"]),
+});
+
+export const CitationIdSchema = z.object({
+  id: z.string().min(1),
 });
