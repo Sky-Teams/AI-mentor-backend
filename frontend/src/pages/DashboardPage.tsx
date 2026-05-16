@@ -6,6 +6,9 @@ import type { Project } from "../types/api";
 export const DashboardPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -19,6 +22,21 @@ export const DashboardPage = () => {
 
     void load();
   }, []);
+
+  const deleteProject = async (projectId: string) => {
+    const confirmed = window.confirm("Delete this project?");
+    if (!confirmed) return;
+
+    setDeletingProjectId(projectId);
+    try {
+      await projectsApi.delete(projectId);
+      setProjects((current) =>
+        current.filter((project) => project.id !== projectId),
+      );
+    } finally {
+      setDeletingProjectId(null);
+    }
+  };
 
   return (
     <div className="page-shell">
@@ -48,17 +66,36 @@ export const DashboardPage = () => {
                   <th>Status</th>
                   <th>Readiness</th>
                   <th>Last Reviewed</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
                 {projects.map((project) => (
                   <tr key={project.id}>
                     <td>
-                      <Link to={`/projects/${project.id}`}>{project.title}</Link>
+                      <Link to={`/projects/${project.id}`}>
+                        {project.title}
+                      </Link>
                     </td>
                     <td>{project.status}</td>
                     <td>{project.readinessScore ?? "-"}</td>
-                    <td>{project.lastReviewedAt ? new Date(project.lastReviewedAt).toLocaleString() : "-"}</td>
+                    <td>
+                      {project.lastReviewedAt
+                        ? new Date(project.lastReviewedAt).toLocaleString()
+                        : "-"}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      <button
+                        className="secondary-button error-text"
+                        disabled={deletingProjectId === project.id}
+                        onClick={() => void deleteProject(project.id)}
+                        type="button"
+                      >
+                        {deletingProjectId === project.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
