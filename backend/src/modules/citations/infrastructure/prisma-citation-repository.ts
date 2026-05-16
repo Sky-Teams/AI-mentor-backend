@@ -13,7 +13,7 @@ const mapBookCitation = (input: {
   placePublished?: string | null;
   isbn?: string | null;
   edition: string | null;
-  page: string;
+  page?: string | null;
   volumeNumber: number | null;
   createdAt: Date;
 }): BaseCitationOutPut => ({
@@ -50,7 +50,7 @@ const mapJournalCitation = (input: {
   datePublished?: Date | null;
   journalName: string;
   volumeNumber: number | null;
-  page: string;
+  page?: string | null;
   doi: string | null;
   issueNumber: number | null;
   createdAt: Date;

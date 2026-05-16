@@ -90,7 +90,17 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
       `Do not let the response cut off.`,
     ].join("\n\n");
 
-    const userPrompt = content.promptTemplate;
+    const userPrompt = JSON.stringify(
+      {
+        originalText: content.originalText,
+        manuscriptType: content.project.manuscriptType,
+        projectTitle: content.project.title,
+        targetJournal: content.project.targetJournal,
+        guidelineRules: content.guidelineRules,
+      },
+      null,
+      2,
+    );
 
     const response = await this.client.beta.chat.completions.parse({
       model: env.OPENAI_MODEL,

@@ -1,7 +1,7 @@
 import { UserRepository } from "src/modules/users/domain/user";
 import {
   Citation,
-  CitationFormatter,
+  CitationFormatTypes,
 } from "../domain/citation";
 import { CitationRepository } from "../domain/citation.repository";
 import { CitationFormatterService } from "./formatter.service";
@@ -19,7 +19,7 @@ export class CitationService {
     citation: Citation;
     ownerId: string;
     projectId: string;
-    formateStyle: CitationFormatter;
+    formateStyle: CitationFormatTypes;
   }) {
     await this.userRepositiry.getUserById(input.ownerId);
     await this.projectService.getProject(input.projectId, input.ownerId);
