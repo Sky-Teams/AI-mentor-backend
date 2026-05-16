@@ -21,4 +21,31 @@ export class CitationController {
 
     response.status(StatusCodes.ACCEPTED).json(successResponse(result));
   }
+
+  public async GetCitation(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { projectId } = request.params as { projectId: string };
+    const result = await this.citationService.GetCitation(
+      projectId,
+      request.auth!.userId,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
+  public async DeleteCitation(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { citationId } = request.params as { citationId: string };
+    const ownerId = request.auth!.userId;
+
+    await this.citationService.DeleteCitation(citationId, ownerId);
+
+    response.status(StatusCodes.OK).json({
+      message: "Citation deleted successfully",
+    });
+  }
 }

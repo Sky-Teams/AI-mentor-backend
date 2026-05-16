@@ -1,6 +1,13 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { CitationFormatType, Prisma, PrismaClient } from "@prisma/client";
 import { CitationRepository } from "../domain/citation.repository";
-import { Authors, BaseCitationOutPut, Citation } from "../domain/citation";
+import {
+  Authors,
+  BaseCitationOutPut,
+  Citation,
+  CitationCompilation,
+  CitationOutput,
+  CitationType,
+} from "../domain/citation";
 import { AppError } from "src/shared/errors/app-error";
 
 const mapBookCitation = (input: {
@@ -13,7 +20,7 @@ const mapBookCitation = (input: {
   placePublished?: string | null;
   isbn?: string | null;
   edition: string | null;
-  page: string;
+  page: string | null;
   volumeNumber: number | null;
   createdAt: Date;
 }): BaseCitationOutPut => ({
@@ -50,7 +57,7 @@ const mapJournalCitation = (input: {
   datePublished?: Date | null;
   journalName: string;
   volumeNumber: number | null;
-  page: string;
+  page: string | null;
   doi: string | null;
   issueNumber: number | null;
   createdAt: Date;
@@ -86,6 +93,7 @@ export class PrismaCitationRepository implements CitationRepository {
     citation: Citation;
     ownerId: string;
     projectId: string;
+    style: CitationFormatType;
   }): Promise<void> {
     await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
@@ -94,6 +102,7 @@ export class PrismaCitationRepository implements CitationRepository {
             type: input.citation.type,
             userId: input.ownerId,
             projectId: input.projectId,
+            style: input.style,
           },
         });
         await this.createCitationType({
@@ -183,5 +192,83 @@ export class PrismaCitationRepository implements CitationRepository {
           "UNSUPPORTED_CITATION_TYPE",
         );
     }
+  }
+
+  public async GetCitation(
+    projectId: string,
+    ownerId: string,
+  ): Promise<CitationOutput[]> {
+    return (await this.prisma.citation.findMany({
+      where: { projectId: projectId, userId: ownerId },
+      include: {
+        journalCitation: true,
+        reportCitation: true,
+        websiteCitation: true,
+        bookCitation: true,
+      },
+    })) as any;
+  }
+
+  public async GetCitationType(input: CitationOutput): Promise<{
+    citation: Citation;
+    type: CitationType;
+    style: CitationFormatType;
+  }> {
+    switch (input.type) {
+      case "BOOK":
+        return {
+          citation: input.bookCitation,
+          type: input.type,
+          style: input.style,
+        };
+      case "JOURNAL":
+        return {
+          citation: input.journalCitation,
+          type: input.type,
+          style: input.style,
+        };
+      case "REPORT":
+        return {
+          citation: input.reportCitation,
+          type: input.type,
+          style: input.style,
+        };
+      case "WEBSITE":
+        return {
+          citation: input.websiteCitation,
+          type: input.type,
+          style: input.style,
+        };
+      default:
+        throw new AppError(
+          "Unsupported type",
+          404,
+          "UNSUPPORTED_CITATION_TYPE",
+        );
+    }
+  }
+
+  public async DeleteCitation(
+    citationId: string,
+    ownerId: string,
+  ): Promise<void> {
+    await this.prisma.citation.deleteMany({
+      where: {
+        userId: ownerId,
+        id: citationId,
+      },
+    });
+  }
+
+  public async GetCitationById(
+    citationId: string,
+    ownerId: string,
+  ): Promise<CitationOutput | null> {
+    const citation = await this.prisma.citation.findFirst({
+      where: { id: citationId, userId: ownerId },
+    });
+    if (!citation) return null;
+
+    return citation as any;
   }
 }
