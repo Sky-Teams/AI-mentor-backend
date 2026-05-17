@@ -78,6 +78,30 @@ export const SectionEditorPage = () => {
     }
   };
 
+  // Navigate to another section (with save check)
+  const goToSection = async (targetKey: string) => {
+    // If there are unsaved changes, ask user what to do
+    if (hasUnsavedChanges) {
+      const ok = window.confirm(
+        "You have unsaved changes. Save before leaving?",
+      );
+      if (ok) {
+        await projectsApi.updateSection(projectId, sectionKey, {
+          content,
+          changeSummary: "Saved before navigation",
+        });
+      }
+    }
+    // Go to the new section
+    navigate(`/projects/${projectId}/sections/${targetKey}`);
+    window.scrollTo(0, 0);
+  };
+
+  const latestSectionReview = useMemo(
+    () => reviews.find((r) => r.sectionKey === sectionKey) || null,
+    [reviews, sectionKey],
+  );
+
   return (
     <div className="page-shell">
       <div className="page-header">
