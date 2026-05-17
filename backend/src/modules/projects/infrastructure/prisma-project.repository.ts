@@ -284,6 +284,7 @@ export class PrismaProjectRepository implements ProjectRepository {
       },
       data: {
         status: "ARCHIVED",
+        deletedAt: new Date(),
       },
     });
   }
