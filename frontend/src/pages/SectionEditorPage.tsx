@@ -35,10 +35,17 @@ export const SectionEditorPage = () => {
     loadData();
   }, [projectId, sectionKey]);
 
-  const latestSectionReview = useMemo(
-    () => reviews.find((review) => review.sectionKey === sectionKey) ?? null,
-    [reviews, sectionKey],
-  );
+  // Find the current section's position
+  const currentIndex = allSections.findIndex((s) => s.key === sectionKey);
+  const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
+  const nextSection =
+    currentIndex < allSections.length - 1
+      ? allSections[currentIndex + 1]
+      : null;
+  const isLast = currentIndex === allSections.length - 1;
+
+  // Check if user made changes
+  const hasUnsavedChanges = section && section.content !== content;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -49,7 +56,7 @@ export const SectionEditorPage = () => {
         changeSummary: "Updated from internal web UI",
       });
       setStatusMessage("Section saved and versioned.");
-      await load();
+      await loadData();
     } finally {
       setIsSaving(false);
     }
@@ -65,7 +72,7 @@ export const SectionEditorPage = () => {
       });
       await reviewsApi.triggerReview(projectId, sectionKey);
       setStatusMessage("Review triggered. Refreshing review state...");
-      await load();
+      await loadData();
     } finally {
       setIsReviewing(false);
     }
