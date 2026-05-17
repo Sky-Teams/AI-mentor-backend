@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ReviewPanel } from "../components/ReviewPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
@@ -7,25 +7,32 @@ import type { ProjectSection, ReviewRun } from "../types/api";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
+  const navigate = useNavigate();
+
+  // Basic state
   const [section, setSection] = useState<ProjectSection | null>(null);
+  const [allSections, setAllSections] = useState<ProjectSection[]>([]);
   const [reviews, setReviews] = useState<ReviewRun[]>([]);
   const [content, setContent] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
 
-  const load = async () => {
-    const [sectionData, reviewData] = await Promise.all([
-      projectsApi.getSection(projectId, sectionKey),
-      reviewsApi.listProjectReviews(projectId),
-    ]);
-    setSection(sectionData);
-    setContent(sectionData.content);
-    setReviews(reviewData);
+  // Load all data
+  const loadData = async () => {
+    // Get project (for all sections), current section, and reviews
+    const project = await projectsApi.get(projectId);
+    const currentSection = await projectsApi.getSection(projectId, sectionKey);
+    const allReviews = await reviewsApi.listProjectReviews(projectId);
+
+    setSection(currentSection);
+    setContent(currentSection.content);
+    setAllSections(project.sections || []);
+    setReviews(allReviews);
   };
 
   useEffect(() => {
-    void load();
+    loadData();
   }, [projectId, sectionKey]);
 
   const latestSectionReview = useMemo(
