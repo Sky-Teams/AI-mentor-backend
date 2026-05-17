@@ -1,4 +1,4 @@
-export type CitationFormateTypes =
+export type CitationFormatTypes =
   | "APA"
   | "MLA"
   | "Chicago"
@@ -61,7 +61,7 @@ export type Citation =
 
 export interface FormatCitationInput {
   citation: Citation;
-  style: CitationFormateTypes;
+  style: CitationFormatTypes;
 }
 
 export interface CitationFormatter {

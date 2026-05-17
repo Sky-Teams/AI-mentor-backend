@@ -3,7 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import { ReviewPanel } from "../components/ReviewPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
-import type { ProjectSection, ReviewRun } from "../types/api";
+import type { ParaphraseRun, ProjectSection, ReviewRun } from "../types/api";
+import { ReviewLayout } from "../components/ReviewLayout";
+import { ParaphrasePanel } from "../components/ParaphrasePanel";
+import { paraphraseApi } from "../services/api/paraphrase";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -13,6 +16,8 @@ export const SectionEditorPage = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+  const [paraphraseRuns, setParaphraseRuns] = useState<ParaphraseRun[]>([]);
+  const [sectionId, setSectionId] = useState("");
 
   const load = async () => {
     const [sectionData, reviewData] = await Promise.all([
@@ -20,6 +25,17 @@ export const SectionEditorPage = () => {
       reviewsApi.listProjectReviews(projectId),
     ]);
     setSection(sectionData);
+    setSectionId(sectionData.id);
+    if (sectionData.id) {
+      const paraphraseData = await paraphraseApi.getSectionParaphrase(
+        projectId,
+        sectionData.id,
+      );
+      const flatList = Array.isArray(paraphraseData)
+        ? paraphraseData.flat()
+        : [];
+      setParaphraseRuns(flatList);
+    }
     setContent(sectionData.content);
     setReviews(reviewData);
   };
@@ -31,6 +47,17 @@ export const SectionEditorPage = () => {
   const latestSectionReview = useMemo(
     () => reviews.find((review) => review.sectionKey === sectionKey) ?? null,
     [reviews, sectionKey],
+  );
+
+  const latestSectionParaphrase = useMemo(
+    () =>
+      paraphraseRuns
+        .filter((p) => p.sectionId === section?.id)
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ),
+    [paraphraseRuns, section?.id],
   );
 
   const handleSave = async () => {
@@ -93,25 +120,36 @@ export const SectionEditorPage = () => {
           </button>
         </div>
       </div>
-
       {statusMessage ? <p className="success-text">{statusMessage}</p> : null}
 
-      <div className="two-column-grid">
-        <div className="card">
-          <div className="card-header">
-            <h3>Content</h3>
-            <span className="badge">{content.length} chars</span>
+      <div className="content-layout">
+        <div className="two-column-grid">
+          <div className="card">
+            <div className="card-header">
+              <h3>Content</h3>
+            </div>
+            <textarea
+              className="editor-area"
+              onChange={(event) => setContent(event.target.value)}
+              rows={10}
+              value={content}
+            />
+            <span className="badge">{content.length} characters</span>
           </div>
-          <textarea
-            className="editor-area"
-            onChange={(event) => setContent(event.target.value)}
-            rows={24}
-            value={content}
-          />
-        </div>
 
-        <ReviewPanel review={latestSectionReview} />
+          <ReviewPanel review={latestSectionReview} />
+        </div>
+        <ReviewLayout review={latestSectionReview} />
       </div>
+
+      {latestSectionParaphrase && (
+        <ParaphrasePanel
+          sectionId={sectionId}
+          paraphrase={latestSectionParaphrase[0]}
+          content={content}
+          sectionKey={sectionKey}
+        />
+      )}
     </div>
   );
 };
