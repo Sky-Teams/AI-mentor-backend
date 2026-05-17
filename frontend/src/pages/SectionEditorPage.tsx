@@ -139,6 +139,9 @@ export const SectionEditorPage = () => {
           <div className="card-header">
             <h3>Content</h3>
             <span className="badge">{content.length} chars</span>
+            {hasUnsavedChanges && (
+              <span className="badge warning">Unsaved</span>
+            )}
           </div>
           <textarea
             className="editor-area"
@@ -149,6 +152,33 @@ export const SectionEditorPage = () => {
         </div>
 
         <ReviewPanel review={latestSectionReview} />
+      </div>
+
+      {/* Simple navigation buttons */}
+      <div
+        className="button-row"
+        style={{ justifyContent: "space-between", marginTop: "1rem" }}
+      >
+        <button
+          className="secondary-button"
+          onClick={() => prevSection && goToSection(prevSection.key)}
+          disabled={!prevSection}
+        >
+          ← Previous
+        </button>
+
+        <button
+          className="primary-button"
+          onClick={() => {
+            if (nextSection) {
+              goToSection(nextSection.key);
+            } else if (isLast) {
+              navigate(`/projects/${projectId}`);
+            }
+          }}
+        >
+          {isLast ? "Finish →" : "Next →"}
+        </button>
       </div>
     </div>
   );
