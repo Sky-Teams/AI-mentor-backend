@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ReviewPanel } from "../components/ReviewPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
@@ -10,7 +10,11 @@ import { paraphraseApi } from "../services/api/paraphrase";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
+  const navigate = useNavigate();
+
+  // Basic state
   const [section, setSection] = useState<ProjectSection | null>(null);
+  const [allSections, setAllSections] = useState<ProjectSection[]>([]);
   const [reviews, setReviews] = useState<ReviewRun[]>([]);
   const [content, setContent] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -19,35 +23,47 @@ export const SectionEditorPage = () => {
   const [paraphraseRuns, setParaphraseRuns] = useState<ParaphraseRun[]>([]);
   const [sectionId, setSectionId] = useState("");
 
-  const load = async () => {
-    const [sectionData, reviewData] = await Promise.all([
-      projectsApi.getSection(projectId, sectionKey),
-      reviewsApi.listProjectReviews(projectId),
-    ]);
-    setSection(sectionData);
-    setSectionId(sectionData.id);
-    if (sectionData.id) {
+  // Load all data (merged from both versions)
+  const loadData = async () => {
+    // Get project (for all sections), current section, and reviews
+    const project = await projectsApi.get(projectId);
+    const currentSection = await projectsApi.getSection(projectId, sectionKey);
+    const allReviews = await reviewsApi.listProjectReviews(projectId);
+
+    setSection(currentSection);
+    setSectionId(currentSection.id);
+    setContent(currentSection.content);
+    setAllSections(project.sections || []);
+    setReviews(allReviews);
+
+    // Load paraphrase data if section has ID
+    if (currentSection.id) {
       const paraphraseData = await paraphraseApi.getSectionParaphrase(
         projectId,
-        sectionData.id,
+        currentSection.id,
       );
       const flatList = Array.isArray(paraphraseData)
         ? paraphraseData.flat()
         : [];
       setParaphraseRuns(flatList);
     }
-    setContent(sectionData.content);
-    setReviews(reviewData);
   };
 
   useEffect(() => {
-    void load();
+    loadData();
   }, [projectId, sectionKey]);
 
-  const latestSectionReview = useMemo(
-    () => reviews.find((review) => review.sectionKey === sectionKey) ?? null,
-    [reviews, sectionKey],
-  );
+  // Find the current section's position
+  const currentIndex = allSections.findIndex((s) => s.key === sectionKey);
+  const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
+  const nextSection =
+    currentIndex < allSections.length - 1
+      ? allSections[currentIndex + 1]
+      : null;
+  const isLast = currentIndex === allSections.length - 1;
+
+  // Check if user made changes
+  const hasUnsavedChanges = section && section.content !== content;
 
   const latestSectionParaphrase = useMemo(
     () =>
@@ -69,7 +85,7 @@ export const SectionEditorPage = () => {
         changeSummary: "Updated from internal web UI",
       });
       setStatusMessage("Section saved and versioned.");
-      await load();
+      await loadData();
     } finally {
       setIsSaving(false);
     }
@@ -85,11 +101,35 @@ export const SectionEditorPage = () => {
       });
       await reviewsApi.triggerReview(projectId, sectionKey);
       setStatusMessage("Review triggered. Refreshing review state...");
-      await load();
+      await loadData();
     } finally {
       setIsReviewing(false);
     }
   };
+
+  // Navigate to another section (with save check)
+  const goToSection = async (targetKey: string) => {
+    // If there are unsaved changes, ask user what to do
+    if (hasUnsavedChanges) {
+      const ok = window.confirm(
+        "You have unsaved changes. Save before leaving?",
+      );
+      if (ok) {
+        await projectsApi.updateSection(projectId, sectionKey, {
+          content,
+          changeSummary: "Saved before navigation",
+        });
+      }
+    }
+    // Go to the new section
+    navigate(`/projects/${projectId}/sections/${targetKey}`);
+    window.scrollTo(0, 0);
+  };
+
+  const latestSectionReview = useMemo(
+    () => reviews.find((r) => r.sectionKey === sectionKey) || null,
+    [reviews, sectionKey],
+  );
 
   return (
     <div className="page-shell">
@@ -127,6 +167,10 @@ export const SectionEditorPage = () => {
           <div className="card">
             <div className="card-header">
               <h3>Content</h3>
+              <span className="badge">{content.length} chars</span>
+              {hasUnsavedChanges && (
+                <span className="badge warning">Unsaved</span>
+              )}
             </div>
             <textarea
               className="editor-area"
@@ -134,7 +178,6 @@ export const SectionEditorPage = () => {
               rows={10}
               value={content}
             />
-            <span className="badge">{content.length} characters</span>
           </div>
 
           <ReviewPanel review={latestSectionReview} />
@@ -142,7 +185,34 @@ export const SectionEditorPage = () => {
         <ReviewLayout review={latestSectionReview} />
       </div>
 
-      {latestSectionParaphrase && (
+      {/* Simple navigation buttons */}
+      <div
+        className="button-row"
+        style={{ justifyContent: "space-between", marginTop: "1rem" }}
+      >
+        <button
+          className="secondary-button"
+          onClick={() => prevSection && goToSection(prevSection.key)}
+          disabled={!prevSection}
+        >
+          ← Previous
+        </button>
+
+        <button
+          className="primary-button"
+          onClick={() => {
+            if (nextSection) {
+              goToSection(nextSection.key);
+            } else if (isLast) {
+              navigate(`/projects/${projectId}`);
+            }
+          }}
+        >
+          {isLast ? "Finish →" : "Next →"}
+        </button>
+      </div>
+
+      {latestSectionParaphrase && latestSectionParaphrase[0] && (
         <ParaphrasePanel
           sectionId={sectionId}
           paraphrase={latestSectionParaphrase[0]}
@@ -150,6 +220,11 @@ export const SectionEditorPage = () => {
           sectionKey={sectionKey}
         />
       )}
+
+      <p className="muted-text">
+        Reminder: AI feedback is helpful, but please have a human review it
+        before you act on it.
+      </p>
     </div>
   );
 };
