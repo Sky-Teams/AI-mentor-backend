@@ -9,17 +9,20 @@ export const ReviewPanel = ({ review }: ReviewPanelProps) => {
     return (
       <div className="card">
         <h3>Latest Review</h3>
-        <p className="muted-text">No review has been run for this section yet.</p>
+        <p className="muted-text">
+          No review has been run for this section yet.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="card">
+    <div className="card latest-review">
       <div className="card-header">
         <h3>Latest Review</h3>
         <span className="badge">{review.status}</span>
       </div>
+      <hr />
       <p>{review.summary ?? "No summary returned."}</p>
       <div className="metric-grid">
         <div className="metric-box">
@@ -39,39 +42,6 @@ export const ReviewPanel = ({ review }: ReviewPanelProps) => {
           <strong>{review.appCreditsConsumed}</strong>
         </div>
       </div>
-
-      {review.warnings?.length ? (
-        <>
-          <h4>Warnings</h4>
-          <ul className="simple-list">
-            {review.warnings.map((warning) => (
-              <li key={warning}>{warning}</li>
-            ))}
-          </ul>
-        </>
-      ) : null}
-
-      {review.nextSteps?.length ? (
-        <>
-          <h4>Next Steps</h4>
-          <ul className="simple-list">
-            {review.nextSteps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        </>
-      ) : null}
-
-      {review.missingInfoQuestions?.length ? (
-        <>
-          <h4>Missing Information Questions</h4>
-          <ul className="simple-list">
-            {review.missingInfoQuestions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </>
-      ) : null}
     </div>
   );
 };

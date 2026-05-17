@@ -3,7 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ReviewPanel } from "../components/ReviewPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
-import type { ProjectSection, ReviewRun } from "../types/api";
+import type { ParaphraseRun, ProjectSection, ReviewRun } from "../types/api";
+import { ReviewLayout } from "../components/ReviewLayout";
+import { ParaphrasePanel } from "../components/ParaphrasePanel";
+import { paraphraseApi } from "../services/api/paraphrase";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -17,8 +20,10 @@ export const SectionEditorPage = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+  const [paraphraseRuns, setParaphraseRuns] = useState<ParaphraseRun[]>([]);
+  const [sectionId, setSectionId] = useState("");
 
-  // Load all data
+  // Load all data (merged from both versions)
   const loadData = async () => {
     // Get project (for all sections), current section, and reviews
     const project = await projectsApi.get(projectId);
@@ -26,9 +31,22 @@ export const SectionEditorPage = () => {
     const allReviews = await reviewsApi.listProjectReviews(projectId);
 
     setSection(currentSection);
+    setSectionId(currentSection.id);
     setContent(currentSection.content);
     setAllSections(project.sections || []);
     setReviews(allReviews);
+
+    // Load paraphrase data if section has ID
+    if (currentSection.id) {
+      const paraphraseData = await paraphraseApi.getSectionParaphrase(
+        projectId,
+        currentSection.id,
+      );
+      const flatList = Array.isArray(paraphraseData)
+        ? paraphraseData.flat()
+        : [];
+      setParaphraseRuns(flatList);
+    }
   };
 
   useEffect(() => {
@@ -46,6 +64,17 @@ export const SectionEditorPage = () => {
 
   // Check if user made changes
   const hasUnsavedChanges = section && section.content !== content;
+
+  const latestSectionParaphrase = useMemo(
+    () =>
+      paraphraseRuns
+        .filter((p) => p.sectionId === section?.id)
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ),
+    [paraphraseRuns, section?.id],
+  );
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -131,27 +160,29 @@ export const SectionEditorPage = () => {
           </button>
         </div>
       </div>
-
       {statusMessage ? <p className="success-text">{statusMessage}</p> : null}
 
-      <div className="two-column-grid">
-        <div className="card">
-          <div className="card-header">
-            <h3>Content</h3>
-            <span className="badge">{content.length} chars</span>
-            {hasUnsavedChanges && (
-              <span className="badge warning">Unsaved</span>
-            )}
+      <div className="content-layout">
+        <div className="two-column-grid">
+          <div className="card">
+            <div className="card-header">
+              <h3>Content</h3>
+              <span className="badge">{content.length} chars</span>
+              {hasUnsavedChanges && (
+                <span className="badge warning">Unsaved</span>
+              )}
+            </div>
+            <textarea
+              className="editor-area"
+              onChange={(event) => setContent(event.target.value)}
+              rows={10}
+              value={content}
+            />
           </div>
-          <textarea
-            className="editor-area"
-            onChange={(event) => setContent(event.target.value)}
-            rows={24}
-            value={content}
-          />
-        </div>
 
-        <ReviewPanel review={latestSectionReview} />
+          <ReviewPanel review={latestSectionReview} />
+        </div>
+        <ReviewLayout review={latestSectionReview} />
       </div>
 
       {/* Simple navigation buttons */}
@@ -181,8 +212,18 @@ export const SectionEditorPage = () => {
         </button>
       </div>
 
+      {latestSectionParaphrase && latestSectionParaphrase[0] && (
+        <ParaphrasePanel
+          sectionId={sectionId}
+          paraphrase={latestSectionParaphrase[0]}
+          content={content}
+          sectionKey={sectionKey}
+        />
+      )}
+
       <p className="muted-text">
-        Reminder: AI feedback is helpful, but please have a human review it before you act on it.
+        Reminder: AI feedback is helpful, but please have a human review it
+        before you act on it.
       </p>
     </div>
   );
