@@ -180,6 +180,10 @@ export const SectionEditorPage = () => {
           {isLast ? "Finish →" : "Next →"}
         </button>
       </div>
+
+      <p className="muted-text">
+        Reminder: AI feedback is helpful, but please have a human review it before you act on it.
+      </p>
     </div>
   );
 };
