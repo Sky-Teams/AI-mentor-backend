@@ -3,10 +3,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ReviewPanel } from "../components/ReviewPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
-import type { ParaphraseRun, ProjectSection, ReviewRun } from "../types/api";
+import type { ProjectSection, ReviewRun } from "../types/api";
 import { ReviewLayout } from "../components/ReviewLayout";
 import { ParaphrasePanel } from "../components/ParaphrasePanel";
-import { paraphraseApi } from "../services/api/paraphrase";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -20,33 +19,22 @@ export const SectionEditorPage = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
-  const [paraphraseRuns, setParaphraseRuns] = useState<ParaphraseRun[]>([]);
   const [sectionId, setSectionId] = useState("");
 
   // Load all data (merged from both versions)
   const loadData = async () => {
     // Get project (for all sections), current section, and reviews
-    const project = await projectsApi.get(projectId);
-    const currentSection = await projectsApi.getSection(projectId, sectionKey);
-    const allReviews = await reviewsApi.listProjectReviews(projectId);
+    const [project, currentSection, allReviews] = await Promise.all([
+      projectsApi.get(projectId),
+      projectsApi.getSection(projectId, sectionKey),
+      reviewsApi.listProjectReviews(projectId),
+    ]);
 
     setSection(currentSection);
     setSectionId(currentSection.id);
     setContent(currentSection.content);
     setAllSections(project.sections || []);
     setReviews(allReviews);
-
-    // Load paraphrase data if section has ID
-    if (currentSection.id) {
-      const paraphraseData = await paraphraseApi.getSectionParaphrase(
-        projectId,
-        currentSection.id,
-      );
-      const flatList = Array.isArray(paraphraseData)
-        ? paraphraseData.flat()
-        : [];
-      setParaphraseRuns(flatList);
-    }
   };
 
   useEffect(() => {
@@ -64,17 +52,6 @@ export const SectionEditorPage = () => {
 
   // Check if user made changes
   const hasUnsavedChanges = section && section.content !== content;
-
-  const latestSectionParaphrase = useMemo(
-    () =>
-      paraphraseRuns
-        .filter((p) => p.sectionId === section?.id)
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        ),
-    [paraphraseRuns, section?.id],
-  );
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -212,14 +189,11 @@ export const SectionEditorPage = () => {
         </button>
       </div>
 
-      {latestSectionParaphrase && latestSectionParaphrase[0] && (
-        <ParaphrasePanel
-          sectionId={sectionId}
-          paraphrase={latestSectionParaphrase[0]}
-          content={content}
-          sectionKey={sectionKey}
-        />
-      )}
+      <ParaphrasePanel
+        sectionId={sectionId}
+        content={content}
+        sectionKey={sectionKey}
+      />
 
       <p className="muted-text">
         Reminder: AI feedback is helpful, but please have a human review it
