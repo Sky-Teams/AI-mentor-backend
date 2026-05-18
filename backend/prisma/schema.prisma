@@ -50,7 +50,8 @@ model JournalSectionTemplate {
   title        String
   sectionOrder Int
   isOptional   Boolean  @default(false)
-  description  String?
+  description  String
+  checklist    SectionCheckList[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -59,6 +60,21 @@ model JournalSectionTemplate {
   @@unique([journalId, key])
   @@index([journalId, sectionOrder])
   @@map("journal_section_templates")
+}
+
+model SectionCheckList {
+  id String @id @default(cuid())
+  JournalSectionTemplateId String 
+  title String
+  items String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  JournalSectionTemplate JournalSectionTemplate @relation(fields: [JournalSectionTemplateId], references: [id], onDelete: Cascade)
+
+  @index([JournalSectionTemplateId])
+
 }
 
 enum SectionStatus {
