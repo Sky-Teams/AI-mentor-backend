@@ -162,7 +162,13 @@ export const SectionEditorPage = () => {
         <ReviewLayout review={latestSectionReview} />
       </div>
 
-      {/* Simple navigation buttons */}
+      <ParaphrasePanel
+        sectionId={sectionId}
+        content={content}
+        sectionKey={sectionKey}
+      />
+
+      {/* Navigation buttons moved to the very bottom, after ParaphrasePanel */}
       <div
         className="button-row"
         style={{ justifyContent: "space-between", marginTop: "1rem" }}
@@ -188,12 +194,6 @@ export const SectionEditorPage = () => {
           {isLast ? "Finish →" : "Next →"}
         </button>
       </div>
-
-      <ParaphrasePanel
-        sectionId={sectionId}
-        content={content}
-        sectionKey={sectionKey}
-      />
 
       <p className="muted-text">
         Reminder: AI feedback is helpful, but please have a human review it
