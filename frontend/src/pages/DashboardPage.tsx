@@ -92,8 +92,8 @@ export const DashboardPage = () => {
                         type="button"
                       >
                         {deletingProjectId === project.id
-                          ? "Deleting..."
-                          : "Delete"}
+                          ? "Archiving..."
+                          : "Archive"}
                       </button>
                     </td>
                   </tr>
