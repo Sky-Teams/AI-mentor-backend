@@ -50,8 +50,8 @@ model JournalSectionTemplate {
   title        String
   sectionOrder Int
   isOptional   Boolean            @default(false)
-  description  String
-  checklist    SectionCheckList[]
+  description  String?
+  checklist    SectionChecklist[]
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
@@ -62,7 +62,7 @@ model JournalSectionTemplate {
   @@map("journal_section_templates")
 }
 
-model SectionCheckList {
+model SectionChecklist {
   id                       String   @id @default(cuid())
   journalSectionTemplateId String
   title                    String?
@@ -70,7 +70,7 @@ model SectionCheckList {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 
-  journalSectionTemplate JournalSectionTemplate @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
+  journalSectionTemplate   JournalSectionTemplate @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
 
   @@index([journalSectionTemplateId])
   @@map("journal_section_checklist_groups")
