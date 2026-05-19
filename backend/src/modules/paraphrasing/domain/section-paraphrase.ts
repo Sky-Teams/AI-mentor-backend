@@ -1,14 +1,15 @@
+import { Project } from "src/modules/projects/domain/project";
 import { AiPharaphraseResult, LengthStrategy, ToneType } from "./paraphrase";
 
 export interface ParaphraseContext {
-  projectId: string;
+  project: Project;
   sectionId: string;
   originalText: string;
   tone?: ToneType;
   preservedWords?: string[];
   lengthStrategy?: LengthStrategy;
   promptTemplate?: string;
-  guidelinePackId?: string
+  guidelineRules: Record<string, unknown>
 }
 
 export interface ParaphraseExecutionResult {

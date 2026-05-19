@@ -1,4 +1,4 @@
-export type CitationFormatType = "APA" | "MLA";
+export type CitationFormatTypes = "APA" | "MLA";
 
 export type CitationType = "BOOK" | "WEBSITE" | "JOURNAL" | "REPORT";
 export interface Authors {
@@ -13,7 +13,7 @@ export interface BaseCitation {
     lastName: string;
   }>;
   datePublished: Date;
-  citationId: string
+  citationId: string;
 }
 
 export type BookCitation = BaseCitation & {
@@ -56,7 +56,7 @@ export type Citation =
 
 export interface FormatCitationInput {
   citation: Citation;
-  style: CitationFormatType;
+  style: CitationFormatTypes;
 }
 
 export interface CitationFormatter {
@@ -76,7 +76,7 @@ interface BookCitationOutPut extends BaseCitationOutPut {
   publisher: string;
   placePublished?: string | null;
   isbn?: string | null;
-  page?: string,
+  page?: string;
   createdAt: Date;
 }
 
@@ -110,7 +110,7 @@ export type CitationCompilation =
 
 export interface CitationOutput {
   citation: CitationCompilation;
-  style: CitationFormatType;
+  style: CitationFormatTypes;
   type: CitationType;
   bookCitation: BookCitation;
   websiteCitation: WebsiteCitation;

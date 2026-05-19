@@ -4,7 +4,7 @@ import {
   Authors,
   BaseCitationOutPut,
   Citation,
-  CitationFormatType,
+  CitationFormatTypes,
   CitationOutput,
   CitationType,
 } from "../domain/citation";
@@ -20,7 +20,7 @@ const mapBookCitation = (input: {
   placePublished?: string | null;
   isbn?: string | null;
   edition: string | null;
-  page: string | null;
+  page?: string | null;
   volumeNumber: number | null;
   createdAt: Date;
 }): BaseCitationOutPut => ({
@@ -57,7 +57,7 @@ const mapJournalCitation = (input: {
   datePublished?: Date | null;
   journalName: string;
   volumeNumber: number | null;
-  page: string | null;
+  page?: string | null;
   doi: string | null;
   issueNumber: number | null;
   createdAt: Date;
@@ -93,7 +93,7 @@ export class PrismaCitationRepository implements CitationRepository {
     citation: Citation;
     ownerId: string;
     projectId: string;
-    style: CitationFormatType;
+    style: CitationFormatTypes;
   }): Promise<void> {
     await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
@@ -209,10 +209,10 @@ export class PrismaCitationRepository implements CitationRepository {
     })) as any;
   }
 
-  public getCitationType(input: CitationOutput):{
+  public getCitationType(input: CitationOutput): {
     citation: Citation;
     type: CitationType;
-    style: CitationFormatType;
+    style: CitationFormatTypes;
   } {
     switch (input.type) {
       case "BOOK":

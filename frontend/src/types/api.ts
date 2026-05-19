@@ -142,6 +142,54 @@ export interface ReviewRun {
   warnings?: string[];
 }
 
+export type ToneType = "SIMPLE"| "ACADEMIC"| "CASUAL"| "NATURAL" 
+export type LengthStrategy = "SHORTEN"| "MAINTAIN"
+
+export interface ParaphraseChange {
+  originalPhrase: string;
+  replacedWith: string;
+  reason: string;
+  startIndex?: number;
+  endIndex?: number;
+}
+
+export interface ParaphraseMetric {
+  name: string;
+  score: number;
+  label: string;
+  retionale?: string;
+}
+
+export interface GrammarTip {
+  ruleName: string;
+  explanation: string;
+  example?: string;
+}
+
+export interface ParaphraseRun {
+  id: string;
+  projectId: string;
+  sectionId: string;
+  initiatedById: string;
+  originalText: string;
+  paraphrasedText: string;
+  grammarTips?: GrammarTip[];
+  tone?: ToneType;
+  changes?: ParaphraseChange[];
+  metrics?: ParaphraseMetric[];
+  aiModel: string;
+  preservedWords: string[];
+  lengthStrategy: LengthStrategy;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+  appCreditsConsumed: number;
+  errorMessage: string | null;
+  createdAt: Date;
+  completedAt: Date | null;
+}
+
+
 export interface ReadinessSnapshot {
   id: string;
   projectId: string;

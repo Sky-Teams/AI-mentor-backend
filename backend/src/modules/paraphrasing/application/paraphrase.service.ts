@@ -79,7 +79,7 @@ export class ParaphraseService {
 
     const GuidelinePack =
       await this.reviewRepository.getDefaultGuidelinePack("PARAPHRASE");
-    const guidelinePack = GuidelinePack?.rules ?? {
+    const guidelineRules = GuidelinePack?.rules ?? {
       focus: [
         "Preserve original meaning",
         "Do not add new information",
@@ -98,7 +98,7 @@ export class ParaphraseService {
           content: section.content,
         },
         promptTemplate,
-        guidelineRules: guidelinePack,
+        guidelineRules,
         model: env.OPENAI_MODEL,
       },
       AiParaphraseResponseSchema,
@@ -127,14 +127,11 @@ export class ParaphraseService {
     await this.paraphraseRepository.markParaphraseProcessing(paraphraseRun.id);
     try {
       const execution = await this.sectionParaphrase.paraphraseSection({
-        projectId: input.projectId,
+        project,
         sectionId: section.id,
         originalText: section.content,
-        tone: input.tone,
-        preservedWords: input.preservedWords,
-        lengthStrategy: input.lengthStrategy,
-        promptTemplate: promptTemplate,
-        guidelinePackId: GuidelinePack?.id,
+        promptTemplate,
+        guidelineRules,
       });
 
       const actualCredits = this.CreditEstimator.calculateActualCredit(
