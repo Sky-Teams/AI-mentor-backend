@@ -172,6 +172,64 @@ textarea {
   margin: 20px;
 }
 
+.section-editor__content-shell {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  margin: 20px;
+}
+
+.section-editor__content-card {
+  margin: 0;
+}
+
+.section-editor__checklist-divider {
+  border-top: 1px solid var(--line);
+}
+
+.checklist-panel--compact {
+  padding: 0.85rem;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.checklist-panel__title {
+  font-size: 13px;
+}
+
+.checklist-panel__groups {
+  display: grid;
+  gap: 10px;
+}
+
+.checklist-panel__group-title {
+  margin: 0 0 6px 0;
+  font-size: 12.5px;
+}
+
+.checklist-panel__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist-panel__item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  line-height: 1.35;
+  margin: 4px 0;
+}
+
+.checklist-panel__checkbox {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
 .card-header,
 .issue-header,
 .button-row {
