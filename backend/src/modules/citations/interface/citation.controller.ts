@@ -6,7 +6,7 @@ import { successResponse } from "src/shared/http/api-response";
 export class CitationController {
   constructor(private readonly citationService: CitationService) {}
 
-  public async CreateCitation(
+  public async createCitation(
     request: Request,
     response: Response,
   ): Promise<void> {
@@ -22,12 +22,12 @@ export class CitationController {
     response.status(StatusCodes.ACCEPTED).json(successResponse(result));
   }
 
-  public async GetCitation(
+  public async getCitations(
     request: Request,
     response: Response,
   ): Promise<void> {
     const { projectId } = request.params as { projectId: string };
-    const result = await this.citationService.GetCitation(
+    const result = await this.citationService.getCitations(
       projectId,
       request.auth!.userId,
     );
@@ -35,14 +35,14 @@ export class CitationController {
     response.status(StatusCodes.OK).json(successResponse(result));
   }
 
-  public async DeleteCitation(
+  public async deleteCitation(
     request: Request,
     response: Response,
   ): Promise<void> {
     const { citationId } = request.params as { citationId: string };
     const ownerId = request.auth!.userId;
 
-    await this.citationService.DeleteCitation(citationId, ownerId);
+    await this.citationService.deleteCitation(citationId, ownerId);
 
     response.status(StatusCodes.OK).json({
       message: "Citation deleted successfully",

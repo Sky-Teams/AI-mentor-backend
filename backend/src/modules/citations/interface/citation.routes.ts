@@ -21,7 +21,7 @@ export const createCitationRouter = (
     "/:projectId",
     validate(CreateCitationSchema, "body"),
     asyncHandler((request, response) =>
-      controller.CreateCitation(request, response),
+      controller.createCitation(request, response),
     ),
   );
 
@@ -29,7 +29,7 @@ export const createCitationRouter = (
     "/:projectId",
     validate(projectIdParamsSchema, "params"),
     asyncHandler((request, response) =>
-      controller.GetCitation(request, response),
+      controller.getCitations(request, response),
     ),
   );
 
@@ -37,7 +37,7 @@ export const createCitationRouter = (
     "/:citationId",
     validate(citationIdParamsSchema, "params"),
     asyncHandler((request, response) =>
-      controller.DeleteCitation(request, response),
+      controller.deleteCitation(request, response),
     ),
   );
 

@@ -1,10 +1,10 @@
-import { CitationFormatType, Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { CitationRepository } from "../domain/citation.repository";
 import {
   Authors,
   BaseCitationOutPut,
   Citation,
-  CitationCompilation,
+  CitationFormatType,
   CitationOutput,
   CitationType,
 } from "../domain/citation";
@@ -89,7 +89,7 @@ const mapReportCitation = (input: {
 export class PrismaCitationRepository implements CitationRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  public async createCitaiotn(input: {
+  public async createCitation(input: {
     citation: Citation;
     ownerId: string;
     projectId: string;
@@ -194,7 +194,7 @@ export class PrismaCitationRepository implements CitationRepository {
     }
   }
 
-  public async GetCitation(
+  public async getCitations(
     projectId: string,
     ownerId: string,
   ): Promise<CitationOutput[]> {
@@ -209,11 +209,11 @@ export class PrismaCitationRepository implements CitationRepository {
     })) as any;
   }
 
-  public async GetCitationType(input: CitationOutput): Promise<{
+  public getCitationType(input: CitationOutput):{
     citation: Citation;
     type: CitationType;
     style: CitationFormatType;
-  }> {
+  } {
     switch (input.type) {
       case "BOOK":
         return {
@@ -248,7 +248,7 @@ export class PrismaCitationRepository implements CitationRepository {
     }
   }
 
-  public async DeleteCitation(
+  public async deleteCitation(
     citationId: string,
     ownerId: string,
   ): Promise<void> {
@@ -260,7 +260,7 @@ export class PrismaCitationRepository implements CitationRepository {
     });
   }
 
-  public async GetCitationById(
+  public async getCitationById(
     citationId: string,
     ownerId: string,
   ): Promise<CitationOutput | null> {
