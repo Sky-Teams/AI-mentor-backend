@@ -125,16 +125,8 @@ export const SectionEditorPage = () => {
 
       <div className="content-layout">
         <div className="two-column-grid">
-          <div
-            style={{
-              border: "1px solid var(--line)",
-              borderRadius: 10,
-              overflow: "hidden",
-              background: "var(--surface)",
-              margin: 20,
-            }}
-          >
-            <div className="card" style={{ margin: 0 }}>
+          <div className="section-editor__content-shell">
+            <div className="card section-editor__content-card">
               <div className="card-header">
                 <h3>Content</h3>
               </div>
@@ -147,12 +139,11 @@ export const SectionEditorPage = () => {
               <span className="badge">{content.length} characters</span>
             </div>
 
-            <div style={{ borderTop: "1px solid var(--line)" }}>
+            <div className="section-editor__checklist-divider">
               <SectionChecklistPanel
                 section={section}
                 compact
                 hideHeader
-                maxHeight={220}
               />
             </div>
           </div>
