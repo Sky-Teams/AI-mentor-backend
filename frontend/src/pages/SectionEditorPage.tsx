@@ -7,6 +7,7 @@ import type { ParaphraseRun, ProjectSection, ReviewRun } from "../types/api";
 import { ReviewLayout } from "../components/ReviewLayout";
 import { ParaphrasePanel } from "../components/ParaphrasePanel";
 import { paraphraseApi } from "../services/api/paraphrase";
+import { SectionChecklistPanel } from "../components/SectionChecklistPanel";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -124,17 +125,36 @@ export const SectionEditorPage = () => {
 
       <div className="content-layout">
         <div className="two-column-grid">
-          <div className="card">
-            <div className="card-header">
-              <h3>Content</h3>
+          <div
+            style={{
+              border: "1px solid var(--line)",
+              borderRadius: 10,
+              overflow: "hidden",
+              background: "var(--surface)",
+              margin: 20,
+            }}
+          >
+            <div className="card" style={{ margin: 0 }}>
+              <div className="card-header">
+                <h3>Content</h3>
+              </div>
+              <textarea
+                className="editor-area"
+                onChange={(event) => setContent(event.target.value)}
+                rows={10}
+                value={content}
+              />
+              <span className="badge">{content.length} characters</span>
             </div>
-            <textarea
-              className="editor-area"
-              onChange={(event) => setContent(event.target.value)}
-              rows={10}
-              value={content}
-            />
-            <span className="badge">{content.length} characters</span>
+
+            <div style={{ borderTop: "1px solid var(--line)" }}>
+              <SectionChecklistPanel
+                section={section}
+                compact
+                hideHeader
+                maxHeight={220}
+              />
+            </div>
           </div>
 
           <ReviewPanel review={latestSectionReview} />
