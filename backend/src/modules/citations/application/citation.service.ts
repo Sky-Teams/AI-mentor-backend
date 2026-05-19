@@ -10,7 +10,7 @@ export class CitationService {
   constructor(
     private readonly formatterService: CitationFormatterService,
     private readonly citationRepository: CitationRepository,
-    private readonly userRepositiry: UserRepository,
+    private readonly userRepository: UserRepository,
     private readonly projectService: ProjectService,
   ) {}
 
@@ -20,9 +20,9 @@ export class CitationService {
     projectId: string;
     formateStyle: CitationFormatType;
   }) {
-    await this.userRepositiry.getUserById(input.ownerId);
+    await this.userRepository.getUserById(input.ownerId);
     await this.projectService.getProject(input.projectId, input.ownerId);
-    await this.citationRepository.createCitaiotn({
+    await this.citationRepository.createCitation({
       citation: input.citation,
       ownerId: input.ownerId,
       projectId: input.projectId,
@@ -35,18 +35,19 @@ export class CitationService {
     );
   }
 
-  public async GetCitation(projectId: string, ownerId: string) {
-    await this.userRepositiry.getUserById(ownerId);
+  public async getCitations(projectId: string, ownerId: string) {
+    await this.userRepository.getUserById(ownerId);
     await this.projectService.getProject(projectId, ownerId);
-    const result = await this.citationRepository.GetCitation(
+    const result = await this.citationRepository.getCitations(
       projectId,
       ownerId,
     );
-    const citation = await Promise.all(
-      result.map((item) => this.citationRepository.GetCitationType(item)),
+    const citations = result.map((item) =>
+      this.citationRepository.getCitationType(item),
     );
+
     return await Promise.all(
-      citation.map(async (item) => ({
+      citations.map(async (item) => ({
         id: item.citation.citationId,
         formatted: await this.formatterService.format(
           item.citation,
@@ -57,9 +58,9 @@ export class CitationService {
     );
   }
 
-  public async DeleteCitation(citationId: string, ownerId: string) {
-    await this.userRepositiry.getUserById(ownerId);
-    const citation = await this.citationRepository.GetCitationById(
+  public async deleteCitation(citationId: string, ownerId: string) {
+    await this.userRepository.getUserById(ownerId);
+    const citation = await this.citationRepository.getCitationById(
       citationId,
       ownerId,
     );
@@ -71,6 +72,6 @@ export class CitationService {
         "CITATION_NOT_FOUND",
       );
     }
-    return await this.citationRepository.DeleteCitation(citationId, ownerId);
+    return await this.citationRepository.deleteCitation(citationId, ownerId);
   }
 }
