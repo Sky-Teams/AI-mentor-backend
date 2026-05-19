@@ -1,3 +1,4 @@
+import { AiOperation } from "src/modules/billing/domain/billing";
 import type { ProjectSection } from "../../projects/domain/project";
 import type { ReadinessSnapshot, ReviewIssue, ReviewRun } from "./review";
 
@@ -48,7 +49,10 @@ export interface ReviewRepository {
   markReviewFailed(reviewRunId: string, errorMessage: string): Promise<void>;
   completeReview(input: ReviewCompletionInput): Promise<ReviewRun>;
   listProjectReviews(projectId: string, ownerId: string): Promise<ReviewRun[]>;
-  findReviewRun(reviewRunId: string, ownerId: string): Promise<ReviewRun | null>;
+  findReviewRun(
+    reviewRunId: string,
+    ownerId: string,
+  ): Promise<ReviewRun | null>;
   findIssue(issueId: string, ownerId: string): Promise<ReviewIssue | null>;
   updateIssueStatus(input: {
     issueId: string;
@@ -56,9 +60,25 @@ export interface ReviewRepository {
     status: ReviewIssue["status"];
   }): Promise<ReviewIssue>;
   listProjectIssues(projectId: string, ownerId: string): Promise<ReviewIssue[]>;
-  findSectionForReview(projectId: string, sectionKey: ProjectSection["key"], ownerId: string): Promise<ProjectSection | null>;
-  saveReadinessSnapshot(input: Omit<ReadinessSnapshot, "id" | "createdAt">): Promise<ReadinessSnapshot>;
-  getLatestReadiness(projectId: string, ownerId: string): Promise<ReadinessSnapshot | null>;
+  findSectionForReview(
+    projectId: string,
+    sectionKey: ProjectSection["key"],
+    ownerId: string,
+  ): Promise<ProjectSection | null>;
+  saveReadinessSnapshot(
+    input: Omit<ReadinessSnapshot, "id" | "createdAt">,
+  ): Promise<ReadinessSnapshot>;
+  getLatestReadiness(
+    projectId: string,
+    ownerId: string,
+  ): Promise<ReadinessSnapshot | null>;
   getActiveReviewPrompt(): Promise<{ id: string; templateText: string } | null>;
-  getDefaultGuidelinePack(): Promise<{ id: string; name: string; version: string; rules: Record<string, unknown> } | null>;
+  getDefaultGuidelinePack(
+    type: AiOperation,
+  ): Promise<{
+    id: string;
+    name: string;
+    version: string;
+    rules: Record<string, unknown>;
+  } | null>;
 }

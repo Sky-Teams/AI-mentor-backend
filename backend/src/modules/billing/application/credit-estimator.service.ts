@@ -1,9 +1,8 @@
 import { encodingForModel, getEncoding, type TiktokenModel } from "js-tiktoken";
 import type { Project } from "../../projects/domain/project";
+import { AnyZodObject } from "zod";
 
-import { sectionReviewSchema } from "../../reviews/infrastructure/openai-section-reviewer";
-
-export interface ReviewCreditEstimateInput {
+export interface CreditEstimateInput {
   project: Project;
   section: {
     key: string;
@@ -15,15 +14,18 @@ export interface ReviewCreditEstimateInput {
   model: string;
 }
 
-export interface ReviewCreditEstimate {
+export interface CreditEstimate {
   estimatedInputTokens: number;
   estimatedOutputTokens: number;
   estimatedTotalTokens: number;
   estimatedCredits: number;
 }
 
-export class ReviewCreditEstimatorService {
-  public estimate(input: ReviewCreditEstimateInput): ReviewCreditEstimate {
+export class CreditEstimatorService {
+  public estimate(
+    input: CreditEstimateInput,
+    schema: AnyZodObject,
+  ): CreditEstimate {
     const systemPrompt = input.promptTemplate;
 
     const userPrompt = JSON.stringify({
@@ -38,11 +40,11 @@ export class ReviewCreditEstimatorService {
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      response_format: sectionReviewSchema,
+      response_format: schema,
     });
 
     const estimatedInputTokens = this.countTokens(requestPayload, input.model);
-    const estimatedOutputTokens = Math.floor(estimatedInputTokens * 1.1);
+    const estimatedOutputTokens = Math.floor(estimatedInputTokens * 1.2);
 
     const estimatedTotalTokens = estimatedInputTokens + estimatedOutputTokens;
 

@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { env } from "../../../shared/config/env";
 import { AppError } from "../../../shared/errors/app-error";
 import type { BillingService } from "../../billing/application/billing.service";
-import type { ReviewCreditEstimatorService } from "../../billing/application/review-credit-estimator.service";
+import type { CreditEstimatorService } from "../../billing/application/credit-estimator.service";
 import type { ProjectService } from "../../projects/application/project.service";
 import type {
   ReviewIssue,
@@ -12,6 +12,8 @@ import type {
 } from "../domain/review";
 import type { ReviewRepository } from "../domain/review.repository";
 import type { SectionReviewer } from "../domain/section-reviewer";
+import { sectionReviewSchema } from "../infrastructure/openai-section-reviewer";
+import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
 
 const severityPenalty: Record<ReviewIssue["severity"], number> = {
   LOW: 5,
@@ -26,7 +28,7 @@ export class ReviewService {
     private readonly projectService: ProjectService,
     private readonly sectionReviewer: SectionReviewer,
     private readonly billingService: BillingService,
-    private readonly reviewCreditEstimator: ReviewCreditEstimatorService,
+    private readonly CreditEstimator: CreditEstimatorService,
   ) {}
 
   public async triggerSectionReview(input: {
@@ -69,18 +71,11 @@ export class ReviewService {
     }
 
     const activePrompt = await this.reviewRepository.getActiveReviewPrompt();
-    const promptTemplate =
-      activePrompt?.templateText ??
-      [
-        "You are an expert publication mentor for medical case reports.",
-        "Review a single manuscript section and return JSON only.",
-        "Do not fabricate patient data, references, timelines, or facts.",
-        "When information is missing, ask explicit questions and warn about the gap.",
-      ].join("\n");
+    const promptTemplate = activePrompt?.templateText ?? PROMPT_TEMPLATE.REVIEW;
 
     const activeGuidelinePack =
       project.journal?.guidelinePack ??
-      (await this.reviewRepository.getDefaultGuidelinePack());
+      (await this.reviewRepository.getDefaultGuidelinePack("REVIEW"));
 
     const fallbackGuidelineRules: Record<string, unknown> = {
       focus: [
@@ -91,24 +86,27 @@ export class ReviewService {
       ],
     };
 
-    const guidelineRules =
-      activeGuidelinePack?.rules ?? fallbackGuidelineRules;
+    const guidelineRules = activeGuidelinePack?.rules ?? fallbackGuidelineRules;
 
-    const estimate = this.reviewCreditEstimator.estimate({
-      project,
-      section: {
-        key: section.key,
-        title: section.title,
-        content: section.content,
+    const estimate = this.CreditEstimator.estimate(
+      {
+        project,
+        section: {
+          key: section.key,
+          title: section.title,
+          content: section.content,
+        },
+        promptTemplate,
+        guidelineRules,
+        model: env.OPENAI_MODEL,
       },
-      promptTemplate,
-      guidelineRules,
-      model: env.OPENAI_MODEL,
-    });
+      sectionReviewSchema,
+    );
 
-    await this.billingService.assertCanAffordReview(
+    await this.billingService.assertCanAfford(
       input.ownerId,
       estimate.estimatedCredits,
+      "REVIEW",
     );
 
     const reviewRun = await this.reviewRepository.createQueuedReview({
@@ -134,19 +132,19 @@ export class ReviewService {
         guidelineRules,
       });
 
-      const actualCredits = this.reviewCreditEstimator.calculateActualCredit(
+      const actualCredits = this.CreditEstimator.calculateActualCredit(
         execution.usage,
       );
 
-      const billedCredits =
-        await this.billingService.recordSuccessfulReviewUsage({
-          userId: input.ownerId,
-          projectId: input.projectId,
-          reviewRunId: reviewRun.id,
-          model: env.OPENAI_MODEL,
-          amount: actualCredits,
-          usage: execution.usage,
-        });
+      const billedCredits = await this.billingService.recordSuccess({
+        userId: input.ownerId,
+        projectId: input.projectId,
+        reviewRunId: reviewRun.id,
+        model: env.OPENAI_MODEL,
+        amount: actualCredits,
+        usage: execution.usage,
+        operation: "REVIEW",
+      });
 
       const completedReview = await this.reviewRepository.completeReview({
         reviewRunId: reviewRun.id,

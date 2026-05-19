@@ -1,4 +1,4 @@
-export type CitationFormatType = "APA" | "MLA";
+export type CitationFormatTypes = "APA" | "MLA";
 
 export type CitationType = "BOOK" | "WEBSITE" | "JOURNAL" | "REPORT";
 export interface Authors {
@@ -55,7 +55,7 @@ export type Citation =
 
 export interface FormatCitationInput {
   citation: Citation;
-  style: CitationFormatType;
+  style: CitationFormatTypes;
 }
 
 export interface CitationFormatter {
@@ -108,7 +108,7 @@ export type CitationCompilation =
 
 export interface CitationOutput {
   citation: CitationCompilation;
-  style: CitationFormatType;
+  style: CitationFormatTypes;
   type: CitationType;
   bookCitation: BookCitation;
   websiteCitation: WebsiteCitation;

@@ -34,7 +34,7 @@ const grammarTipsSchema = z.object({
   explanation: z.string().min(1),
   example: z.string().optional(),
 });
-const AiParaphraseResponseSchema = z.object({
+export const AiParaphraseResponseSchema = z.object({
   paraphrasedText: z.string().min(1),
   tone: z.enum(TONE_VALUES).default("SIMPLE"),
   lengthStrategy: z.enum(LENGTH_VALUES).default("SHORTEN"),
@@ -72,21 +72,35 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
 
     const tone = content.tone ?? "SIMPLE";
     const lengthStrategy = content.lengthStrategy ?? "SHORTEN";
+    const lengthInstruction =
+      lengthStrategy === "MAINTAIN"
+        ? "CRITICAL: Maintain a similar word count and level of detail as the original text. Do not summarize, do not omit facts, and do not delete or merge sentences."
+        : "Rewrite the text to be significantly more concise. If a sentence doesn't add new value, merge or delete it.";
 
     const systemPrompt = [
       `Return only structured JSON that matches the schema.`,
       `TASK: Paraphrase the text based on these specific constraints:`,
       `1. Tone requirement: ${toneTypeDescriptions[tone]}.`,
       `2. Length strategy: ${lengthStrategyDescriptions[lengthStrategy]}.`,
-      `3. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
-      `4. Preserved Words Rule: ${preservedWordsRule}`,
-      `Do not repeat the same information. If a sentence doesn't add new value, merge or delete it`,
+      `3. Length Instruction: ${lengthInstruction}`,
+      `4. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
+      `5. Preserved Words Rule: ${preservedWordsRule}`,
       `Limit the 'changes' array to a maximum of 2 essential items.`,
       `You MUST include 'metrics', 'grammarTips', and 'readabilityScore' keys, even if they contain empty arrays or default values.`,
       `Do not let the response cut off.`,
     ].join("\n\n");
 
-    const userPrompt = content.promptTemplate;
+    const userPrompt = JSON.stringify(
+      {
+        originalText: content.originalText,
+        manuscriptType: content.project.manuscriptType,
+        projectTitle: content.project.title,
+        targetJournal: content.project.targetJournal,
+        guidelineRules: content.guidelineRules,
+      },
+      null,
+      2,
+    );
 
     const response = await this.client.beta.chat.completions.parse({
       model: env.OPENAI_MODEL,

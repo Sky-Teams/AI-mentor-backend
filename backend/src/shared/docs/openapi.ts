@@ -56,6 +56,15 @@ export const openApiSpec = {
           },
         },
       },
+      TriggerParaphraseRequest: {
+        type: "object",
+        require: ["sectionId"],
+        properties: {
+          tone: { type: "string" },
+          preservedWords: { type: "array" },
+          lengthStrategy: { type: "string" },
+        },
+      },
     },
   },
   security: [{ bearerAuth: [] }],
@@ -360,6 +369,77 @@ export const openApiSpec = {
         },
         responses: {
           "200": { description: "Issue updated" },
+        },
+      },
+    },
+    "/projects/paraphrase/{projectId}": {
+      post: {
+        summary: "Trigger AI paraphrase for a section",
+        parameters: [
+          {
+            in: "path",
+            name: "projectId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/TriggerParaphraseRequest" },
+              example: { sectionId: "cmonxwyaw0004u1186fsjdmm3" },
+            },
+          },
+        },
+        responses: {
+          "202": { description: "Paraphrase triggered" },
+        },
+      },
+    },
+    "/projects/paraphrase": {
+      post: {
+        summary: "Get paraphrase by sectionId",
+        parameters: [
+          {
+            in: "path",
+            name: ["projectId", "sectionId"],
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "202": { description: "Paraphrase section" },
+        },
+      },
+    },
+    "/projects/paraphrase/{paraphraseRunId}": {
+      get: {
+        summary: "Get a paraphrase by id",
+        parameters: [
+          {
+            in: "path",
+            name: "paraphraseRunId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "202": { description: "Paraphrase details" },
+        },
+      },
+      delete: {
+        summary: "Get a paraphrase by id",
+        parameters: [
+          {
+            in: "path",
+            name: "paraphraseRunId",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "202": { description: "Paraphrase removed" },
         },
       },
     },

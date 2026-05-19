@@ -4,7 +4,7 @@ import type { ReviewRepository } from "../../../src/modules/reviews/domain/revie
 import type { ProjectService } from "../../../src/modules/projects/application/project.service";
 import type { SectionReviewer } from "../../../src/modules/reviews/domain/section-reviewer";
 import type { BillingService } from "../../../src/modules/billing/application/billing.service";
-import type { ReviewCreditEstimatorService } from "../../../src/modules/billing/application/review-credit-estimator.service";
+import type { CreditEstimatorService } from "../../../src/modules/billing/application/credit-estimator.service";
 import type { ReadinessSnapshot } from "../../../src/modules/reviews/domain/review";
 
 describe("ReviewService", () => {
@@ -46,7 +46,7 @@ describe("ReviewService", () => {
 
     const sectionReviewer = {} as SectionReviewer;
     const billingService = {} as BillingService;
-    const reviewCreditEstimator = {} as ReviewCreditEstimatorService;
+    const reviewCreditEstimator = {} as CreditEstimatorService;
 
     const reviewService = new ReviewService(
       reviewRepository,

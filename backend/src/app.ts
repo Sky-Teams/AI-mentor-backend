@@ -45,7 +45,7 @@ import { ParaphraseService } from "./modules/paraphrasing/application/paraphrase
 import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructure/prisma-paraphrase.repository";
 import { OpenAiSectionParaphrase } from "./modules/paraphrasing/infrastructure/openai-section-paraphrase";
 import { createParaphraseRouter } from "./modules/paraphrasing/interface/paraphrase.routes";
-import { ReviewCreditEstimatorService } from "./modules/billing/application/review-credit-estimator.service";
+import { CreditEstimatorService } from "./modules/billing/application/credit-estimator.service";
 import { PrismaUserRepository } from "./modules/users/infrastructure/prisma-user.repository";
 import { JournalController } from "src/modules/journal/interface/journal.controller.js";
 import { JournalService } from "src/modules/journal/application/journal.service.js";
@@ -64,7 +64,7 @@ export const createApp = (): express.Express => {
   const citationRepository = new PrismaCitationRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
   const paraphraseRepository = new PrismaParaphraseRepository(prisma);
-  const userRepositiry = new PrismaUserRepository(prisma);
+  const userRepository = new PrismaUserRepository(prisma);
 
   const authService = new AuthService(
     authRepository,
@@ -73,13 +73,13 @@ export const createApp = (): express.Express => {
   );
   const projectService = new ProjectService(projectRepository);
   const billingService = new BillingService(billingRepository);
-  const reviewCreditEstimator = new ReviewCreditEstimatorService();
+  const CreditEstimator = new CreditEstimatorService();
   const reviewService = new ReviewService(
     reviewRepository,
     projectService,
     new OpenAiSectionReviewer(),
     billingService,
-    reviewCreditEstimator,
+    CreditEstimator,
   );
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
@@ -87,7 +87,7 @@ export const createApp = (): express.Express => {
   const citationService = new CitationService(
     citationFormatterService,
     citationRepository,
-    userRepositiry,
+    userRepository,
     projectService
   );
   const adminService = new AdminService(adminRepository);
@@ -96,6 +96,9 @@ export const createApp = (): express.Express => {
     projectService,
     billingService,
     new OpenAiSectionParaphrase(),
+    CreditEstimator,
+    reviewRepository,
+    userRepository,
   );
 
   const journalRepository = new PrismaJournalRepository(prisma);

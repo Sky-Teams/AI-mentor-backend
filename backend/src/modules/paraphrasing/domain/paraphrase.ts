@@ -12,12 +12,11 @@ export const toneTypeDescriptions: Record<ToneType, string> = {
     "Use standard, well-balanced language that sounds like a native speaker. Neither too formal nor too simple.",
 };
 
-export const lengthStrategies = ["SHORTEN", "EXPAND", "MAINTAIN"] as const;
+export const lengthStrategies = ["SHORTEN", "MAINTAIN"] as const;
 export type LengthStrategy = (typeof lengthStrategies)[number];
 
 export const lengthStrategyDescriptions: Record<LengthStrategy, string> = {
   SHORTEN: "Make the text significantly more concise by removing fluff.",
-  EXPAND: "Elaborate more on the ideas and use more descriptive language.",
   MAINTAIN: "Maintain approximately the same length as the original text.",
 };
 

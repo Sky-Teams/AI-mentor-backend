@@ -11,6 +11,7 @@ import type {
   ReviewCompletionInput,
   ReviewRepository,
 } from "../domain/review.repository";
+import { AiOperation } from "src/modules/billing/domain/billing";
 
 const mapIssue = (issue: {
   id: string;
@@ -514,7 +515,7 @@ export class PrismaReviewRepository implements ReviewRepository {
       : null;
   }
 
-  public async getDefaultGuidelinePack(): Promise<{
+  public async getDefaultGuidelinePack(type: AiOperation): Promise<{
     id: string;
     name: string;
     version: string;
@@ -522,6 +523,7 @@ export class PrismaReviewRepository implements ReviewRepository {
   } | null> {
     const guidelinePack = await this.prisma.guidelinePack.findFirst({
       where: {
+        type,
         isDefault: true,
         status: "ACTIVE",
       },

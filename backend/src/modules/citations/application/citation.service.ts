@@ -1,5 +1,5 @@
 import { UserRepository } from "src/modules/users/domain/user";
-import { Citation, CitationFormatType } from "../domain/citation";
+import { Citation, CitationFormatTypes } from "../domain/citation";
 import { CitationRepository } from "../domain/citation.repository";
 import { CitationFormatterService } from "./formatter.service";
 import { ProjectService } from "src/modules/projects/application/project.service";
@@ -18,7 +18,7 @@ export class CitationService {
     citation: Citation;
     ownerId: string;
     projectId: string;
-    formateStyle: CitationFormatType;
+    formateStyle: CitationFormatTypes;
   }) {
     await this.userRepositiry.getUserById(input.ownerId);
     await this.projectService.getProject(input.projectId, input.ownerId);
@@ -40,7 +40,7 @@ export class CitationService {
     ownerId: string;
     projectId: string;
     citation: Citation;
-    style?: CitationFormatType;
+    style?: CitationFormatTypes;
   }) {
     await this.userRepositiry.getUserById(input.ownerId);
     await this.projectService.getProject(input.projectId, input.ownerId);
@@ -61,7 +61,7 @@ export class CitationService {
       citation: input.citation,
       style: input.style,
     });
-    
+
     const currentData =
       result.type === "BOOK"
         ? result.bookCitation

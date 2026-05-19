@@ -50,6 +50,7 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
     lengthStrategy?: LengthStrategy;
     aiModel: string;
     promptTemplateId?: string;
+    guidelinePackId?: string;
   }): Promise<ParaphraseRun> {
     const paraphrase = await this.prisma.paraphraseRun.create({
       data: {
@@ -64,6 +65,7 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
         originalText: input.originalText,
         paraphrasedText: "",
         promptTemplateId: input.promptTemplateId,
+        guidelinePackId: input.guidelinePackId,
       },
     });
     return mapParaphraseRun(paraphrase);
