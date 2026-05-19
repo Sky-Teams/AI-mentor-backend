@@ -3,26 +3,16 @@ import type { ProjectSection } from "../types/api";
 
 type Props = {
   section: ProjectSection | null;
-  compact?: boolean;
-  hideHeader?: boolean;
 };
 
-export function SectionChecklistPanel({
-  section,
-  compact,
-  hideHeader,
-}: Props) {
+export function SectionChecklistPanel({ section }: Props) {
   const checklist = section?.checklist ?? [];
 
   return (
-    <div className={`card checklist-panel${compact ? " checklist-panel--compact" : ""}`}>
-      {!hideHeader ? (
-        <div className="card-header">
-          <h3 className={compact ? "checklist-panel__title" : undefined}>
-            Checklist
-          </h3>
-        </div>
-      ) : null}
+    <div className="card checklist-panel">
+      <div className="card-header">
+        <h3 className="checklist-panel__title">Checklist</h3>
+      </div>
 
       {checklist.length === 0 ? (
         <p className="muted-text">No checklist for this section.</p>
@@ -35,10 +25,7 @@ export function SectionChecklistPanel({
               ) : null}
               <ul className="checklist-panel__list">
                 {group.items.map((item, i) => (
-                  <li
-                    key={`${idx}-${i}`}
-                    className="checklist-panel__item"
-                  >
+                  <li key={`${idx}-${i}`} className="checklist-panel__item">
                     <input
                       aria-label="Checklist item"
                       type="checkbox"

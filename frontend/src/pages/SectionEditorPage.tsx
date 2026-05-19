@@ -140,11 +140,7 @@ export const SectionEditorPage = () => {
             </div>
 
             <div className="section-editor__checklist-divider">
-              <SectionChecklistPanel
-                section={section}
-                compact
-                hideHeader
-              />
+              <SectionChecklistPanel section={section} />
             </div>
           </div>
 
