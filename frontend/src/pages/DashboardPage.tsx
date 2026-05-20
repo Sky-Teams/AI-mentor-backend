@@ -54,11 +54,17 @@ export const DashboardPage = () => {
                 {projects.map((project) => (
                   <tr key={project.id}>
                     <td>
-                      <Link to={`/projects/${project.id}`}>{project.title}</Link>
+                      <Link to={`/projects/${project.id}`}>
+                        {project.title}
+                      </Link>
                     </td>
                     <td>{project.status}</td>
-                    <td>{project.readinessScore ?? "-"}</td>
-                    <td>{project.lastReviewedAt ? new Date(project.lastReviewedAt).toLocaleString() : "-"}</td>
+                    <td>{project.readinessScore ?? "-"}%</td>
+                    <td>
+                      {project.lastReviewedAt
+                        ? new Date(project.lastReviewedAt).toLocaleString()
+                        : "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

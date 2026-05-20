@@ -24,7 +24,7 @@ export const ReadinessCard = ({ readiness }: ReadinessCardProps) => {
       <div className="metric-grid">
         <div className="metric-box">
           <span>Overall Score</span>
-          <strong>{readiness.overallScore}</strong>
+          <strong>{readiness.overallScore}%</strong>
         </div>
         <div className="metric-box">
           <span>Blockers</span>
