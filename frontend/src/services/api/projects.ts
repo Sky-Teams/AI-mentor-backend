@@ -1,9 +1,14 @@
 import { apiClient, unwrap } from "./client";
-import type { ApiSuccessResponse, Project, ProjectSection } from "../../types/api";
+import type {
+  ApiSuccessResponse,
+  Project,
+  ProjectSection,
+} from "../../types/api";
 
 export const projectsApi = {
   async list(): Promise<Project[]> {
-    const response = await apiClient.get<ApiSuccessResponse<Project[]>>("/projects");
+    const response =
+      await apiClient.get<ApiSuccessResponse<Project[]>>("/projects");
     return unwrap(response.data);
   },
 
@@ -12,16 +17,24 @@ export const projectsApi = {
     targetJournal?: string;
     metadata?: Record<string, string>;
   }): Promise<Project> {
-    const response = await apiClient.post<ApiSuccessResponse<Project>>("/projects", input);
+    const response = await apiClient.post<ApiSuccessResponse<Project>>(
+      "/projects",
+      input,
+    );
     return unwrap(response.data);
   },
 
   async get(projectId: string): Promise<Project> {
-    const response = await apiClient.get<ApiSuccessResponse<Project>>(`/projects/${projectId}`);
+    const response = await apiClient.get<ApiSuccessResponse<Project>>(
+      `/projects/${projectId}`,
+    );
     return unwrap(response.data);
   },
 
-  async getSection(projectId: string, sectionKey: string): Promise<ProjectSection> {
+  async getSection(
+    projectId: string,
+    sectionKey: string,
+  ): Promise<ProjectSection> {
     const response = await apiClient.get<ApiSuccessResponse<ProjectSection>>(
       `/projects/${projectId}/sections/${sectionKey}`,
     );
@@ -39,10 +52,10 @@ export const projectsApi = {
     return unwrap(response.data);
   },
 
-  async delete(projectId: string): Promise<{ archived: boolean }> {
-    const response = await apiClient.delete<ApiSuccessResponse<{ archived: boolean }>>(
-      `/projects/${projectId}`,
-    );
+  async archive(projectId: string): Promise<{ archived: boolean }> {
+    const response = await apiClient.delete<
+      ApiSuccessResponse<{ archived: boolean }>
+    >(`/projects/${projectId}`);
     return unwrap(response.data);
   },
 };
