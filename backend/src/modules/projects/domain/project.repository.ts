@@ -48,4 +48,10 @@ export interface ProjectRepository {
     ownerId: string,
     projectId: string,
   ): Promise<ProjectSection | null>;
+  toggleSectionChecklist(
+    projectId: string,
+    ownerId: string,
+    sectionKey: string,
+    checklistId: string,
+  ): Promise<{ completed: boolean }>;
 }
