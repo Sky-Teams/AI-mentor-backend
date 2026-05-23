@@ -67,10 +67,11 @@ model SectionChecklist {
   journalSectionTemplateId String
   title                    String?
   items                    String[]
+  completed                Boolean
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 
-  journalSectionTemplate   JournalSectionTemplate @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
+  journalSectionTemplate JournalSectionTemplate @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
 
   @@index([journalSectionTemplateId])
   @@map("journal_section_checklist_groups")
