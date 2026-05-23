@@ -113,4 +113,18 @@ export class ProjectService {
     }
     return section;
   }
+
+  public async toggleSectionChecklist(
+    projectId: string,
+    ownerId: string,
+    sectionKey: string,
+    checklistId: string,
+  ): Promise<{ completed: boolean }> {
+    return await this.projectRepository.toggleSectionChecklist(
+      projectId,
+      ownerId,
+      sectionKey,
+      checklistId,
+    );
+  }
 }
