@@ -6,12 +6,20 @@ import type { ProjectService } from "../application/project.service";
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
 
-  public async listProjects(request: Request, response: Response): Promise<void> {
-    const projects = await this.projectService.listProjects(request.auth!.userId);
+  public async listProjects(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const projects = await this.projectService.listProjects(
+      request.auth!.userId,
+    );
     response.status(StatusCodes.OK).json(successResponse(projects));
   }
 
-  public async createProject(request: Request, response: Response): Promise<void> {
+  public async createProject(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const project = await this.projectService.createProject({
       ownerId: request.auth!.userId,
       ...request.body,
@@ -21,11 +29,17 @@ export class ProjectController {
 
   public async getProject(request: Request, response: Response): Promise<void> {
     const { projectId } = request.params as { projectId: string };
-    const project = await this.projectService.getProject(projectId, request.auth!.userId);
+    const project = await this.projectService.getProject(
+      projectId,
+      request.auth!.userId,
+    );
     response.status(StatusCodes.OK).json(successResponse(project));
   }
 
-  public async updateProject(request: Request, response: Response): Promise<void> {
+  public async updateProject(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const { projectId } = request.params as { projectId: string };
     const project = await this.projectService.updateProject({
       ownerId: request.auth!.userId,
@@ -35,7 +49,10 @@ export class ProjectController {
     response.status(StatusCodes.OK).json(successResponse(project));
   }
 
-  public async archiveProject(request: Request, response: Response): Promise<void> {
+  public async archiveProject(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const { projectId } = request.params as { projectId: string };
     await this.projectService.archiveProject(projectId, request.auth!.userId);
     response.status(StatusCodes.OK).json(successResponse({ archived: true }));
@@ -54,7 +71,10 @@ export class ProjectController {
     response.status(StatusCodes.OK).json(successResponse(section));
   }
 
-  public async updateSection(request: Request, response: Response): Promise<void> {
+  public async updateSection(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const { projectId, sectionKey } = request.params as {
       projectId: string;
       sectionKey: string;
@@ -66,5 +86,25 @@ export class ProjectController {
       ...request.body,
     });
     response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
+  public async toggleSectionChecklist(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const { projectId, sectionKey, checklistId } = req.params as {
+      projectId: string;
+      sectionKey: string;
+      checklistId: string;
+    };
+
+    const result = await this.projectService.toggleSectionChecklist(
+      projectId,
+      req.auth!.userId,
+      sectionKey,
+      checklistId,
+    );
+
+    res.status(StatusCodes.OK).json(successResponse(result));
   }
 }
