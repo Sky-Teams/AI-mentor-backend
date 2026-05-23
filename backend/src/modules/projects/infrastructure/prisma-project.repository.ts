@@ -438,4 +438,60 @@ export class PrismaProjectRepository implements ProjectRepository {
 
     return section ? mapSection(section) : null;
   }
+
+  public async toggleSectionChecklist(
+    projectId: string,
+    ownerId: string,
+    sectionKey: string,
+    checklistId: string,
+  ): Promise<{ completed: boolean }> {
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: projectId,
+        ownerId,
+        deletedAt: null,
+        sections: { some: { key: sectionKey } },
+      },
+      select: { journalId: true },
+    });
+
+    if (!project)
+      throw new AppError(
+        "Project was not found.",
+        StatusCodes.NOT_FOUND,
+        "PROJECT_NOT_FOUND",
+      );
+    if (!project.journalId)
+      throw new AppError(
+        "Project has no journal assigned.",
+        StatusCodes.BAD_REQUEST,
+        "PROJECT_HAS_NO_JOURNAL",
+      );
+
+    const checklist = await this.prisma.sectionChecklist.findFirst({
+      where: {
+        id: checklistId,
+        journalSectionTemplate: {
+          key: sectionKey,
+          journalId: project.journalId,
+        },
+      },
+      select: { completed: true },
+    });
+
+    if (!checklist)
+      throw new AppError(
+        "Section checklist not found",
+        StatusCodes.NOT_FOUND,
+        "CHECKLIST_NOT_FOUND",
+      );
+
+    const updated = await this.prisma.sectionChecklist.update({
+      where: { id: checklistId },
+      data: { completed: !checklist.completed },
+      select: { completed: true },
+    });
+
+    return { completed: updated.completed };
+  }
 }
