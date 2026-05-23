@@ -27,11 +27,11 @@ export const ReviewPanel = ({ review }: ReviewPanelProps) => {
       <div className="metric-grid">
         <div className="metric-box">
           <span>Overall Score</span>
-          <strong>{review.overallScore ?? "-"}</strong>
+          <strong>{review.overallScore ?? "-"}%</strong>
         </div>
         <div className="metric-box">
           <span>Readiness</span>
-          <strong>{review.readinessIndicator ?? "-"}</strong>
+          <strong>{review.readinessIndicator ?? "-"}%</strong>
         </div>
         <div className="metric-box">
           <span>Technical Tokens</span>

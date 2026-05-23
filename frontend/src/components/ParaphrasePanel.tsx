@@ -6,13 +6,11 @@ import { ParaphraseList } from "./paraphraseList";
 import { projectsApi } from "../services/api/projects";
 
 interface ParaphrasePanelProps {
-  paraphrase: ParaphraseRun;
   sectionId: string;
   content: string;
   sectionKey: string;
 }
 export const ParaphrasePanel = ({
-  paraphrase,
   sectionId,
   content,
   sectionKey,

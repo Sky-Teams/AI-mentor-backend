@@ -78,7 +78,7 @@ export const DashboardPage = () => {
                       </Link>
                     </td>
                     <td>{project.status}</td>
-                    <td>{project.readinessScore ?? "-"}</td>
+                    <td>{project.readinessScore ?? "-"}%</td>
                     <td>
                       {project.lastReviewedAt
                         ? new Date(project.lastReviewedAt).toLocaleString()
