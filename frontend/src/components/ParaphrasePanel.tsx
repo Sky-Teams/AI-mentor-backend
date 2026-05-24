@@ -58,10 +58,7 @@ export const ParaphrasePanel = ({
         projectId: projectId,
         sectionId: sectionId,
         tone: selectedTone.toLocaleUpperCase() as ToneType,
-        lengthStrategy:
-          selectedLength === "Maintain"
-            ? ("SAME" as LengthStrategy)
-            : ("SHORTEN" as LengthStrategy),
+        lengthStrategy: selectedLength.toLocaleUpperCase() as LengthStrategy,
         preservedWords: finalWords,
       });
 
@@ -131,10 +128,12 @@ export const ParaphrasePanel = ({
               <button
                 className="outline-button"
                 type="button"
-                disabled={!sectionId || isParaphrasing}
+                disabled={!sectionId}
                 onClick={handleParaphrase}
               >
-                {isParaphrasing ? "Paraphrasing..." : "Paraphrase"}
+                {!sectionId || isParaphrasing
+                  ? "Paraphrasing..."
+                  : "Paraphrase"}
               </button>
             </div>
           </div>
@@ -183,8 +182,7 @@ export const ParaphrasePanel = ({
                           {change.replacedWith}
                         </li>
                         <li>
-                          <strong>Reasons: </strong>
-                          {change.reason}
+                          <strong>Reasons: </strong> {change.reason}
                         </li>
                       </ul>
                     ))}
@@ -200,16 +198,13 @@ export const ParaphrasePanel = ({
                     {currentData.grammarTips.map((grammer, index) => (
                       <ul key={currentData.id || index}>
                         <li>
-                          <strong>Name: </strong>
-                          {grammer.ruleName}
+                          <strong>Name: </strong> {grammer.ruleName}
                         </li>
                         <li>
-                          <strong>Explain: </strong>
-                          {grammer.explanation}
+                          <strong>Explain: </strong> {grammer.explanation}
                         </li>
                         <li>
-                          <strong>Example: </strong>
-                          {grammer.example}
+                          <strong>Example: </strong> {grammer.example}
                         </li>
                       </ul>
                     ))}
@@ -225,20 +220,16 @@ export const ParaphrasePanel = ({
                     {currentData.metrics.map((metric, index) => (
                       <ul key={currentData.id || index}>
                         <li>
-                          <strong>Name: </strong>
-                          {metric.name}
+                          <strong>Name: </strong> {metric.name}
                         </li>
                         <li>
-                          <strong>Label: </strong>
-                          {metric.label}
+                          <strong>Label: </strong> {metric.label}
                         </li>
                         <li>
-                          <strong>Score: </strong>
-                          {metric.score}
+                          <strong>Score: </strong> {metric.score}
                         </li>
                         <li>
-                          <strong>Rationale: </strong>
-                          {metric.retionale}
+                          <strong>Rationale: </strong> {metric.retionale}
                         </li>
                       </ul>
                     ))}
