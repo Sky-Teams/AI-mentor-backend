@@ -130,6 +130,9 @@ export class ParaphraseService {
         project,
         sectionId: section.id,
         originalText: section.content,
+        tone: input.tone,
+        preservedWords: input.preservedWords,
+        lengthStrategy: input.lengthStrategy,
         promptTemplate,
         guidelineRules,
       });
@@ -184,63 +187,63 @@ export class ParaphraseService {
     }
   }
 
-  public async listSectionParaphrase(
-    projectId: string,
-    sectionId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun[]> {
-    await this.userRepository.getUserById(ownerId);
-    await this.projectService.getProject(projectId, ownerId);
-    await this.projectService.getSectionById(sectionId, ownerId, projectId);
-    const paraphrase = await this.paraphraseRepository.listSectionParaphrase(
-      projectId,
-      sectionId,
-      ownerId,
-    );
-    return paraphrase;
-  }
+  // public async listSectionParaphrase(
+  //   projectId: string,
+  //   sectionId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun[]> {
+  //   await this.userRepository.getUserById(ownerId);
+  //   await this.projectService.getProject(projectId, ownerId);
+  //   await this.projectService.getSectionById(sectionId, ownerId, projectId);
+  //   const paraphrase = await this.paraphraseRepository.listSectionParaphrase(
+  //     projectId,
+  //     sectionId,
+  //     ownerId,
+  //   );
+  //   return paraphrase;
+  // }
 
-  public async getParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun> {
-    await this.userRepository.getUserById(ownerId);
-    const paraphrase = await this.paraphraseRepository.findParaphraseRun(
-      paraphraseRunId,
-      ownerId,
-    );
+  // public async getParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun> {
+  //   await this.userRepository.getUserById(ownerId);
+  //   const paraphrase = await this.paraphraseRepository.findParaphraseRun(
+  //     paraphraseRunId,
+  //     ownerId,
+  //   );
 
-    if (!paraphrase) {
-      throw new AppError(
-        "Paraphrase was not found",
-        StatusCodes.NOT_FOUND,
-        "PARAPHRASE_NOT_FOUND",
-      );
-    }
-    return paraphrase;
-  }
+  //   if (!paraphrase) {
+  //     throw new AppError(
+  //       "Paraphrase was not found",
+  //       StatusCodes.NOT_FOUND,
+  //       "PARAPHRASE_NOT_FOUND",
+  //     );
+  //   }
+  //   return paraphrase;
+  // }
 
-  public async deleteParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<void> {
-    await this.userRepository.getUserById(ownerId);
-    const paraphrase = await this.paraphraseRepository.findParaphraseRun(
-      paraphraseRunId,
-      ownerId,
-    );
+  // public async deleteParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<void> {
+  //   await this.userRepository.getUserById(ownerId);
+  //   const paraphrase = await this.paraphraseRepository.findParaphraseRun(
+  //     paraphraseRunId,
+  //     ownerId,
+  //   );
 
-    if (!paraphrase) {
-      throw new AppError(
-        "Paraphrase was not found",
-        StatusCodes.NOT_FOUND,
-        "PARAPHRASE_NOT_FOUND",
-      );
-    }
+  //   if (!paraphrase) {
+  //     throw new AppError(
+  //       "Paraphrase was not found",
+  //       StatusCodes.NOT_FOUND,
+  //       "PARAPHRASE_NOT_FOUND",
+  //     );
+  //   }
 
-    return await this.paraphraseRepository.deleteParaphraseRun(
-      paraphraseRunId,
-      ownerId,
-    );
-  }
+  //   return await this.paraphraseRepository.deleteParaphraseRun(
+  //     paraphraseRunId,
+  //     ownerId,
+  //   );
+  // }
 }
