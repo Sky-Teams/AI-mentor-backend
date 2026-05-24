@@ -30,19 +30,19 @@ export const paraphraseApi = {
     return unwrap(response.data);
   },
 
-  async getSectionParaphrase(projectId: string, sectionId: string) {
-    const response = await apiClient.get<ApiSuccessResponse<ParaphraseRun[]>>(
-      `/projects/paraphrase`,
-      {
-        params: {
-          projectId: projectId,
-          sectionId: sectionId,
-        },
-      },
-    );
+  // async getSectionParaphrase(projectId: string, sectionId: string) {
+  //   const response = await apiClient.get<ApiSuccessResponse<ParaphraseRun[]>>(
+  //     `/projects/paraphrase`,
+  //     {
+  //       params: {
+  //         projectId: projectId,
+  //         sectionId: sectionId,
+  //       },
+  //     },
+  //   );
 
-    return unwrap(response.data);
-  },
+  //   return unwrap(response.data);
+  // },
 
   // async deleteParaphrase(paraphraseRunId: string){
   //   const response = await apiClient.delete<ApiSuccessResponse<ParaphraseRun>>(
