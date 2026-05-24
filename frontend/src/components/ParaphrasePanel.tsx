@@ -234,12 +234,12 @@ export const ParaphrasePanel = ({
         )}
       </div>
 
-      <ParaphraseList
+      {/* <ParaphraseList
         projectId={projectId}
         sectionId={sectionId}
         refreshTrigger={refreshTrigger}
         onListChange={updateTopPanel}
-      />
+      /> */}
     </div>
   );
 };
