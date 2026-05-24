@@ -58,4 +58,18 @@ export const projectsApi = {
     >(`/projects/${projectId}`);
     return unwrap(response.data);
   },
+
+  async toggleSectionChecklistItem(
+    projectId: string,
+    sectionKey: string,
+    checklistId: string,
+    itemIndex: number,
+  ): Promise<{ checked: boolean }> {
+    const response = await apiClient.patch<
+      ApiSuccessResponse<{ checked: boolean }>
+    >(
+      `/projects/${projectId}/sections/${sectionKey}/checklist/${checklistId}/items/${itemIndex}/toggle`,
+    );
+    return unwrap(response.data);
+  },
 };
