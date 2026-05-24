@@ -2,7 +2,7 @@ import { LengthStrategy, ParaphraseRun, ToneType } from "../types/api";
 import { paraphraseApi } from "../services/api/paraphrase";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ParaphraseList } from "./paraphraseList";
+// import { ParaphraseList } from "./paraphraseList";
 import { projectsApi } from "../services/api/projects";
 
 interface ParaphrasePanelProps {
@@ -49,8 +49,6 @@ export const ParaphrasePanel = ({
         .split(/[,\s]+/)
         .map((word) => word.trim())
         .filter((word) => word !== "");
-
-      setInputWords("");
 
       setIsParaphrasing(true);
 
