@@ -36,7 +36,6 @@ export const SectionEditorPage = () => {
     setAllSections(project.sections || []);
     setReviews(allReviews);
   };
-  console.log("section=====", section);
 
   useEffect(() => {
     loadData();
@@ -159,7 +158,12 @@ export const SectionEditorPage = () => {
             </div>
 
             <div className="section-editor__checklist-divider">
-              <SectionChecklistPanel section={section} />
+              <SectionChecklistPanel
+                section={section}
+                projectId={projectId}
+                sectionKey={sectionKey}
+                onChanged={loadData}
+              />
             </div>
           </div>
 
