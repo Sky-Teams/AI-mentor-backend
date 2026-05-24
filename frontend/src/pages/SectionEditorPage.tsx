@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { ParaphrasePanel } from "../components/ParaphrasePanel";
+import { ReviewLayout } from "../components/ReviewLayout";
 import { ReviewPanel } from "../components/ReviewPanel";
+import { SectionChecklistPanel } from "../components/SectionChecklistPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
 import type { ProjectSection, ReviewRun } from "../types/api";
-import { ReviewLayout } from "../components/ReviewLayout";
-import { ParaphrasePanel } from "../components/ParaphrasePanel";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -21,9 +22,8 @@ export const SectionEditorPage = () => {
   const [isReviewing, setIsReviewing] = useState(false);
   const [sectionId, setSectionId] = useState("");
 
-  // Load all data (merged from both versions)
+  // Load all data (project + current section + reviews)
   const loadData = async () => {
-    // Get project (for all sections), current section, and reviews
     const [project, currentSection, allReviews] = await Promise.all([
       projectsApi.get(projectId),
       projectsApi.getSection(projectId, sectionKey),
@@ -36,6 +36,7 @@ export const SectionEditorPage = () => {
     setAllSections(project.sections || []);
     setReviews(allReviews);
   };
+  console.log("section=====", section);
 
   useEffect(() => {
     loadData();
@@ -86,7 +87,6 @@ export const SectionEditorPage = () => {
 
   // Navigate to another section (with save check)
   const goToSection = async (targetKey: string) => {
-    // If there are unsaved changes, ask user what to do
     if (hasUnsavedChanges) {
       const ok = window.confirm(
         "You have unsaved changes. Save before leaving?",
@@ -98,7 +98,7 @@ export const SectionEditorPage = () => {
         });
       }
     }
-    // Go to the new section
+
     navigate(`/projects/${projectId}/sections/${targetKey}`);
     window.scrollTo(0, 0);
   };
@@ -141,20 +141,26 @@ export const SectionEditorPage = () => {
 
       <div className="content-layout">
         <div className="two-column-grid">
-          <div className="card">
-            <div className="card-header">
-              <h3>Content</h3>
-              <span className="badge">{content.length} chars</span>
-              {hasUnsavedChanges && (
-                <span className="badge warning">Unsaved</span>
-              )}
+          <div className="section-editor__content-shell">
+            <div className="card section-editor__content-card">
+              <div className="card-header">
+                <h3>Content</h3>
+                <span className="badge">{content.length} chars</span>
+                {hasUnsavedChanges && (
+                  <span className="badge warning">Unsaved</span>
+                )}
+              </div>
+              <textarea
+                className="editor-area"
+                onChange={(event) => setContent(event.target.value)}
+                rows={10}
+                value={content}
+              />
             </div>
-            <textarea
-              className="editor-area"
-              onChange={(event) => setContent(event.target.value)}
-              rows={10}
-              value={content}
-            />
+
+            <div className="section-editor__checklist-divider">
+              <SectionChecklistPanel section={section} />
+            </div>
           </div>
 
           <ReviewPanel review={latestSectionReview} />
@@ -177,8 +183,9 @@ export const SectionEditorPage = () => {
           className="secondary-button"
           onClick={() => prevSection && goToSection(prevSection.key)}
           disabled={!prevSection}
+          type="button"
         >
-          ← Previous
+          {"\u2190"} Previous
         </button>
 
         <button
@@ -190,8 +197,9 @@ export const SectionEditorPage = () => {
               navigate(`/projects/${projectId}`);
             }
           }}
+          type="button"
         >
-          {isLast ? "Finish →" : "Next →"}
+          {isLast ? `Finish ${"\u2192"}` : `Next ${"\u2192"}`}
         </button>
       </div>
 

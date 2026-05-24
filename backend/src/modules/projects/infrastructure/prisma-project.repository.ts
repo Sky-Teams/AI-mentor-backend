@@ -389,9 +389,35 @@ export class PrismaProjectRepository implements ProjectRepository {
           deletedAt: null,
         },
       },
+      include: {
+        project: {
+          select: {
+            journalId: true,
+          },
+        },
+      },
     });
 
-    return section ? mapSection(section) : null;
+    if (!section) return null;
+    if (!section.project.journalId) return mapSection(section);
+
+    const template = await this.prisma.journalSectionTemplate.findFirst({
+      where: {
+        journalId: section.project.journalId,
+        key: sectionKey,
+      },
+      include: {
+        checklist: {},
+      },
+    });
+
+    return {
+      ...mapSection(section),
+      checklist: template?.checklist.map((group) => ({
+        title: group.title,
+        items: group.items as string[],
+      })),
+    };
   }
 
   public async findSectionById(
