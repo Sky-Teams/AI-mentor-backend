@@ -187,7 +187,7 @@ export class ParaphraseService {
     }
   }
 
-  // public async listSectionParaphrase(
+  public async listSectionParaphrase(
   //   projectId: string,
   //   sectionId: string,
   //   ownerId: string,
