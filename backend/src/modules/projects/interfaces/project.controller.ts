@@ -88,21 +88,23 @@ export class ProjectController {
     response.status(StatusCodes.OK).json(successResponse(result));
   }
 
-  public async toggleSectionChecklist(
+  public async toggleSectionChecklistItem(
     req: Request,
     res: Response,
   ): Promise<void> {
-    const { projectId, sectionKey, checklistId } = req.params as {
+    const { projectId, sectionKey, checklistId, itemIndex } = req.params as {
       projectId: string;
       sectionKey: string;
       checklistId: string;
+      itemIndex: string;
     };
 
-    const result = await this.projectService.toggleSectionChecklist(
+    const result = await this.projectService.toggleSectionChecklistItem(
       projectId,
       req.auth!.userId,
       sectionKey,
       checklistId,
+      Number(itemIndex),
     );
 
     res.status(StatusCodes.OK).json(successResponse(result));

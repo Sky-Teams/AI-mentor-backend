@@ -8,7 +8,7 @@ import {
   createProjectSchema,
   projectIdParamsSchema,
   sectionParamsSchema,
-  toggleSectionChecklistSchema,
+  toggleSectionChecklistItemSchema,
   updateProjectSchema,
   updateSectionSchema,
 } from "./project.schemas";
@@ -73,9 +73,11 @@ export const createProjectRouter = (
   );
 
   router.patch(
-    "/:projectId/sections/:sectionKey/checklist/:checklistId/toggle",
-    validate(toggleSectionChecklistSchema, "params"),
-    asyncHandler((req, res) => controller.toggleSectionChecklist(req, res)),
+    "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
+    validate(toggleSectionChecklistItemSchema, "params"),
+    asyncHandler((req, res) =>
+      controller.toggleSectionChecklistItem(req, res),
+    ),
   );
 
   return router;

@@ -37,8 +37,9 @@ export interface ProjectSection {
   lastEditedAt: Date | null;
   updatedAt: Date;
   checklist?: Array<{
+    id: string;
     title: string | null;
-    items: string[];
+    items: Array<{ text: string; checked: boolean }>;
   }>;
 }
 
