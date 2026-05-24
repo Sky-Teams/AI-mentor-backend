@@ -131,9 +131,9 @@ export const ParaphrasePanel = ({
                 disabled={!sectionId}
                 onClick={handleParaphrase}
               >
-                {!sectionId || isParaphrasing
-                  ? "Paraphrasing..."
-                  : "Paraphrase"}
+                {!sectionId || !isParaphrasing
+                  ? "Paraphrase"
+                  : "Paraphrasing..."}
               </button>
             </div>
           </div>
