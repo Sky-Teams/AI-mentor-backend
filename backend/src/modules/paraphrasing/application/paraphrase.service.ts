@@ -116,6 +116,9 @@ export class ParaphraseService {
         sectionId: section.id,
         initiatedById: input.ownerId,
         originalText: section.content,
+        tone: input.tone,
+        preservedWords: input.preservedWords,
+        lengthStrategy: input.lengthStrategy,
         aiModel: env.OPENAI_MODEL,
         promptTemplateId: activePrompt?.id,
         guidelinePackId: GuidelinePack?.id,
@@ -184,7 +187,7 @@ export class ParaphraseService {
     }
   }
 
-  public async listSectionParaphrase(
+  // public async listSectionParaphrase(
   //   projectId: string,
   //   sectionId: string,
   //   ownerId: string,
