@@ -1,7 +1,7 @@
 import { LengthStrategy, ParaphraseRun, ToneType } from "./paraphrase";
 
 export interface ParaphraseCompletionInput {
-  paraphraseRunId: string;
+  paraphraseRunId?: string;
   paraphrasedText: string;
   changes: Array<{
     originalPhrase: string;
@@ -41,9 +41,9 @@ export interface ParaphraseRepository {
     promptTemplateId?: string;
     guidelinePackId?: string;
   }): Promise<ParaphraseRun>;
-  markParaphraseProcessing(paraphraseRunId: string): Promise<void>;
+  markParaphraseProcessing(paraphraseRunId?: string): Promise<void>;
   markParaphraseFailed(
-    paraphraseRunId: string,
+    paraphraseRunId?: string,
     errorMessage: string,
   ): Promise<void>;
   completeParaphrase(input: ParaphraseCompletionInput): Promise<ParaphraseRun>;
