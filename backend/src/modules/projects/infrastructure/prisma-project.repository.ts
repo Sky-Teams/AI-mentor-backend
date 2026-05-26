@@ -460,59 +460,101 @@ export class PrismaProjectRepository implements ProjectRepository {
     return section ? mapSection(section) : null;
   }
 
-  public async toggleSectionChecklist(
+  public async toggleSectionChecklistItem(
     projectId: string,
     ownerId: string,
     sectionKey: string,
     checklistId: string,
-  ): Promise<{ completed: boolean }> {
-    const project = await this.prisma.project.findFirst({
+    itemIndex: number,
+  ): Promise<{ checked: boolean }> {
+    // 1) Find section
+    const section = await this.prisma.projectSection.findFirst({
       where: {
-        id: projectId,
-        ownerId,
-        deletedAt: null,
-        sections: { some: { key: sectionKey } },
+        projectId,
+        key: sectionKey,
+        project: {
+          ownerId,
+          deletedAt: null,
+        },
       },
-      select: { journalId: true },
+      select: {
+        id: true,
+        project: { select: { journalId: true } },
+      },
     });
 
-    if (!project)
+    if (!section) {
       throw new AppError(
-        "Project was not found.",
+        "Section was not found.",
         StatusCodes.NOT_FOUND,
-        "PROJECT_NOT_FOUND",
+        "SECTION_NOT_FOUND",
       );
-    if (!project.journalId)
+    }
+
+    const journalId = section.project.journalId;
+    if (!journalId) {
       throw new AppError(
         "Project has no journal assigned.",
         StatusCodes.BAD_REQUEST,
         "PROJECT_HAS_NO_JOURNAL",
       );
+    }
 
+    // 2) Find Checklists of a section
     const checklist = await this.prisma.sectionChecklist.findFirst({
       where: {
         id: checklistId,
         journalSectionTemplate: {
           key: sectionKey,
-          journalId: project.journalId,
+          journalId,
         },
       },
-      select: { completed: true },
+      select: { id: true, items: true },
     });
 
-    if (!checklist)
+    if (!checklist) {
       throw new AppError(
         "Section checklist not found",
         StatusCodes.NOT_FOUND,
         "CHECKLIST_NOT_FOUND",
       );
+    }
 
-    const updated = await this.prisma.sectionChecklist.update({
-      where: { id: checklistId },
-      data: { completed: !checklist.completed },
-      select: { completed: true },
+    // validate item index
+    if (itemIndex < 0 || itemIndex >= checklist.items.length) {
+      throw new AppError(
+        "Checklist item index out of range",
+        StatusCodes.BAD_REQUEST,
+        "CHECKLIST_ITEM_INDEX_INVALID",
+      );
+    }
+
+    // Check if a checklistItem is in DB , if was update it , if was not create it
+    const existing = await this.prisma.sectionChecklistItemCheck.findFirst({
+      where: {
+        sectionId: section.id,
+        checklistId: checklist.id,
+        itemIndex,
+      },
+      select: { id: true, checked: true },
     });
 
-    return { completed: updated.completed };
+    const result = existing
+      ? await this.prisma.sectionChecklistItemCheck.update({
+          where: { id: existing.id },
+          data: { checked: !existing.checked },
+          select: { checked: true },
+        })
+      : await this.prisma.sectionChecklistItemCheck.create({
+          data: {
+            sectionId: section.id,
+            checklistId: checklist.id,
+            itemIndex,
+            checked: true,
+          },
+          select: { checked: true },
+        });
+
+    return { checked: result.checked };
   }
 }
