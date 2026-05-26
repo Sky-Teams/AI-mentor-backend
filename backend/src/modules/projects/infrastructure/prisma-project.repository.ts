@@ -401,7 +401,7 @@ export class PrismaProjectRepository implements ProjectRepository {
     if (!section) return null;
     if (!section.project.journalId) return mapSection(section);
 
-    const template = await this.prisma.journalSectionTemplate.findFirst({
+    const sectionTemplate = await this.prisma.journalSectionTemplate.findFirst({
       where: {
         journalId: section.project.journalId,
         key: sectionKey,
@@ -411,11 +411,32 @@ export class PrismaProjectRepository implements ProjectRepository {
       },
     });
 
+    const checklists = sectionTemplate?.checklist ?? [];
+
+    const checklistIds = checklists.map((item) => item.id);
+
+    const checklistItems = await this.prisma.sectionChecklistItemCheck.findMany(
+      {
+        where: {
+          sectionId: section.id,
+          checklistId: { in: checklistIds },
+        },
+        select: { checklistId: true, itemIndex: true, checked: true },
+      },
+    );
+
     return {
       ...mapSection(section),
-      checklist: template?.checklist.map((group) => ({
-        title: group.title,
-        items: group.items as string[],
+      checklist: sectionTemplate?.checklist.map((item) => ({
+        id: item.id,
+        title: item.title,
+        items: item.items.map((text, index) => ({
+          text,
+          checked:
+            checklistItems.find(
+              (ch) => ch.checklistId === item.id && ch.itemIndex === index,
+            )?.checked ?? false,
+        })),
       })),
     };
   }
