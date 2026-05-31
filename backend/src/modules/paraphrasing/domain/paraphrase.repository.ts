@@ -43,8 +43,8 @@ export interface ParaphraseRepository {
   }): Promise<ParaphraseRun>;
   markParaphraseProcessing(paraphraseRunId?: string): Promise<void>;
   markParaphraseFailed(
-    paraphraseRunId?: string,
     errorMessage: string,
+    paraphraseRunId?: string,
   ): Promise<void>;
   completeParaphrase(input: ParaphraseCompletionInput): Promise<ParaphraseRun>;
   // listSectionParaphrase(
