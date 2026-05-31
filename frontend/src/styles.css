@@ -524,6 +524,9 @@ td {
   color: #d32f2f;
 }
 
+.save-button {
+  display: flex;
+}
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
