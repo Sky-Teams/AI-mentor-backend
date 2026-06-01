@@ -9,32 +9,33 @@ interface ParaphrasePanelProps {
   sectionId: string;
   content: string;
   sectionKey: string;
+  onSaveSuccess?: () => void | Promise<void>;
 }
 
 export const ParaphrasePanel = ({
   sectionId,
   content,
   sectionKey,
+  onSaveSuccess,
 }: ParaphrasePanelProps) => {
   const { projectId = "" } = useParams();
-
   const [isParaphrasing, setIsParaphrasing] = useState(false);
   const [selectedTone, setSelectedTone] = useState("Simple");
   const [selectedLength, setSelectedLength] = useState("Shorten");
-
   // store only latest paraphrase locally
   const [latestParaphrase, setLatestParaphrase] =
     useState<ParaphraseRun | null>(null);
+  const [inputWords, setInputWords] = useState("");
+  const [paraphrasedText, setParaphraseText] = useState("");
+  const [isSavedContent, setIsSavedContent] = useState(false);
+  // no longer needed because history list is disabled
+  // const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     setLatestParaphrase(null);
     setInputWords("");
+    setParaphraseText("");
   }, [sectionId]);
-
-  const [inputWords, setInputWords] = useState("");
-
-  // no longer needed because history list is disabled
-  // const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleParaphrase = async () => {
     if (!projectId) return;
@@ -62,6 +63,7 @@ export const ParaphrasePanel = ({
 
       // show latest generated paraphrase directly
       setLatestParaphrase(result);
+      setParaphraseText(result.paraphrasedText);
 
       // if (result) {
       //   setRefreshTrigger((prev) => prev + 1);
@@ -77,6 +79,25 @@ export const ParaphrasePanel = ({
 
   const currentData = latestParaphrase;
 
+  const saveChange = async () => {
+    try {
+      setIsSavedContent(true);
+      const textToSave =
+        paraphrasedText && paraphrasedText.trim() !== ""
+          ? paraphrasedText
+          : content;
+      console.log(textToSave);
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content: textToSave,
+        changeSummary: "Saved change",
+      });
+      if (onSaveSuccess) {
+        await onSaveSuccess();
+      }
+    } finally {
+      setIsSavedContent(false);
+    }
+  };
   return (
     <div>
       <div className="content-layout">
@@ -149,7 +170,6 @@ export const ParaphrasePanel = ({
             </label>
           </div>
         </div>
-
         {currentData ? (
           <div>
             <div className="review-layout two-column">
@@ -163,6 +183,15 @@ export const ParaphrasePanel = ({
               </div>
             </div>
 
+            <div className="review-layout save-button" id="">
+              <button
+                className="outline-button"
+                type="button"
+                onClick={saveChange}
+              >
+                {isSavedContent ? "Saving ..." : "Save Change"}
+              </button>
+            </div>
             <div className="review-layout">
               {currentData.changes?.length ? (
                 <>
