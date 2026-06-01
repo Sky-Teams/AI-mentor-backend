@@ -9,11 +9,13 @@ interface ParaphrasePanelProps {
   sectionId: string;
   content: string;
   sectionKey: string;
+  onSaveSuccess?: () => void | Promise<void>;
 }
 export const ParaphrasePanel = ({
   sectionId,
   content,
   sectionKey,
+  onSaveSuccess,
 }: ParaphrasePanelProps) => {
   const { projectId = "" } = useParams();
   const [isParaphrasing, setIsParaphrasing] = useState(false);
@@ -23,6 +25,8 @@ export const ParaphrasePanel = ({
     useState<ParaphraseRun | null>(null);
   const [inputWords, setInputWords] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [paraphrasedText, setParaphraseText] = useState("");
+  const [isSavedContent, setIsSavedContent] = useState(false);
 
   const handleParaphrase = async () => {
     if (!projectId) return;
@@ -46,6 +50,7 @@ export const ParaphrasePanel = ({
       });
       if (result) {
         setRefreshTrigger((prev) => prev + 1);
+        setParaphraseText(result.paraphrasedText);
       }
     } finally {
       setIsParaphrasing(false);
@@ -57,6 +62,24 @@ export const ParaphrasePanel = ({
   };
   const currentData = latestParaphrase;
 
+  const saveChange = async () => {
+    try {
+      setIsSavedContent(true);
+      const textToSave =
+        paraphrasedText && paraphrasedText.trim() !== ""
+          ? paraphrasedText
+          : content;
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content: textToSave,
+        changeSummary: "Saved change",
+      });
+      if (onSaveSuccess) {
+        await onSaveSuccess();
+      }
+    } finally {
+      setIsSavedContent(false);
+    }
+  };
   return (
     <div>
       <div className="content-layout">
@@ -119,7 +142,6 @@ export const ParaphrasePanel = ({
             </label>
           </div>
         </div>
-
         {currentData ? (
           <div className="">
             <div className="review-layout two-column">
@@ -131,6 +153,15 @@ export const ParaphrasePanel = ({
                 <h2>Paraphrase Text</h2>
                 <p>{currentData.paraphrasedText}</p>
               </div>
+            </div>
+            <div className="review-layout save-button" id="">
+              <button
+                className="outline-button"
+                type="button"
+                onClick={saveChange}
+              >
+                {isSavedContent ? "Saving ..." : "Save Change"}
+              </button>
             </div>
             <div className="review-layout">
               {currentData.changes?.length ? (

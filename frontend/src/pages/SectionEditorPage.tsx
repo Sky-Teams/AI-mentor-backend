@@ -172,6 +172,7 @@ export const SectionEditorPage = () => {
         sectionId={sectionId}
         content={content}
         sectionKey={sectionKey}
+        onSaveSuccess={loadData}
       />
 
       {/* Navigation buttons moved to the very bottom, after ParaphrasePanel */}
