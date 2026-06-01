@@ -172,6 +172,7 @@ enum UserSubscriptionStatus {
   CANCELLED
   EXPIRED
   TRIALING
+  PENDING
 }
 
 enum CreditTransactionType {
@@ -489,8 +490,8 @@ model UserSubscription {
   subscriptionPlanId String
   status             UserSubscriptionStatus @default(ACTIVE)
   startedAt          DateTime               @default(now())
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
   cancelledAt        DateTime?
   autoRenew          Boolean                @default(true)
   externalReference  String?
