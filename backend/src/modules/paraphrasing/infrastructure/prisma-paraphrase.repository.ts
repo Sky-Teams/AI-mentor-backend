@@ -119,53 +119,53 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
     return mapParaphraseRun(paraphraseRun);
   }
 
-  public async listSectionParaphrase(
-    projectId: string,
-    sectionId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun[]> {
-    const paraphrases = await this.prisma.paraphraseRun.findMany({
-      where: {
-        projectId,
-        sectionId,
-        project: {
-          ownerId,
-          deletedAt: null,
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    return paraphrases.map((item) => mapParaphraseRun(item));
-  }
+  // public async listSectionParaphrase(
+  //   projectId: string,
+  //   sectionId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun[]> {
+  //   const paraphrases = await this.prisma.paraphraseRun.findMany({
+  //     where: {
+  //       projectId,
+  //       sectionId,
+  //       project: {
+  //         ownerId,
+  //         deletedAt: null,
+  //       },
+  //     },
+  //     orderBy: {
+  //       createdAt: "desc",
+  //     },
+  //   });
+  //   return paraphrases.map((item) => mapParaphraseRun(item));
+  // }
 
-  public async findParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun | null> {
-    const paraphrase = await this.prisma.paraphraseRun.findFirst({
-      where: {
-        id: paraphraseRunId,
-        initiatedById: ownerId,
-      },
-    });
+  // public async findParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun | null> {
+  //   const paraphrase = await this.prisma.paraphraseRun.findFirst({
+  //     where: {
+  //       id: paraphraseRunId,
+  //       initiatedById: ownerId,
+  //     },
+  //   });
 
-    if (!paraphrase) return null;
-    return mapParaphraseRun(paraphrase);
-  }
+  //   if (!paraphrase) return null;
+  //   return mapParaphraseRun(paraphrase);
+  // }
 
-  public async deleteParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<void> {
-    await this.prisma.paraphraseRun.deleteMany({
-      where: {
-        id: paraphraseRunId,
-        initiatedById: ownerId,
-      },
-    });
-  }
+  // public async deleteParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<void> {
+  //   await this.prisma.paraphraseRun.deleteMany({
+  //     where: {
+  //       id: paraphraseRunId,
+  //       initiatedById: ownerId,
+  //     },
+  //   });
+  // }
 
   public async getActiveParaphrasePrompt(): Promise<{
     id: string;

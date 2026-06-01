@@ -12,7 +12,7 @@ export const paraphraseApi = {
     sectionId: string;
     tone?: ToneType;
     lengthStrategy?: LengthStrategy;
-    preservedWords?: string[]
+    preservedWords?: string[];
   }): Promise<ParaphraseRun> {
     const response = await apiClient.post<ApiSuccessResponse<ParaphraseRun>>(
       `/projects/paraphrase/${input.projectId}`,
@@ -30,24 +30,25 @@ export const paraphraseApi = {
     return unwrap(response.data);
   },
 
-  async getSectionParaphrase(projectId: string, sectionId: string){
-    const response = await apiClient.get<ApiSuccessResponse<ParaphraseRun[]>>(
-      `/projects/paraphrase`,{
-        params:{
-          projectId: projectId,
-          sectionId: sectionId
-        }
-      }
-    )
+  // async getSectionParaphrase(projectId: string, sectionId: string) {
+  //   const response = await apiClient.get<ApiSuccessResponse<ParaphraseRun[]>>(
+  //     `/projects/paraphrase`,
+  //     {
+  //       params: {
+  //         projectId: projectId,
+  //         sectionId: sectionId,
+  //       },
+  //     },
+  //   );
 
-    return unwrap(response.data)
-  },
+  //   return unwrap(response.data);
+  // },
 
-  async deleteParaphrase(paraphraseRunId: string){
-    const response = await apiClient.delete<ApiSuccessResponse<ParaphraseRun>>(
-      `/projects/paraphrase/${paraphraseRunId}`
-    )
+  // async deleteParaphrase(paraphraseRunId: string){
+  //   const response = await apiClient.delete<ApiSuccessResponse<ParaphraseRun>>(
+  //     `/projects/paraphrase/${paraphraseRunId}`
+  //   )
 
-    return unwrap(response.data)
-  }
+  //   return unwrap(response.data)
+  // }
 };

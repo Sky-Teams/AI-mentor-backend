@@ -19,6 +19,7 @@ import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-par
 import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { toneTypeDescriptions } from "../domain/paraphrase";
+import crypto from "crypto";
 
 export class ParaphraseService {
   public constructor(
@@ -110,26 +111,31 @@ export class ParaphraseService {
       "PARAPHRASE",
     );
 
-    const paraphraseRun =
-      await this.paraphraseRepository.createQueuedParaphrase({
-        projectId: input.projectId,
-        sectionId: section.id,
-        initiatedById: input.ownerId,
-        originalText: section.content,
-        tone: input.tone,
-        preservedWords: input.preservedWords,
-        lengthStrategy: input.lengthStrategy,
-        aiModel: env.OPENAI_MODEL,
-        promptTemplateId: activePrompt?.id,
-        guidelinePackId: GuidelinePack?.id,
-      });
+    //* As we want to return just the AI response and dont save to DB, we comment these functions
 
-    await this.paraphraseRepository.markParaphraseProcessing(paraphraseRun.id);
+    // const paraphraseRun =
+    //   await this.paraphraseRepository.createQueuedParaphrase({
+    //     projectId: input.projectId,
+    //     sectionId: section.id,
+    //     initiatedById: input.ownerId,
+    //     originalText: section.content,
+    //     tone: input.tone,
+    //     preservedWords: input.preservedWords,
+    //     lengthStrategy: input.lengthStrategy,
+    //     aiModel: env.OPENAI_MODEL,
+    //     promptTemplateId: activePrompt?.id,
+    //     guidelinePackId: GuidelinePack?.id,
+    //   });
+
+    // await this.paraphraseRepository.markParaphraseProcessing(paraphraseRun.id);
     try {
       const execution = await this.sectionParaphrase.paraphraseSection({
         project,
         sectionId: section.id,
         originalText: section.content,
+        tone: input.tone,
+        preservedWords: input.preservedWords,
+        lengthStrategy: input.lengthStrategy,
         promptTemplate,
         guidelineRules,
       });
@@ -140,7 +146,7 @@ export class ParaphraseService {
 
       const billedCredits = await this.billingService.recordSuccess({
         userId: input.ownerId,
-        paraphraseRunId: paraphraseRun.id,
+        paraphraseRunId: undefined,
         operation: "PARAPHRASE",
         projectId: input.projectId,
         model: env.OPENAI_MODEL,
@@ -148,99 +154,118 @@ export class ParaphraseService {
         amount: actualCredits,
       });
 
-      const completeParaphrase =
-        await this.paraphraseRepository.completeParaphrase({
-          paraphraseRunId: paraphraseRun.id,
-          paraphrasedText: execution.result.paraphrasedText,
-          changes: execution.result.changes as ParaphraseChange[],
-          metrics: execution.result.metrics as ParaphraseMetric[],
-          grammarTips: execution.result.grammarTips as GrammarTip[],
-          rawResponse: execution.rawResponse,
-          inputTokens: execution.usage.inputTokens,
-          outputTokens: execution.usage.outputTokens,
-          totalTokens: execution.usage.totalTokens,
-          appCreditsConsumed: billedCredits,
-        });
+      // const completeParaphrase =
+      //   await this.paraphraseRepository.completeParaphrase({
+      //     paraphraseRunId: undefined,
+      //     paraphrasedText: execution.result.paraphrasedText,
+      //     changes: execution.result.changes as ParaphraseChange[],
+      //     metrics: execution.result.metrics as ParaphraseMetric[],
+      //     grammarTips: execution.result.grammarTips as GrammarTip[],
+      //     rawResponse: execution.rawResponse,
+      //     inputTokens: execution.usage.inputTokens,
+      //     outputTokens: execution.usage.outputTokens,
+      //     totalTokens: execution.usage.totalTokens,
+      //     appCreditsConsumed: billedCredits,
+      //   });
 
-      return completeParaphrase;
+      // return result directly, no DB
+      return {
+        id: crypto.randomUUID(),
+        projectId: input.projectId,
+        sectionId: section.id,
+        initiatedById: input.ownerId,
+        originalText: section.content,
+        paraphrasedText: execution.result.paraphrasedText,
+        grammarTips: execution.result.grammarTips ?? [],
+        tone: execution.result.tone ?? input.tone,
+        changes: execution.result.changes ?? [],
+        metrics: execution.result.metrics ?? [],
+        aiModel: env.OPENAI_MODEL,
+        preservedWords: input.preservedWords ?? [],
+        lengthStrategy: input.lengthStrategy ?? "SHORTEN",
+        inputTokens: execution.usage.inputTokens,
+        outputTokens: execution.usage.outputTokens,
+        totalTokens: execution.usage.totalTokens,
+        appCreditsConsumed: billedCredits,
+        errorMessage: null,
+        createdAt: new Date(),
+        completedAt: new Date(),
+      };
     } catch (error) {
       await this.billingService.recordFailed({
         userId: input.ownerId,
         projectId: input.projectId,
-        paraphraseRunId: paraphraseRun.id,
+        paraphraseRunId: undefined,
         operation: "PARAPHRASE",
         model: env.OPENAI_MODEL,
       });
 
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Paraphrase processing failed.";
-      await this.paraphraseRepository.markParaphraseFailed(
-        paraphraseRun.id,
-        message,
-      );
+      // const message =
+      //   error instanceof Error
+      //     ? error.message
+      //     : "Paraphrase processing failed.";
+      // await this.paraphraseRepository.markParaphraseFailed(paraphraseRun.id, message);
       throw error;
     }
   }
 
-  public async listSectionParaphrase(
-    projectId: string,
-    sectionId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun[]> {
-    await this.userRepository.getUserById(ownerId);
-    await this.projectService.getProject(projectId, ownerId);
-    await this.projectService.getSectionById(sectionId, ownerId, projectId);
-    const paraphrase = await this.paraphraseRepository.listSectionParaphrase(
-      projectId,
-      sectionId,
-      ownerId,
-    );
-    return paraphrase;
-  }
+  // public async listSectionParaphrase(
+  //   projectId: string,
+  //   sectionId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun[]> {
+  //   await this.userRepository.getUserById(ownerId);
+  //   await this.projectService.getProject(projectId, ownerId);
+  //   await this.projectService.getSectionById(sectionId, ownerId, projectId);
+  //   const paraphrase = await this.paraphraseRepository.listSectionParaphrase(
+  //     projectId,
+  //     sectionId,
+  //     ownerId,
+  //   );
+  //   return paraphrase;
+  // }
 
-  public async getParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun> {
-    await this.userRepository.getUserById(ownerId);
-    const paraphrase = await this.paraphraseRepository.findParaphraseRun(
-      paraphraseRunId,
-      ownerId,
-    );
+  // public async getParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun> {
+  //   await this.userRepository.getUserById(ownerId);
+  //   const paraphrase = await this.paraphraseRepository.findParaphraseRun(
+  //     paraphraseRunId,
+  //     ownerId,
+  //   );
 
-    if (!paraphrase) {
-      throw new AppError(
-        "Paraphrase was not found",
-        StatusCodes.NOT_FOUND,
-        "PARAPHRASE_NOT_FOUND",
-      );
-    }
-    return paraphrase;
-  }
+  //   if (!paraphrase) {
+  //     throw new AppError(
+  //       "Paraphrase was not found",
+  //       StatusCodes.NOT_FOUND,
+  //       "PARAPHRASE_NOT_FOUND",
+  //     );
+  //   }
+  //   return paraphrase;
+  // }
 
-  public async deleteParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<void> {
-    await this.userRepository.getUserById(ownerId);
-    const paraphrase = await this.paraphraseRepository.findParaphraseRun(
-      paraphraseRunId,
-      ownerId,
-    );
+  // public async deleteParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<void> {
+  //   await this.userRepository.getUserById(ownerId);
+  //   const paraphrase = await this.paraphraseRepository.findParaphraseRun(
+  //     paraphraseRunId,
+  //     ownerId,
+  //   );
 
-    if (!paraphrase) {
-      throw new AppError(
-        "Paraphrase was not found",
-        StatusCodes.NOT_FOUND,
-        "PARAPHRASE_NOT_FOUND",
-      );
-    }
+  //   if (!paraphrase) {
+  //     throw new AppError(
+  //       "Paraphrase was not found",
+  //       StatusCodes.NOT_FOUND,
+  //       "PARAPHRASE_NOT_FOUND",
+  //     );
+  //   }
 
-    return await this.paraphraseRepository.deleteParaphraseRun(
-      paraphraseRunId,
-      ownerId,
-    );
-  }
+  //   return await this.paraphraseRepository.deleteParaphraseRun(
+  //     paraphraseRunId,
+  //     ownerId,
+  //   );
+  // }
 }
