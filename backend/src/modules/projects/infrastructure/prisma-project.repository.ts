@@ -401,7 +401,7 @@ export class PrismaProjectRepository implements ProjectRepository {
     if (!section) return null;
     if (!section.project.journalId) return mapSection(section);
 
-    const template = await this.prisma.journalSectionTemplate.findFirst({
+    const sectionTemplate = await this.prisma.journalSectionTemplate.findFirst({
       where: {
         journalId: section.project.journalId,
         key: sectionKey,
@@ -411,11 +411,32 @@ export class PrismaProjectRepository implements ProjectRepository {
       },
     });
 
+    const checklists = sectionTemplate?.checklist ?? [];
+
+    const checklistIds = checklists.map((item) => item.id);
+
+    const checklistItems = await this.prisma.sectionChecklistItemCheck.findMany(
+      {
+        where: {
+          sectionId: section.id,
+          checklistId: { in: checklistIds },
+        },
+        select: { checklistId: true, itemIndex: true, checked: true },
+      },
+    );
+
     return {
       ...mapSection(section),
-      checklist: template?.checklist.map((group) => ({
-        title: group.title,
-        items: group.items as string[],
+      checklist: sectionTemplate?.checklist.map((item) => ({
+        id: item.id,
+        title: item.title,
+        items: item.items.map((text, index) => ({
+          text,
+          checked:
+            checklistItems.find(
+              (ch) => ch.checklistId === item.id && ch.itemIndex === index,
+            )?.checked ?? false,
+        })),
       })),
     };
   }
@@ -437,5 +458,103 @@ export class PrismaProjectRepository implements ProjectRepository {
     });
 
     return section ? mapSection(section) : null;
+  }
+
+  public async toggleSectionChecklistItem(
+    projectId: string,
+    ownerId: string,
+    sectionKey: string,
+    checklistId: string,
+    itemIndex: number,
+  ): Promise<{ checked: boolean }> {
+    // 1) Find section
+    const section = await this.prisma.projectSection.findFirst({
+      where: {
+        projectId,
+        key: sectionKey,
+        project: {
+          ownerId,
+          deletedAt: null,
+        },
+      },
+      select: {
+        id: true,
+        project: { select: { journalId: true } },
+      },
+    });
+
+    if (!section) {
+      throw new AppError(
+        "Section was not found.",
+        StatusCodes.NOT_FOUND,
+        "SECTION_NOT_FOUND",
+      );
+    }
+
+    const journalId = section.project.journalId;
+    if (!journalId) {
+      throw new AppError(
+        "Project has no journal assigned.",
+        StatusCodes.BAD_REQUEST,
+        "PROJECT_HAS_NO_JOURNAL",
+      );
+    }
+
+    // 2) Find Checklists of a section
+    const checklist = await this.prisma.sectionChecklist.findFirst({
+      where: {
+        id: checklistId,
+        journalSectionTemplate: {
+          key: sectionKey,
+          journalId,
+        },
+      },
+      select: { id: true, items: true },
+    });
+
+    if (!checklist) {
+      throw new AppError(
+        "Section checklist not found",
+        StatusCodes.NOT_FOUND,
+        "CHECKLIST_NOT_FOUND",
+      );
+    }
+
+    // validate item index
+    if (itemIndex < 0 || itemIndex >= checklist.items.length) {
+      throw new AppError(
+        "Checklist item index out of range",
+        StatusCodes.BAD_REQUEST,
+        "CHECKLIST_ITEM_INDEX_INVALID",
+      );
+    }
+
+    // Check if a checklistItem is in DB , if was update it , if was not create it
+    const existing = await this.prisma.sectionChecklistItemCheck.findFirst({
+      where: {
+        sectionId: section.id,
+        checklistId: checklist.id,
+        itemIndex,
+      },
+      select: { id: true, checked: true },
+    });
+
+    const result = existing
+      ? await this.prisma.sectionChecklistItemCheck.update({
+          where: { id: existing.id },
+          data: { checked: !existing.checked },
+          select: { checked: true },
+        })
+      : await this.prisma.sectionChecklistItemCheck.create({
+          data: {
+            sectionId: section.id,
+            checklistId: checklist.id,
+            itemIndex,
+            checked: true,
+          },
+          select: { checked: true },
+        });
+
+    return { checked: result.checked };
   }
 }

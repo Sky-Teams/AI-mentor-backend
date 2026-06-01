@@ -36,3 +36,10 @@ export const updateSectionSchema = z.object({
   content: z.string().max(60000),
   changeSummary: z.string().max(240).optional(),
 });
+
+export const toggleSectionChecklistItemSchema = z.object({
+  projectId: z.string(),
+  sectionKey: z.string(),
+  checklistId: z.string(),
+  itemIndex: z.coerce.number().int().min(0),
+});

@@ -23,7 +23,7 @@ export const SectionEditorPage = () => {
   const [sectionId, setSectionId] = useState("");
 
   // Load all data (project + current section + reviews)
-  const loadData = async () => {
+  const loadData = async (options?: { preserveContent?: boolean }) => {
     const [project, currentSection, allReviews] = await Promise.all([
       projectsApi.get(projectId),
       projectsApi.getSection(projectId, sectionKey),
@@ -32,11 +32,12 @@ export const SectionEditorPage = () => {
 
     setSection(currentSection);
     setSectionId(currentSection.id);
-    setContent(currentSection.content);
+    if (!options?.preserveContent) {
+      setContent(currentSection.content);
+    }
     setAllSections(project.sections || []);
     setReviews(allReviews);
   };
-  console.log("section=====", section);
 
   useEffect(() => {
     loadData();
@@ -159,7 +160,12 @@ export const SectionEditorPage = () => {
             </div>
 
             <div className="section-editor__checklist-divider">
-              <SectionChecklistPanel section={section} />
+              <SectionChecklistPanel
+                section={section}
+                projectId={projectId}
+                sectionKey={sectionKey}
+                onChanged={() => loadData({ preserveContent: true })}
+              />
             </div>
           </div>
 

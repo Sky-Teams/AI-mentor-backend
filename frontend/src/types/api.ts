@@ -63,7 +63,11 @@ export interface ProjectSection {
   status: SectionStatus;
   lastEditedAt: string | null;
   updatedAt: string;
-  checklist?: Array<{ title: string | null; items: string[] }>;
+  checklist?: Array<{
+    id: string;
+    title: string | null;
+    items: Array<{ text: string; checked: boolean }>;
+  }>;
 }
 
 export interface Project {

@@ -8,6 +8,7 @@ import {
   createProjectSchema,
   projectIdParamsSchema,
   sectionParamsSchema,
+  toggleSectionChecklistItemSchema,
   updateProjectSchema,
   updateSectionSchema,
 } from "./project.schemas";
@@ -19,14 +20,65 @@ export const createProjectRouter = (
   const router = Router();
   router.use(authenticate(tokenService));
 
-  router.get("/", asyncHandler((request, response) => controller.listProjects(request, response)));
-  router.post("/", validate(createProjectSchema), asyncHandler((request, response) => controller.createProject(request, response)));
-  router.get("/:projectId", validate(projectIdParamsSchema, "params"), asyncHandler((request, response) => controller.getProject(request, response)));
-  router.patch("/:projectId", validate(projectIdParamsSchema, "params"), validate(updateProjectSchema), asyncHandler((request, response) => controller.updateProject(request, response)));
-  router.delete("/:projectId", validate(projectIdParamsSchema, "params"), asyncHandler((request, response) => controller.archiveProject(request, response)));
+  router.get(
+    "/",
+    asyncHandler((request, response) =>
+      controller.listProjects(request, response),
+    ),
+  );
+  router.post(
+    "/",
+    validate(createProjectSchema),
+    asyncHandler((request, response) =>
+      controller.createProject(request, response),
+    ),
+  );
+  router.get(
+    "/:projectId",
+    validate(projectIdParamsSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.getProject(request, response),
+    ),
+  );
+  router.patch(
+    "/:projectId",
+    validate(projectIdParamsSchema, "params"),
+    validate(updateProjectSchema),
+    asyncHandler((request, response) =>
+      controller.updateProject(request, response),
+    ),
+  );
+  router.delete(
+    "/:projectId",
+    validate(projectIdParamsSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.archiveProject(request, response),
+    ),
+  );
 
-  router.get("/:projectId/sections/:sectionKey", validate(sectionParamsSchema, "params"), asyncHandler((request, response) => controller.getSection(request, response)));
-  router.put("/:projectId/sections/:sectionKey", validate(sectionParamsSchema, "params"), validate(updateSectionSchema), asyncHandler((request, response) => controller.updateSection(request, response)));
+  router.get(
+    "/:projectId/sections/:sectionKey",
+    validate(sectionParamsSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.getSection(request, response),
+    ),
+  );
+  router.put(
+    "/:projectId/sections/:sectionKey",
+    validate(sectionParamsSchema, "params"),
+    validate(updateSectionSchema),
+    asyncHandler((request, response) =>
+      controller.updateSection(request, response),
+    ),
+  );
+
+  router.patch(
+    "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
+    validate(toggleSectionChecklistItemSchema, "params"),
+    asyncHandler((req, res) =>
+      controller.toggleSectionChecklistItem(req, res),
+    ),
+  );
 
   return router;
 };
