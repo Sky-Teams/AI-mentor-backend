@@ -86,7 +86,6 @@ export const ParaphrasePanel = ({
         paraphrasedText && paraphrasedText.trim() !== ""
           ? paraphrasedText
           : content;
-      console.log(textToSave);
       await projectsApi.updateSection(projectId, sectionKey, {
         content: textToSave,
         changeSummary: "Saved change",
