@@ -56,8 +56,8 @@ const mapSubscription = (subscription: {
   subscriptionPlanId: string;
   status: UserSubscription["status"];
   startedAt: Date;
-  currentPeriodStart: Date;
-  currentPeriodEnd: Date;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
   autoRenew: boolean;
   subscriptionPlan?: {
     id: string;
