@@ -105,7 +105,10 @@ export const createApp = (): express.Express => {
     reviewRepository,
     userRepository,
   );
-  const subscriptionService = new SubscriptionService(subscriptionRepository);
+  const subscriptionService = new SubscriptionService(
+    subscriptionRepository,
+    userRepository,
+  );
 
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalService = new JournalService(journalRepository);
