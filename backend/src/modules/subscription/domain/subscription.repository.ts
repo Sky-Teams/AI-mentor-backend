@@ -3,5 +3,9 @@ import { SubscriptionPlan } from "./subscription";
 
 export interface SubscriptionRepository {
   listPlans(): Promise<SubscriptionPlan[]>;
-  getPlan(subscriptionPlanId: string): Promise<SubscriptionPlan | null>;
+  findPlanById(subscriptionPlanId: string): Promise<SubscriptionPlan | null>;
+  buyPlan(
+    subscriptionPlanId: string,
+    userId: string,
+  ): Promise<UserSubscription>;
 }
