@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { billingApi } from "../services/api/billing";
 import type { BillingOverview } from "../types/api";
+import { SubscriptionListPanel } from "../components/SubscriptionListPanel";
 
 export const BillingPage = () => {
   const [overview, setOverview] = useState<BillingOverview | null>(null);
@@ -73,6 +74,8 @@ export const BillingPage = () => {
           </div>
         </div>
       </div>
+
+      <SubscriptionListPanel/>
     </div>
   );
 };
