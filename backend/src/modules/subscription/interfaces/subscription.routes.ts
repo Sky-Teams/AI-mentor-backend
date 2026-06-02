@@ -3,6 +3,8 @@ import { asyncHandler } from "../../../shared/http/async-handler";
 import { authenticate } from "../../../shared/middleware/authenticate";
 import type { TokenService } from "../../auth/domain/token-service";
 import { SubscriptionController } from "./subscription.controller";
+import { validate } from "src/shared/http/validation";
+import { subscriptionPlanIdSchema } from "./subscription.schema";
 
 export const createSubscriptionRouter = (
   controller: SubscriptionController,
@@ -21,6 +23,7 @@ export const createSubscriptionRouter = (
 
   router.patch(
     "/plans/buy/:subscriptionPlanId",
+    validate(subscriptionPlanIdSchema, "params"),
     asyncHandler((request, response) => controller.buyPlan(request, response)),
   );
 
