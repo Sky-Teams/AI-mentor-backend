@@ -23,6 +23,7 @@ export const subscriptionStatuses = [
   "CANCELLED",
   "EXPIRED",
   "TRIALING",
+  "PENDING",
 ] as const;
 export type UserSubscriptionStatus = (typeof subscriptionStatuses)[number];
 
@@ -53,8 +54,8 @@ export interface UserSubscription {
   subscriptionPlanId: string;
   status: UserSubscriptionStatus;
   startedAt: Date;
-  currentPeriodStart: Date;
-  currentPeriodEnd: Date;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
   autoRenew: boolean;
   subscriptionPlan?: SubscriptionPlan;
 }
@@ -72,7 +73,13 @@ export interface CreditTransaction {
   walletId: string;
   userId: string;
   type: CreditTransactionType;
-  source: "SUBSCRIPTION" | "AI_REVIEW" | "AI_PARAPHRASE" | "ADMIN_ADJUSTMENT" | "PURCHASE" | "MANUAL";
+  source:
+    | "SUBSCRIPTION"
+    | "AI_REVIEW"
+    | "AI_PARAPHRASE"
+    | "ADMIN_ADJUSTMENT"
+    | "PURCHASE"
+    | "MANUAL";
   amount: number;
   balanceAfter: number;
   description: string | null;
