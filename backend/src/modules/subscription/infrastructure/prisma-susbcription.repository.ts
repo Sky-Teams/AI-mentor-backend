@@ -2,6 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { SubscriptionPlan } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserSubscription } from "src/modules/billing/domain/billing";
+import { AppError } from "src/shared/errors/app-error";
+import { StatusCodes } from "http-status-codes";
 
 const mapPlan = (plan: {
   id: string;
@@ -26,22 +28,56 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
   public async listPlans(): Promise<SubscriptionPlan[]> {
     const plans = await this.prisma.subscriptionPlan.findMany({
+      where: { status: "ACTIVE" },
       orderBy: [{ monthlyPriceCents: "asc" }, { includedCredits: "asc" }],
     });
 
     return plans.map(mapPlan);
   }
 
-  public async getPlan(
+  public async findPlanById(
     subscriptionPlanId: string,
   ): Promise<SubscriptionPlan | null> {
     const plan = await this.prisma.subscriptionPlan.findFirst({
-      where: { id: subscriptionPlanId },
+      where: { id: subscriptionPlanId, status: "ACTIVE" },
     });
 
     if (!plan) return null;
 
     return plan;
   }
-  
+
+  public async buyPlan(
+    subscriptionPlanId: string,
+    userId: string,
+  ): Promise<UserSubscription> {
+    const activeSubscription = await this.prisma.userSubscription.findFirst({
+      where: { userId: userId, status: "ACTIVE" },
+    });
+
+    if (activeSubscription)
+      throw new AppError(
+        "Already has an active subscription",
+        StatusCodes.BAD_REQUEST,
+        `ALREADY_HAS_ACTIVE_SUBSCRIPTION`,
+      );
+
+    return await this.prisma.userSubscription.upsert({
+      where: {
+        userId_status: {
+          userId: userId,
+          status: "PENDING",
+        },
+      },
+      update: {
+        subscriptionPlanId: subscriptionPlanId,
+        status: "PENDING",
+      },
+      create: {
+        userId: userId,
+        status: "PENDING",
+        subscriptionPlanId: subscriptionPlanId,
+      },
+    });
+  }
 }
