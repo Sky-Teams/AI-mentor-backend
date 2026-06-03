@@ -172,7 +172,6 @@ enum UserSubscriptionStatus {
   CANCELLED
   EXPIRED
   TRIALING
-  PENDING
 }
 
 enum CreditTransactionType {
@@ -212,27 +211,28 @@ enum paraphraseRunStatuses {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  email              String              @unique
-  passwordHash       String
-  fullName           String
-  role               Role                @default(USER)
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  deletedAt          DateTime?
-  projects           Project[]
-  refreshTokens      RefreshToken[]
-  sectionVersions    SectionVersion[]
-  initiatedReviews   ReviewRun[]         @relation("ReviewInitiator")
-  resolvedIssues     ReviewIssue[]       @relation("IssueResolver")
-  subscriptions      UserSubscription[]
-  creditWallet       CreditWallet?
-  creditTransactions CreditTransaction[]
-  aiUsageLogs        AiUsageLog[]
-  auditLogs          AuditLog[]          @relation("AuditActor")
-  citations          Citation[]
-  paraphraseRuns     ParaphraseRun[]     @relation("ParaphraseInitiator")
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  passwordHash         String
+  fullName             String
+  role                 Role                  @default(USER)
+  isActive             Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  deletedAt            DateTime?
+  projects             Project[]
+  refreshTokens        RefreshToken[]
+  sectionVersions      SectionVersion[]
+  initiatedReviews     ReviewRun[]           @relation("ReviewInitiator")
+  resolvedIssues       ReviewIssue[]         @relation("IssueResolver")
+  subscriptions        UserSubscription[]
+  creditWallet         CreditWallet?
+  creditTransactions   CreditTransaction[]
+  aiUsageLogs          AiUsageLog[]
+  auditLogs            AuditLog[]            @relation("AuditActor")
+  citations            Citation[]
+  paraphraseRuns       ParaphraseRun[]       @relation("ParaphraseInitiator")
+  subscriptionRequests SubscriptionRequest[]
 
   @@index([role, isActive])
 }
@@ -480,6 +480,7 @@ model SubscriptionPlan {
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
   subscriptions           UserSubscription[]
+  subscriptionRequests    SubscriptionRequest[]
 
   @@index([status, billingModel])
 }
@@ -490,8 +491,8 @@ model UserSubscription {
   subscriptionPlanId String
   status             UserSubscriptionStatus @default(ACTIVE)
   startedAt          DateTime               @default(now())
-  currentPeriodStart DateTime?
-  currentPeriodEnd   DateTime?
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
   cancelledAt        DateTime?
   autoRenew          Boolean                @default(true)
   externalReference  String?
@@ -501,6 +502,27 @@ model UserSubscription {
   subscriptionPlan   SubscriptionPlan       @relation(fields: [subscriptionPlanId], references: [id], onDelete: Restrict)
 
   @@index([userId, status, currentPeriodEnd])
+}
+
+model SubscriptionRequest {
+  id                 String                    @id @default(cuid())
+  userId             String
+  subscriptionPlanId String
+  status             SubscriptionRequestStatus
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+enum SubscriptionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model CreditWallet {
