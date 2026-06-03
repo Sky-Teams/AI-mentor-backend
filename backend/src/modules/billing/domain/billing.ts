@@ -23,7 +23,6 @@ export const subscriptionStatuses = [
   "CANCELLED",
   "EXPIRED",
   "TRIALING",
-  "PENDING",
 ] as const;
 export type UserSubscriptionStatus = (typeof subscriptionStatuses)[number];
 
@@ -54,8 +53,8 @@ export interface UserSubscription {
   subscriptionPlanId: string;
   status: UserSubscriptionStatus;
   startedAt: Date;
-  currentPeriodStart: Date | null;
-  currentPeriodEnd: Date | null;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
   autoRenew: boolean;
   subscriptionPlan?: SubscriptionPlan;
 }
