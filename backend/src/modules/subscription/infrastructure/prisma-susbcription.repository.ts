@@ -1,9 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { SubscriptionPlan } from "../domain/subscription";
+import { SubscriptionPlan, SubscriptionRequest } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
-import { UserSubscription } from "src/modules/billing/domain/billing";
-import { AppError } from "src/shared/errors/app-error";
-import { StatusCodes } from "http-status-codes";
 
 const mapPlan = (plan: {
   id: string;
@@ -50,31 +47,22 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
   public async buyPlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<UserSubscription> {
-    const activeSubscription = await this.prisma.userSubscription.findFirst({
-      where: { userId: userId, status: "ACTIVE" },
-    });
-
-    if (activeSubscription)
-      throw new AppError(
-        "Already has an active subscription",
-        StatusCodes.BAD_REQUEST,
-        `ALREADY_HAS_ACTIVE_SUBSCRIPTION`,
-      );
-
-    const pendingSubscription = await this.prisma.userSubscription.findFirst({
-      where: { userId: userId, status: "PENDING" },
-    });
+  ): Promise<SubscriptionRequest> {
+    const pendingSubscription = await this.prisma.subscriptionRequest.findFirst(
+      {
+        where: { userId: userId, status: "PENDING" },
+      },
+    );
 
     const result = pendingSubscription
-      ? await this.prisma.userSubscription.update({
+      ? await this.prisma.subscriptionRequest.update({
           where: { id: pendingSubscription.id },
           data: {
             subscriptionPlanId: subscriptionPlanId,
             status: "PENDING",
           },
         })
-      : await this.prisma.userSubscription.create({
+      : await this.prisma.subscriptionRequest.create({
           data: {
             userId: userId,
             subscriptionPlanId: subscriptionPlanId,
