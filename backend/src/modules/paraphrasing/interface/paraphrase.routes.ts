@@ -27,29 +27,29 @@ export const createParaphraseRouter = (
     ),
   );
 
-  router.get(
-    "/",
-    validate(queryParaphraseSchema, "query"),
-    asyncHandler((request, response) =>
-      controller.getSectionParaphrase(request, response),
-    ),
-  );
+  // router.get(
+  //   "/",
+  //   validate(queryParaphraseSchema, "query"),
+  //   asyncHandler((request, response) =>
+  //     controller.getSectionParaphrase(request, response),
+  //   ),
+  // );
 
-  router.get(
-    "/:paraphraseRunId",
-    validate(paraphraseRunIdSchema, "params"),
-    asyncHandler((request, response) =>
-      controller.getParaphraseRun(request, response),
-    ),
-  );
+  // router.get(
+  //   "/:paraphraseRunId",
+  //   validate(paraphraseRunIdSchema, "params"),
+  //   asyncHandler((request, response) =>
+  //     controller.getParaphraseRun(request, response),
+  //   ),
+  // );
 
-  router.delete(
-    "/:paraphraseRunId",
-    validate(paraphraseRunIdSchema, "params"),
-    asyncHandler((request, response) =>
-      controller.deleteParaphraseRun(request, response),
-    ),
-  );
+  // router.delete(
+  //   "/:paraphraseRunId",
+  //   validate(paraphraseRunIdSchema, "params"),
+  //   asyncHandler((request, response) =>
+  //     controller.deleteParaphraseRun(request, response),
+  //   ),
+  // );
 
   return router;
 };

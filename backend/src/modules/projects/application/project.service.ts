@@ -113,4 +113,22 @@ export class ProjectService {
     }
     return section;
   }
+
+  public async toggleSectionChecklistItem(
+    projectId: string,
+    ownerId: string,
+    sectionKey: string,
+    checklistId: string,
+    itemIndex: number,
+  ): Promise<{ checked: boolean }> {
+    await this.getProject(projectId, ownerId);
+
+    return await this.projectRepository.toggleSectionChecklistItem(
+      projectId,
+      ownerId,
+      sectionKey,
+      checklistId,
+      itemIndex,
+    );
+  }
 }

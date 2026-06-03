@@ -1,7 +1,7 @@
 import { LengthStrategy, ParaphraseRun, ToneType } from "./paraphrase";
 
 export interface ParaphraseCompletionInput {
-  paraphraseRunId: string;
+  paraphraseRunId?: string;
   paraphrasedText: string;
   changes: Array<{
     originalPhrase: string;
@@ -39,24 +39,24 @@ export interface ParaphraseRepository {
     lengthStrategy?: LengthStrategy;
     aiModel: string;
     promptTemplateId?: string;
-    guidelinePackId?: string
+    guidelinePackId?: string;
   }): Promise<ParaphraseRun>;
-  markParaphraseProcessing(paraphraseRunId: string): Promise<void>;
+  markParaphraseProcessing(paraphraseRunId?: string): Promise<void>;
   markParaphraseFailed(
-    paraphraseRunId: string,
     errorMessage: string,
+    paraphraseRunId?: string,
   ): Promise<void>;
   completeParaphrase(input: ParaphraseCompletionInput): Promise<ParaphraseRun>;
-  listSectionParaphrase(
-    projectId: string,
-    sectionId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun[]>;
-  findParaphraseRun(
-    paraphraseRunId: string,
-    ownerId: string,
-  ): Promise<ParaphraseRun | null>;
-  deleteParaphraseRun(paraphraseRunId: string, ownerId: string): Promise<void>;
+  // listSectionParaphrase(
+  //   projectId: string,
+  //   sectionId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun[]>;
+  // findParaphraseRun(
+  //   paraphraseRunId: string,
+  //   ownerId: string,
+  // ): Promise<ParaphraseRun | null>;
+  // deleteParaphraseRun(paraphraseRunId: string, ownerId: string): Promise<void>;
   getActiveParaphrasePrompt(): Promise<{
     id: string;
     templateText: string;

@@ -256,32 +256,50 @@ export class PrismaBillingRepository implements BillingRepository {
           },
         });
 
-        await transaction.aiUsageLog.upsert({
-          where: {
-            reviewRunId: input.reviewRunId ?? undefined,
-            paraphraseRunId: input.paraphraseRunId ?? undefined,
-          },
-          create: {
-            userId: input.userId,
-            projectId: input.projectId,
-            reviewRunId: input.reviewRunId,
-            paraphraseRunId: input.paraphraseRunId,
-            model: input.model,
-            operation: input.operation,
-            status: "SUCCESS",
-            technicalInputTokens: input.usage.inputTokens,
-            technicalOutputTokens: input.usage.outputTokens,
-            technicalTotalTokens: input.usage.totalTokens,
-            billedCredits: input.amount,
-          },
-          update: {
-            status: "SUCCESS",
-            technicalInputTokens: input.usage.inputTokens,
-            technicalOutputTokens: input.usage.outputTokens,
-            technicalTotalTokens: input.usage.totalTokens,
-            billedCredits: input.amount,
-          },
-        });
+        // As we made the paraphraseRunId undefined in the services here should put the if condition that if paraphraseRunId === undefined it just create it and because the upsert fail with an undeinfed id
+
+        if (input.reviewRunId || input.paraphraseRunId) {
+          await transaction.aiUsageLog.upsert({
+            where: {
+              reviewRunId: input.reviewRunId ?? undefined,
+              paraphraseRunId: input.paraphraseRunId ?? undefined,
+            },
+            create: {
+              userId: input.userId,
+              projectId: input.projectId,
+              reviewRunId: input.reviewRunId,
+              paraphraseRunId: input.paraphraseRunId,
+              model: input.model,
+              operation: input.operation,
+              status: "SUCCESS",
+              technicalInputTokens: input.usage.inputTokens,
+              technicalOutputTokens: input.usage.outputTokens,
+              technicalTotalTokens: input.usage.totalTokens,
+              billedCredits: input.amount,
+            },
+            update: {
+              status: "SUCCESS",
+              technicalInputTokens: input.usage.inputTokens,
+              technicalOutputTokens: input.usage.outputTokens,
+              technicalTotalTokens: input.usage.totalTokens,
+              billedCredits: input.amount,
+            },
+          });
+        } else {
+          await transaction.aiUsageLog.create({
+            data: {
+              userId: input.userId,
+              projectId: input.projectId,
+              model: input.model,
+              operation: input.operation,
+              status: "SUCCESS",
+              technicalInputTokens: input.usage.inputTokens,
+              technicalOutputTokens: input.usage.outputTokens,
+              technicalTotalTokens: input.usage.totalTokens,
+              billedCredits: input.amount,
+            },
+          });
+        }
       },
     );
 
@@ -296,27 +314,41 @@ export class PrismaBillingRepository implements BillingRepository {
     operation: AiOperation;
     model: string;
   }): Promise<void> {
-    await this.prisma.aiUsageLog.upsert({
-      where: {
-        reviewRunId: input.reviewRunId ?? undefined,
-        paraphraseRunId: input.paraphraseRunId ?? undefined,
-      },
-      create: {
-        userId: input.userId,
-        projectId: input.projectId,
-        reviewRunId: input.reviewRunId,
-        paraphraseRunId: input.paraphraseRunId,
-        model: input.model,
-        operation: input.operation,
-        status: "FAILED",
-        technicalInputTokens: 0,
-        technicalOutputTokens: 0,
-        technicalTotalTokens: 0,
-        billedCredits: 0,
-      },
-      update: {
-        status: "FAILED",
-      },
-    });
+    if (input.reviewRunId || input.paraphraseRunId) {
+      await this.prisma.aiUsageLog.upsert({
+        where: {
+          reviewRunId: input.reviewRunId ?? undefined,
+          paraphraseRunId: input.paraphraseRunId ?? undefined,
+        },
+        create: {
+          userId: input.userId,
+          projectId: input.projectId,
+          reviewRunId: input.reviewRunId,
+          paraphraseRunId: input.paraphraseRunId,
+          model: input.model,
+          operation: input.operation,
+          status: "FAILED",
+          technicalInputTokens: 0,
+          technicalOutputTokens: 0,
+          technicalTotalTokens: 0,
+          billedCredits: 0,
+        },
+        update: { status: "FAILED" },
+      });
+    } else {
+      await this.prisma.aiUsageLog.create({
+        data: {
+          userId: input.userId,
+          projectId: input.projectId,
+          model: input.model,
+          operation: input.operation,
+          status: "FAILED",
+          technicalInputTokens: 0,
+          technicalOutputTokens: 0,
+          technicalTotalTokens: 0,
+          billedCredits: 0,
+        },
+      });
+    }
   }
 }

@@ -63,6 +63,11 @@ export interface ProjectSection {
   status: SectionStatus;
   lastEditedAt: string | null;
   updatedAt: string;
+  checklist?: Array<{
+    id: string;
+    title: string | null;
+    items: Array<{ text: string; checked: boolean }>;
+  }>;
 }
 
 export interface Project {
@@ -142,8 +147,8 @@ export interface ReviewRun {
   warnings?: string[];
 }
 
-export type ToneType = "SIMPLE"| "ACADEMIC"| "CASUAL"| "NATURAL" 
-export type LengthStrategy = "SHORTEN"| "MAINTAIN"
+export type ToneType = "SIMPLE" | "ACADEMIC" | "CASUAL" | "NATURAL";
+export type LengthStrategy = "SHORTEN" | "MAINTAIN";
 
 export interface ParaphraseChange {
   originalPhrase: string;
@@ -188,7 +193,6 @@ export interface ParaphraseRun {
   createdAt: Date;
   completedAt: Date | null;
 }
-
 
 export interface ReadinessSnapshot {
   id: string;

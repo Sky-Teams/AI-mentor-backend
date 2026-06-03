@@ -385,6 +385,16 @@ async function main() {
         description: section.description,
       },
     });
+
+    if (section.checklist?.length) {
+      await prisma.sectionChecklist.createMany({
+        data: section.checklist.map((group) => ({
+          journalSectionTemplateId: createdSection.id,
+          title: group.title,
+          items: group.items,
+        })),
+      });
+    }
   }
 
   const existingProject = await prisma.project.findFirst({

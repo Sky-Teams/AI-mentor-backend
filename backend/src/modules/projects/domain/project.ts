@@ -36,6 +36,11 @@ export interface ProjectSection {
   status: SectionStatus;
   lastEditedAt: Date | null;
   updatedAt: Date;
+  checklist?: Array<{
+    id: string;
+    title: string | null;
+    items: Array<{ text: string; checked: boolean }>;
+  }>;
 }
 
 export interface SectionVersion {
