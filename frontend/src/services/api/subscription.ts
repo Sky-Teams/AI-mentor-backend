@@ -44,7 +44,7 @@ export interface UserSubscription {
 export const subscriptionApi = {
   async listPlans() {
     const response =
-      await apiClient.get<ApiSuccessResponse<SubscriptionPlan>>(
+      await apiClient.get<ApiSuccessResponse<SubscriptionPlan[]>>(
         `/subscriptions/plans`,
       );
 
