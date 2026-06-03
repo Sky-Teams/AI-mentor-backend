@@ -9,15 +9,7 @@ export const planBillingModels = [
 ] as const;
 export type PlanBillingModel = (typeof planBillingModels)[number];
 
-export const subscriptionStatuses = [
-  "ACTIVE",
-  "PAST_DUE",
-  "CANCELLED",
-  "EXPIRED",
-  "TRIALING",
-  "PENDING",
-] as const;
-export type UserSubscriptionStatus = (typeof subscriptionStatuses)[number];
+export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface SubscriptionPlan {
   id: string;
@@ -29,16 +21,11 @@ export interface SubscriptionPlan {
   includedCredits: number;
 }
 
-export interface UserSubscription {
+export interface SubscriptionRequest {
   id: string;
   userId: string;
   subscriptionPlanId: string;
-  status: UserSubscriptionStatus;
-  startedAt: Date;
-  currentPeriodStart: Date | null;
-  currentPeriodEnd: Date | null;
-  autoRenew: boolean;
-  subscriptionPlan?: SubscriptionPlan;
+  status: SubscriptionRequestStatus;
 }
 
 export const subscriptionApi = {
@@ -53,7 +40,7 @@ export const subscriptionApi = {
 
   async buyPlan(subscriptionPlanId: string) {
     const response = await apiClient.patch<
-      ApiSuccessResponse<UserSubscription>
+      ApiSuccessResponse<SubscriptionRequest>
     >(`/subscriptions/plans/buy/${subscriptionPlanId}`);
 
     return unwrap(response.data);
