@@ -5,7 +5,12 @@ import { authenticate } from "../../../shared/middleware/authenticate";
 import { authorize } from "../../../shared/middleware/authorize";
 import type { TokenService } from "../../auth/domain/token-service";
 import type { AdminController } from "./admin.controller";
-import { guidelinePackSchema, planSchema, promptTemplateSchema } from "./admin.schemas";
+import {
+  guidelinePackSchema,
+  planSchema,
+  promptTemplateSchema,
+} from "./admin.schemas";
+import { createJournalSchema } from "src/modules/journal/interface/journal.schema.js";
 
 export const createAdminRouter = (
   controller: AdminController,
@@ -15,13 +20,57 @@ export const createAdminRouter = (
   router.use(authenticate(tokenService));
   router.use(authorize("ADMIN"));
 
-  router.get("/guideline-packs", asyncHandler((request, response) => controller.listGuidelines(request, response)));
-  router.put("/guideline-packs", validate(guidelinePackSchema), asyncHandler((request, response) => controller.upsertGuideline(request, response)));
-  router.get("/prompt-templates", asyncHandler((request, response) => controller.listPromptTemplates(request, response)));
-  router.put("/prompt-templates", validate(promptTemplateSchema), asyncHandler((request, response) => controller.upsertPromptTemplate(request, response)));
-  router.get("/plans", asyncHandler((request, response) => controller.listPlans(request, response)));
-  router.put("/plans", validate(planSchema), asyncHandler((request, response) => controller.upsertPlan(request, response)));
-  router.get("/users/usage", asyncHandler((request, response) => controller.listUsersUsage(request, response)));
+  router.get(
+    "/guideline-packs",
+    asyncHandler((request, response) =>
+      controller.listGuidelines(request, response),
+    ),
+  );
+  router.put(
+    "/guideline-packs",
+    validate(guidelinePackSchema),
+    asyncHandler((request, response) =>
+      controller.upsertGuideline(request, response),
+    ),
+  );
+  router.get(
+    "/prompt-templates",
+    asyncHandler((request, response) =>
+      controller.listPromptTemplates(request, response),
+    ),
+  );
+  router.put(
+    "/prompt-templates",
+    validate(promptTemplateSchema),
+    asyncHandler((request, response) =>
+      controller.upsertPromptTemplate(request, response),
+    ),
+  );
+  router.get(
+    "/plans",
+    asyncHandler((request, response) =>
+      controller.listPlans(request, response),
+    ),
+  );
+  router.put(
+    "/plans",
+    validate(planSchema),
+    asyncHandler((request, response) =>
+      controller.upsertPlan(request, response),
+    ),
+  );
+  router.get(
+    "/users/usage",
+    asyncHandler((request, response) =>
+      controller.listUsersUsage(request, response),
+    ),
+  );
+
+  router.post(
+    "/journals",
+    validate(createJournalSchema),
+    asyncHandler((req, res) => controller.createJournal(req, res)),
+  );
 
   return router;
 };
