@@ -24,7 +24,7 @@ export function SubscriptionListPanel() {
     loadData();
   }, []);
 
-  const handleBuyPlans = async (planId: string) => {
+  const handleBuyPlan = async (planId: string) => {
     try {
       setBuyingId(planId);
       await subscriptionApi.buyPlan(planId);
@@ -82,7 +82,7 @@ export function SubscriptionListPanel() {
                   <button
                     className="outline-button"
                     type="button"
-                    onClick={() => handleBuyPlans(plan.id)}
+                    onClick={() => handleBuyPlan(plan.id)}
                   >
                     {buyingId === plan.id ? "Buying..." : "Buy Plan"}
                   </button>
