@@ -1,5 +1,4 @@
-import { UserSubscription } from "src/modules/billing/domain/billing";
-import { SubscriptionPlan } from "./subscription";
+import { SubscriptionPlan, SubscriptionRequest } from "./subscription";
 
 export interface SubscriptionRepository {
   listPlans(): Promise<SubscriptionPlan[]>;
@@ -7,5 +6,5 @@ export interface SubscriptionRepository {
   buyPlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<UserSubscription>;
+  ): Promise<SubscriptionRequest>;
 }
