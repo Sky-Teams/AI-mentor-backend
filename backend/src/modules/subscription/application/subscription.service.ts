@@ -1,5 +1,5 @@
 import { UserSubscription } from "src/modules/billing/domain/billing";
-import { SubscriptionPlan } from "../domain/subscription";
+import { SubscriptionPlan, SubscriptionRequest } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { AppError } from "src/shared/errors/app-error";
@@ -18,7 +18,7 @@ export class SubscriptionService {
   public async buyPlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<UserSubscription> {
+  ): Promise<SubscriptionRequest> {
     await this.userRepository.getUserById(userId);
 
     const plan =
