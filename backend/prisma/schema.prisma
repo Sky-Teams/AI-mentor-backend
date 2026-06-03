@@ -500,7 +500,6 @@ model UserSubscription {
   user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscriptionPlan   SubscriptionPlan       @relation(fields: [subscriptionPlanId], references: [id], onDelete: Restrict)
 
-  @@unique([userId, status])
   @@index([userId, status, currentPeriodEnd])
 }
 

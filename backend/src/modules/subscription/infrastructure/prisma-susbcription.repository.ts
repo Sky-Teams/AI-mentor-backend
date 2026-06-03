@@ -62,22 +62,26 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         `ALREADY_HAS_ACTIVE_SUBSCRIPTION`,
       );
 
-    return await this.prisma.userSubscription.upsert({
-      where: {
-        userId_status: {
-          userId: userId,
-          status: "PENDING",
-        },
-      },
-      update: {
-        subscriptionPlanId: subscriptionPlanId,
-        status: "PENDING",
-      },
-      create: {
-        userId: userId,
-        status: "PENDING",
-        subscriptionPlanId: subscriptionPlanId,
-      },
+    const pendingSubscription = await this.prisma.userSubscription.findFirst({
+      where: { userId: userId, status: "PENDING" },
     });
+
+    const result = pendingSubscription
+      ? await this.prisma.userSubscription.update({
+          where: { id: pendingSubscription.id },
+          data: {
+            subscriptionPlanId: subscriptionPlanId,
+            status: "PENDING",
+          },
+        })
+      : await this.prisma.userSubscription.create({
+          data: {
+            userId: userId,
+            subscriptionPlanId: subscriptionPlanId,
+            status: "PENDING",
+          },
+        });
+
+    return result;
   }
 }
