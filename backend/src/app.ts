@@ -186,6 +186,7 @@ export const createApp = (): express.Express => {
     `${env.API_PREFIX}/subscriptions`,
     createSubscriptionRouter(subscriptionController, tokenService),
   );
+  
   app.use(createErrorHandler(logger));
   return app;
 };
