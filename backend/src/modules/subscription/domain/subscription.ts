@@ -1,5 +1,7 @@
 import { PlanBillingModel } from "src/modules/billing/domain/billing";
 
+export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -8,4 +10,11 @@ export interface SubscriptionPlan {
   billingModel: PlanBillingModel;
   monthlyPriceCents: number | null;
   includedCredits: number;
+}
+
+export interface SubscriptionRequest {
+  id: string;
+  userId: string;
+  subscriptionPlanId: string;
+  status: SubscriptionRequestStatus;
 }
