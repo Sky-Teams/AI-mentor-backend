@@ -29,5 +29,5 @@ export type CreatedJournal = JournalDefinition & {
 export interface JournalRepository {
   findAll(): Promise<Array<{ id: string; name: string }>>;
   findById(id: string): Promise<{ id: string; name: string } | null>;
-  createJournal(input: CreateJournalInput): Promise<Journal>;
+  createJournal(input: CreateJournalInput): Promise<CreatedJournal>;
 }
