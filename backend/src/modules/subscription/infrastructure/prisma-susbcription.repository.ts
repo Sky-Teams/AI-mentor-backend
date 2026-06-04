@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { SubscriptionPlan, SubscriptionRequest } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
+import { AppError } from "src/shared/errors/app-error";
+import { StatusCodes } from "http-status-codes";
 
 const mapPlan = (plan: {
   id: string;
@@ -54,22 +56,19 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
       },
     );
 
-    const result = pendingSubscription
-      ? await this.prisma.subscriptionRequest.update({
-          where: { id: pendingSubscription.id },
-          data: {
-            subscriptionPlanId: subscriptionPlanId,
-            status: "PENDING",
-          },
-        })
-      : await this.prisma.subscriptionRequest.create({
-          data: {
-            userId: userId,
-            subscriptionPlanId: subscriptionPlanId,
-            status: "PENDING",
-          },
-        });
+    if (pendingSubscription)
+      throw new AppError(
+        "Already have a pending request",
+        StatusCodes.BAD_REQUEST,
+        `ALREADY_HAVE_PENDING_REQUEST`,
+      );
 
-    return result;
+    return await this.prisma.subscriptionRequest.create({
+      data: {
+        userId: userId,
+        subscriptionPlanId: subscriptionPlanId,
+        status: "PENDING",
+      },
+    });
   }
 }
