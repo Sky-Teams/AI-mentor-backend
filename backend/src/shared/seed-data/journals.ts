@@ -8,7 +8,7 @@ export interface JournalSectionDefinition {
   title: string;
   order: number;
   optional: boolean;
-  description: string;
+  description?: string;
   checklist: SectionChecklistGroup[];
 }
 
@@ -16,12 +16,14 @@ export interface JournalDefinition {
   code: string;
   name: string;
   publisher: string;
-  description: string;
+  description?: string;
   manuscriptType: "CASE_REPORT";
   isDefault?: boolean;
   sections: JournalSectionDefinition[];
   guidelinePack: string;
 }
+
+export type CreateJournalInput = JournalDefinition;
 
 export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
   isDefault: true,
@@ -403,12 +405,21 @@ export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
       description:
         "Summarize the key findings and explain their significance. Compare the case with existing literature and similar reports. Discuss clinical implications and potential impact on practice. Highlight the main lessons learned and any recommendations for future cases.",
       checklist: [
-        { title: "Summary", items: ["Summarize key findings", "Explain conclusions"] },
-        { title: "Literature Comparison", items: ["Compare with published cases"] },
+        {
+          title: "Summary",
+          items: ["Summarize key findings", "Explain conclusions"],
+        },
+        {
+          title: "Literature Comparison",
+          items: ["Compare with published cases"],
+        },
         { title: "Implications", items: ["Explain future clinical relevance"] },
         {
           title: "Lessons Learned",
-          items: ["State clinical takeaways", "Mention future practice changes"],
+          items: [
+            "State clinical takeaways",
+            "Mention future practice changes",
+          ],
         },
       ],
     },
