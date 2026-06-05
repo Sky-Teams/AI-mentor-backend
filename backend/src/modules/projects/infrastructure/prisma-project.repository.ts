@@ -130,7 +130,7 @@ export class PrismaProjectRepository implements ProjectRepository {
 
         if (templates.length === 0) {
           throw new AppError(
-            `Journal '${journal.code}' has no section templates.`,
+            `Journal '${journal.name}' has no section templates.`,
             StatusCodes.NOT_FOUND,
             "JOURNAL_HAS_NO_SECTIONS",
           );
@@ -407,11 +407,11 @@ export class PrismaProjectRepository implements ProjectRepository {
         key: sectionKey,
       },
       include: {
-        checklist: {},
+        checklists: {},
       },
     });
 
-    const checklists = sectionTemplate?.checklist ?? [];
+    const checklists = sectionTemplate?.checklists ?? [];
 
     const checklistIds = checklists.map((item) => item.id);
 
@@ -427,7 +427,7 @@ export class PrismaProjectRepository implements ProjectRepository {
 
     return {
       ...mapSection(section),
-      checklist: sectionTemplate?.checklist.map((item) => ({
+      checklist: sectionTemplate?.checklists.map((item) => ({
         id: item.id,
         title: item.title,
         items: item.items.map((text, index) => ({
