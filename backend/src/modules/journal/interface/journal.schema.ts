@@ -5,12 +5,11 @@ export const journalIdParamsSchema = z.object({
 });
 
 export const createJournalSchema = z.object({
-  code: z.string().min(1).max(80),
   name: z.string().min(1).max(180),
   publisher: z.string().min(1).max(180).optional(),
   description: z.string().min(1).max(1000).optional(),
   manuscriptType: z.enum(["CASE_REPORT"]).optional(),
-  guidelinePackId: z.string().min(1).optional(),
+  guidelinePack: z.string().min(1).optional(),
 
   sections: z
     .array(
@@ -21,14 +20,12 @@ export const createJournalSchema = z.object({
         isOptional: z.boolean().optional(),
         description: z.string().min(1).max(1000).optional(),
 
-        checklist: z
-          .array(
-            z.object({
-              title: z.string().min(1).max(180).optional(),
-              items: z.array(z.string().min(1).max(500)).min(1),
-            }),
-          )
-          .optional(),
+        checklists: z.array(
+          z.object({
+            title: z.string().min(1).max(180).nullable(),
+            items: z.array(z.string().min(1).max(500)).min(1),
+          }),
+        ),
       }),
     )
     .min(1),
