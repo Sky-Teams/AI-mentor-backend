@@ -45,7 +45,6 @@ const mapProject = (project: {
   status: Project["status"];
   targetJournal: string | null;
   journal: {
-    code: string;
     guidelinePack?: {
       id: string;
       rules: Prisma.JsonValue | null;
@@ -71,10 +70,8 @@ const mapProject = (project: {
 }): Project => ({
   id: project.id,
   ownerId: project.ownerId,
-  journalCode: project.journal?.code ?? "unknown",
   journal: project.journal
     ? {
-        code: project.journal.code,
         guidelinePack: project.journal.guidelinePack
           ? {
               id: project.journal.guidelinePack.id,

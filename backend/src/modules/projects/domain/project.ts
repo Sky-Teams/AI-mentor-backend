@@ -54,7 +54,6 @@ export interface SectionVersion {
 }
 
 export interface Journal {
-  code: string;
   guidelinePack: {
     id?: string;
     rules: Record<string, unknown>;
@@ -64,7 +63,6 @@ export interface Journal {
 export interface Project {
   id: string;
   ownerId: string;
-  journalCode: string;
   targetJournal: string | null;
   journal?: Journal | null;
   manuscriptType: ManuscriptType;
