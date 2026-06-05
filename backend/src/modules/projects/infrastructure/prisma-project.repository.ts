@@ -160,7 +160,6 @@ export class PrismaProjectRepository implements ProjectRepository {
           include: {
             journal: {
               select: {
-                code: true,
                 guidelinePack: {
                   select: { id: true, rules: true },
                 },
@@ -188,7 +187,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       include: {
         journal: {
           select: {
-            code: true,
             guidelinePack: {
               select: { id: true, rules: true },
             },
@@ -221,7 +219,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       include: {
         journal: {
           select: {
-            code: true,
             guidelinePack: {
               select: { id: true, rules: true },
             },
@@ -252,7 +249,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       include: {
         journal: {
           select: {
-            code: true,
             guidelinePack: {
               select: { id: true, rules: true },
             },
