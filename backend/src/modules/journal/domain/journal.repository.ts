@@ -11,11 +11,10 @@ export type CreatedJournal = JournalDefinition & {
   sections: Array<
     JournalDefinition["sections"][number] & {
       id: string;
-      journalId: string;
       createdAt: Date;
       updatedAt: Date;
       checklist: Array<
-        JournalDefinition["sections"][number]["checklist"][number] & {
+        JournalDefinition["sections"][number]["checklists"][number] & {
           id: string;
           journalSectionTemplateId: string;
           createdAt: Date;
