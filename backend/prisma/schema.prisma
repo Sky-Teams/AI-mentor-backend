@@ -25,13 +25,12 @@ enum ManuscriptType {
 
 model Journal {
   id              String         @id @default(cuid())
-  code            String         @unique
   name            String         @unique
   publisher       String?
   description     String?
   manuscriptType  ManuscriptType @default(CASE_REPORT)
-  guidelinePackId String?
-  guidelinePack   GuidelinePack? @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  guidelinePackId String
+  guidelinePack   GuidelinePack  @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
   isDefault       Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -51,7 +50,7 @@ model JournalSectionTemplate {
   sectionOrder Int
   isOptional   Boolean            @default(false)
   description  String?
-  checklist    SectionChecklist[]
+  checklists   SectionChecklist[]
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
