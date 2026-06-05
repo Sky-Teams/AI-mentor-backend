@@ -423,9 +423,9 @@ model ReadinessSnapshot {
 
 model GuidelinePack {
   id             String              @id @default(cuid())
-  name           String
+  name           String              @unique
   type           GuidelineType       @default(REVIEW)
-  code           String              @unique
+  code           String?
   version        String
   description    String?
   manuscriptType ManuscriptType      @default(CASE_REPORT)
