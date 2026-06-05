@@ -9,7 +9,7 @@ export const createJournalSchema = z.object({
   publisher: z.string().min(1).max(180).optional(),
   description: z.string().min(1).max(1000).optional(),
   manuscriptType: z.enum(["CASE_REPORT"]).optional(),
-  guidelinePack: z.string().min(1).optional(),
+  guidelinePack: z.string().min(1),
 
   sections: z
     .array(

@@ -1,22 +1,29 @@
-import { Journal } from "@prisma/client";
 import {
   CreateJournalInput,
   JournalDefinition,
 } from "src/shared/seed-data/journals.js";
 
-export type CreatedJournal = JournalDefinition & {
+export type CreatedJournal = Omit<JournalDefinition, "guidelinePack"> & {
   id: string;
+  guidelinePackId: string;
+  guidelinePack: {
+    id: string;
+    name: string;
+    version: string;
+    status: string;
+    rules: unknown;
+  };
   createdAt: Date;
   updatedAt: Date;
   sections: Array<
     JournalDefinition["sections"][number] & {
       id: string;
+      journalId: string;
       createdAt: Date;
       updatedAt: Date;
-      checklist: Array<
+      checklists: Array<
         JournalDefinition["sections"][number]["checklists"][number] & {
           id: string;
-          journalSectionTemplateId: string;
           createdAt: Date;
           updatedAt: Date;
         }

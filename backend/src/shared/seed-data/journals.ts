@@ -553,5 +553,5 @@ export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
   Output expectations:
   - Focus on constructive, practical, and journal-oriented feedback.
   - Prioritize issues that impact publication readiness and scientific quality.
-  `,
+`,
 };
