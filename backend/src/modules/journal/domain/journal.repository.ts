@@ -3,6 +3,7 @@ import {
   JournalDefinition,
 } from "src/shared/seed-data/journals.js";
 
+// This CreateJournal type also includes JournalDefinition type, and Omit means to dont use that guidelinePack from JournalDefinition
 export type CreatedJournal = Omit<JournalDefinition, "guidelinePack"> & {
   id: string;
   guidelinePackId: string;
