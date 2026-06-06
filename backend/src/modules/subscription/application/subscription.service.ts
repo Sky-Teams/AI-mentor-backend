@@ -22,7 +22,7 @@ export class SubscriptionService {
     await this.userRepository.getUserById(userId);
 
     const plan =
-      await await this.subscriptionRepository.findPlanById(subscriptionPlanId);
+      await this.subscriptionRepository.findPlanById(subscriptionPlanId);
     if (!plan)
       throw new AppError(
         "Plan was not found",
