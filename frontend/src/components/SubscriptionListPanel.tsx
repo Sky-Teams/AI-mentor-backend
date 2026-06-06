@@ -8,6 +8,7 @@ export function SubscriptionListPanel() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [buyingId, setBuyingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -27,11 +28,20 @@ export function SubscriptionListPanel() {
   const handleBuyPlan = async (planId: string) => {
     try {
       setBuyingId(planId);
+      setErrorMessage("");
+
       await subscriptionApi.buyPlan(planId);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      const errorMessage = error || "Something went wrong";
-      alert(errorMessage);
+      if (error.response?.data?.error?.code === "PLAN_NOT_FOUND") {
+        setErrorMessage("Plan was not found");
+      } else if (
+        error.response?.data?.error?.code === "ALREADY_HAVE_PENDING_REQUEST"
+      ) {
+        setErrorMessage("Already have a pending request");
+      } else {
+        setErrorMessage("Please try again...");
+      }
       console.log(error);
     } finally {
       setBuyingId(null);
@@ -40,6 +50,7 @@ export function SubscriptionListPanel() {
 
   return (
     <div className="content-layout">
+      {errorMessage && <div className="error-text">{errorMessage}</div>}
       <div className="paraphrase-header">
         <h2>Plans</h2>
       </div>
