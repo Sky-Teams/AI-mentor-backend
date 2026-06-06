@@ -290,3 +290,29 @@ export interface AdminUsageUserSummary {
   totalTechnicalTokens: number;
   totalBilledCredits: number;
 }
+
+export interface CreateJournalInput {
+  name: string;
+  publisher?: string;
+  description?: string;
+  manuscriptType?: "CASE_REPORT";
+  guidelinePack: string;
+  sections: Array<{
+    key: string;
+    title: string;
+    sectionOrder: number;
+    isOptional?: boolean;
+    description?: string;
+    checklists: Array<{
+      title: string | null;
+      items: string[];
+    }>;
+  }>;
+}
+
+export interface Journal extends CreateJournalInput {
+  id: string;
+  guidelinePackId: string;
+  createdAt: string;
+  updatedAt: string;
+}
