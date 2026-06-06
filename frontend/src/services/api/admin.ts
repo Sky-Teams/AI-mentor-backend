@@ -3,7 +3,9 @@ import type {
   AdminUsageUserSummary,
   ApiSuccessResponse,
   BillingOverview,
+  CreateJournalInput,
   GuidelinePack,
+  Journal,
   PromptTemplate,
 } from "../../types/api";
 
@@ -32,6 +34,14 @@ export const adminApi = {
   async getUsersUsage(): Promise<AdminUsageUserSummary[]> {
     const response = await apiClient.get<ApiSuccessResponse<AdminUsageUserSummary[]>>(
       "/admin/users/usage",
+    );
+    return unwrap(response.data);
+  },
+
+  async createJournal(input: CreateJournalInput): Promise<Journal> {
+    const response = await apiClient.post<ApiSuccessResponse<Journal>>(
+      "/admin/journals",
+      input,
     );
     return unwrap(response.data);
   },
