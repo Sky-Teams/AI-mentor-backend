@@ -214,11 +214,13 @@ model SectionChecklistItemCheck {
 
 model JournalSpecialty {
   id          String    @id @default(cuid())
-  name        String
+  name        String    @unique
   description String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   journals    Journal[]
+
+  @@index([name])
 }
 
 model User {
