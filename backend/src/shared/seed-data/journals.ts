@@ -1,3 +1,41 @@
+export const SPECIALTIES = [
+  "General Medicine",
+  "Internal Medicine",
+  "Cardiology",
+  "Cardiac Surgery",
+  "Thoracic Surgery",
+  "Pulmonology / Respiratory Medicine",
+  "Gastroenterology & Hepatology",
+  "General Surgery",
+  "Pediatric Surgery",
+  "Neurosurgery",
+  "Neurology",
+  "Urology",
+  "Orthopedic Surgery",
+  "Plastic & Reconstructive Surgery",
+  "Vascular Surgery",
+  "Pediatric Medicine",
+  "Obstetrics & Gynecology",
+  "Oncology",
+  "Hematology",
+  "Nephrology",
+  "Endocrinology",
+  "Infectious Diseases",
+  "Rheumatology",
+  "Dermatology",
+  "Ophthalmology",
+  "Otolaryngology (ENT)",
+  "Pathology",
+  "Radiology",
+  "Emergency Medicine",
+  "Critical Care Medicine",
+  "Anesthesiology",
+  "Dentistry & Oral Surgery",
+  "Psychiatry",
+  "Family Medicine",
+  "Rehabilitation Medicine",
+];
+
 export interface SectionChecklistsGroup {
   title: string | null;
   items: string[];
@@ -21,6 +59,7 @@ export interface JournalDefinition {
   isDefault?: boolean;
   sections: JournalSectionDefinition[];
   guidelinePack: string;
+  specialtyId: string;
 }
 
 export type CreateJournalInput = JournalDefinition;
@@ -32,6 +71,7 @@ export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
   description:
     "Elsevier surgical case report template aligned with the approved SCARE Guideline Checklists 2025.",
   manuscriptType: "CASE_REPORT",
+  specialtyId: SPECIALTIES[0]!, // this is like a temporary fake id as we dont have real specialtyId here to use then in seed file when create the journal it use the real one
   sections: [
     {
       key: "TITLE",
