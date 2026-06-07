@@ -24,6 +24,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
     title: section.title,
     sectionOrder: section.sectionOrder,
     isOptional: section.isOptional,
+    maxChars: section.maxChars,
     description: section.description,
     createdAt: section.createdAt,
     updatedAt: section.updatedAt,
@@ -89,6 +90,7 @@ export class PrismaJournalRepository implements JournalRepository {
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
+              maxChars: section.maxChars,
               description: section.description,
               checklists: {
                 create: section.checklists.map((checklist) => ({

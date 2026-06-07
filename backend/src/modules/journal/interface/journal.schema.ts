@@ -18,6 +18,7 @@ export const createJournalSchema = z.object({
         title: z.string().min(1).max(180),
         sectionOrder: z.number().int().min(1),
         isOptional: z.boolean().optional(),
+        maxChars: z.number().min(1),
         description: z.string().min(1).max(1000).optional(),
 
         checklists: z.array(
