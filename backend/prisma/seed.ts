@@ -381,6 +381,7 @@ async function main() {
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
         description: section.description,
+        maxChars: section.maxChars,
       },
     });
 
@@ -453,6 +454,7 @@ async function main() {
         title: t.title,
         sectionOrder: t.sectionOrder,
         isOptional: t.isOptional,
+        maxChars: t.maxChars,
       })),
     });
   }
