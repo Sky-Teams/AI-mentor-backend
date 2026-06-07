@@ -23,78 +23,6 @@ enum ManuscriptType {
   CASE_REPORT
 }
 
-model Journal {
-  id              String         @id @default(cuid())
-  name            String         @unique
-  publisher       String?
-  description     String?
-  manuscriptType  ManuscriptType @default(CASE_REPORT)
-  guidelinePackId String
-  guidelinePack   GuidelinePack  @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
-  isDefault       Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  sectionTemplates JournalSectionTemplate[]
-  projects         Project[]
-
-  @@index([isDefault])
-  @@map("journals")
-}
-
-model JournalSectionTemplate {
-  id           String             @id @default(cuid())
-  journalId    String
-  key          String
-  title        String
-  sectionOrder Int
-  isOptional   Boolean            @default(false)
-  maxChars     Int
-  description  String?
-  checklists   SectionChecklist[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-
-  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
-
-  @@unique([journalId, key])
-  @@index([journalId, sectionOrder])
-  @@map("journal_section_templates")
-}
-
-model SectionChecklist {
-  id                       String   @id @default(cuid())
-  journalSectionTemplateId String
-  title                    String?
-  items                    String[]
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-
-  journalSectionTemplate JournalSectionTemplate      @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
-  itemChecks             SectionChecklistItemCheck[]
-
-  @@index([journalSectionTemplateId])
-  @@map("journal_section_checklist_groups")
-}
-
-model SectionChecklistItemCheck {
-  id          String   @id @default(cuid())
-  sectionId   String
-  checklistId String
-  itemIndex   Int
-  checked     Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  section   ProjectSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  checklist SectionChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
-
-  @@unique([sectionId, checklistId, itemIndex])
-  @@index([sectionId])
-  @@index([checklistId])
-  @@map("section_checklist_item_checks")
-}
-
 enum SectionStatus {
   NOT_STARTED
   DRAFT
@@ -208,6 +136,78 @@ enum paraphraseRunStatuses {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+model Journal {
+  id              String         @id @default(cuid())
+  name            String         @unique
+  publisher       String?
+  description     String?
+  manuscriptType  ManuscriptType @default(CASE_REPORT)
+  guidelinePackId String
+  guidelinePack   GuidelinePack  @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  isDefault       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  sectionTemplates JournalSectionTemplate[]
+  projects         Project[]
+
+  @@index([isDefault])
+  @@map("journals")
+}
+
+model JournalSectionTemplate {
+  id           String             @id @default(cuid())
+  journalId    String
+  key          String
+  title        String
+  sectionOrder Int
+  isOptional   Boolean            @default(false)
+  maxChars     Int
+  description  String?
+  checklists   SectionChecklist[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([journalId, key])
+  @@index([journalId, sectionOrder])
+  @@map("journal_section_templates")
+}
+
+model SectionChecklist {
+  id                       String   @id @default(cuid())
+  journalSectionTemplateId String
+  title                    String?
+  items                    String[]
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  journalSectionTemplate JournalSectionTemplate      @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
+  itemChecks             SectionChecklistItemCheck[]
+
+  @@index([journalSectionTemplateId])
+  @@map("journal_section_checklist_groups")
+}
+
+model SectionChecklistItemCheck {
+  id          String   @id @default(cuid())
+  sectionId   String
+  checklistId String
+  itemIndex   Int
+  checked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  section   ProjectSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  checklist SectionChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, checklistId, itemIndex])
+  @@index([sectionId])
+  @@index([checklistId])
+  @@map("section_checklist_item_checks")
 }
 
 model User {
