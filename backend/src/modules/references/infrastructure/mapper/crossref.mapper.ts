@@ -1,0 +1,54 @@
+import crypto from "crypto";
+import { Authors } from "src/modules/citations/domain/citation";
+import { JournalSearchResponse } from "src/modules/references/domain/reference";
+
+const mapAuthors = (items: { given: string; family: string }): Authors => ({
+  firstName: items.given,
+  lastName: items.family,
+});
+
+const mapDatePublished = (item: {
+  "date-parts"?: Array<[number, number, number]>;
+}) => {
+  const [[year, month, day] = []] = item["date-parts"] || [[]];
+  const datePartsArray = [year, month, day].filter(Boolean);
+  const datePublished =
+    datePartsArray.length > 0 ? datePartsArray.join("-") : null;
+  return datePublished;
+};
+
+export const mapCrossrefResponse = (items: {
+  publisher?: string;
+  URL: string;
+  issue?: string;
+  page?: string;
+  author?: Parameters<typeof mapAuthors>[0][] | [];
+  title?: string[];
+  volume?: string;
+  "container-title"?: string[];
+  published?: Parameters<typeof mapDatePublished>[0];
+}): JournalSearchResponse => {
+  return {
+    id: crypto.randomUUID(),
+    publisher: items?.publisher || null,
+    doi: items?.URL,
+    issue: items?.issue || null,
+    page: items?.page || null,
+    title: items?.title?.[0] || null,
+    volume: items?.volume || null,
+    authors: items?.author ? items.author.map(mapAuthors) : [],
+    journalName: items["container-title"]
+      ? items["container-title"]?.[0]
+      : null,
+    datePublished: items?.published ? mapDatePublished(items.published) : null,
+  };
+};
+
+export interface CrossrefTitleResponse {
+  message: {
+    items: Parameters<typeof mapCrossrefResponse>[0][];
+  };
+}
+export interface CrossrefDoiResponse {
+  message: Parameters<typeof mapCrossrefResponse>[0];
+}
