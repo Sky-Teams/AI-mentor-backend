@@ -49,6 +49,10 @@ import { createReferenceRouter } from "./modules/references/interface/reference.
 import { ReferenceSearchService } from "./modules/references/application/reference.search.service";
 import { JournalReferenceService } from "./modules/references/application/journal.reference.search.service";
 import { JournalExternalApiRepository } from "./modules/references/infrastructure/journal.external-api.repository";
+import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-susbcription.repository";
+import { SubscriptionService } from "./modules/subscription/application/subscription.service";
+import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
+import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -62,6 +66,7 @@ export const createApp = (): express.Express => {
   const adminRepository = new PrismaAdminRepository(prisma);
   const paraphraseRepository = new PrismaParaphraseRepository(prisma);
   const userRepository = new PrismaUserRepository(prisma);
+  const subscriptionRepository = new PrismaSubscriptionRepository(prisma);
 
   const authService = new AuthService(
     authRepository,
@@ -78,8 +83,10 @@ export const createApp = (): express.Express => {
     billingService,
     CreditEstimator,
   );
-  const journalExternalApiRepository = new JournalExternalApiRepository()
-  const journalReferenceService = new JournalReferenceService(journalExternalApiRepository);
+  const journalExternalApiRepository = new JournalExternalApiRepository();
+  const journalReferenceService = new JournalReferenceService(
+    journalExternalApiRepository,
+  );
   const adminService = new AdminService(adminRepository);
   const paraphraseService = new ParaphraseService(
     paraphraseRepository,
@@ -91,6 +98,11 @@ export const createApp = (): express.Express => {
     userRepository,
   );
   const referenceService = new ReferenceSearchService(journalReferenceService);
+  const subscriptionService = new SubscriptionService(
+    subscriptionRepository,
+    userRepository,
+  );
+
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalService = new JournalService(journalRepository);
 
@@ -102,6 +114,9 @@ export const createApp = (): express.Express => {
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);
   const referenceController = new ReferenceController(referenceService);
+  const subscriptionController = new SubscriptionController(
+    subscriptionService,
+  );
 
   const app = express();
   app.disable("x-powered-by");
@@ -160,6 +175,11 @@ export const createApp = (): express.Express => {
   app.use(
     `${env.API_PREFIX}/references`,
     createReferenceRouter(referenceController, tokenService),
+  );
+
+  app.use(
+    `${env.API_PREFIX}/subscriptions`,
+    createSubscriptionRouter(subscriptionController, tokenService),
   );
 
   app.use(createErrorHandler(logger));
