@@ -10,7 +10,7 @@ export const createJournalSchema = z.object({
   description: z.string().min(1).max(1000).optional(),
   manuscriptType: z.enum(["CASE_REPORT"]).optional(),
   guidelinePack: z.string().min(1),
-
+  specialtyId: z.string().min(1),
   sections: z
     .array(
       z.object({
@@ -20,7 +20,6 @@ export const createJournalSchema = z.object({
         isOptional: z.boolean().optional(),
         maxChars: z.number().min(1),
         description: z.string().min(1).max(1000).optional(),
-
         checklists: z.array(
           z.object({
             title: z.string().min(1).max(180).nullable(),
