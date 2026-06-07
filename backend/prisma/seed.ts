@@ -7,6 +7,44 @@ const j = ELSEVIER_SCARE_JOURNAL;
 
 const prisma = new PrismaClient();
 
+const SPECIALTIES = [
+  "General Medicine",
+  "Internal Medicine",
+  "Cardiology",
+  "Cardiac Surgery",
+  "Thoracic Surgery",
+  "Pulmonology / Respiratory Medicine",
+  "Gastroenterology & Hepatology",
+  "General Surgery",
+  "Pediatric Surgery",
+  "Neurosurgery",
+  "Neurology",
+  "Urology",
+  "Orthopedic Surgery",
+  "Plastic & Reconstructive Surgery",
+  "Vascular Surgery",
+  "Pediatric Medicine",
+  "Obstetrics & Gynecology",
+  "Oncology",
+  "Hematology",
+  "Nephrology",
+  "Endocrinology",
+  "Infectious Diseases",
+  "Rheumatology",
+  "Dermatology",
+  "Ophthalmology",
+  "Otolaryngology (ENT)",
+  "Pathology",
+  "Radiology",
+  "Emergency Medicine",
+  "Critical Care Medicine",
+  "Anesthesiology",
+  "Dentistry & Oral Surgery",
+  "Psychiatry",
+  "Family Medicine",
+  "Rehabilitation Medicine",
+];
+
 async function upsertUser(input: {
   email: string;
   fullName: string;
