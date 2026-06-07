@@ -10,6 +10,7 @@ import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SectionEditorPage } from "./pages/SectionEditorPage";
 import { AdminPage } from "./pages/AdminPage";
+import { ReferencePage } from "./pages/ReferencePage";
 // import { ParaphraseDetails } from "./pages/ParaphraseDetails";
 
 export const App = () => (
@@ -30,6 +31,7 @@ export const App = () => (
           />
           <Route element={<BillingPage />} path="/billing" />
           <Route element={<AdminPage />} path="/admin" />
+          <Route element={<ReferencePage />} path="/references" />
           {/* <Route
             element={<ParaphraseDetails />}
             path="/projects/paraphrase/:paraphraseRunId"
