@@ -1,10 +1,6 @@
-import { JournalSearchResponse, Reference, ReferenceTypes } from "./reference";
+import { JournalSearchResponse } from "./reference";
 
 export interface JournalRepository {
   findByDoi(doi: string): Promise<JournalSearchResponse | null>;
-  findByTitle(title: string): Promise<JournalSearchResponse[] | null>;
-}
-
-export interface ReferenceFormatter {
-  format(reference: Reference, type: ReferenceTypes): Promise<string>;
+  findByTitle(title: string): Promise<JournalSearchResponse[] | []>;
 }
