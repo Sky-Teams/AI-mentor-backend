@@ -17,6 +17,7 @@ export type SectionDraft = {
   title: string;
   description: string;
   isOptional: boolean;
+  maxChars: string;
   checklists: ChecklistDraft[];
 };
 
@@ -51,6 +52,7 @@ export const createSection = (): SectionDraft => ({
   title: "",
   description: "",
   isOptional: false,
+  maxChars: "",
   checklists: [createChecklist()],
 });
 
@@ -88,6 +90,7 @@ export const buildJournalPayload = (
     description: section.description.trim() || undefined,
     sectionOrder: sectionIndex + 1,
     isOptional: section.isOptional,
+    maxChars: Number(section.maxChars),
     checklists: section.checklists.map((checklist) => ({
       title: checklist.title.trim() || null,
       items: checklist.items
@@ -104,6 +107,7 @@ export const journalPayloadHasEmptyNestedFields = (
   payload.sections.some(
     (section) =>
       !section.title ||
+      section.maxChars < 1 ||
       section.checklists.length === 0 ||
       section.checklists.some((checklist) => checklist.items.length === 0),
   );

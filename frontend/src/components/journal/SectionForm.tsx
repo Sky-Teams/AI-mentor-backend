@@ -65,6 +65,20 @@ export const SectionForm = ({
         />
         Optional section
       </label>
+
+      <label className="field">
+        <span>Max Characters</span>
+        <input
+          min={1}
+          onChange={(event) =>
+            onUpdate({ ...section, maxChars: event.target.value })
+          }
+          placeholder="1000"
+          required
+          type="number"
+          value={section.maxChars}
+        />
+      </label>
     </div>
 
     <label className="field">

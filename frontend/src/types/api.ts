@@ -60,6 +60,7 @@ export interface ProjectSection {
   content: string;
   sectionOrder: number;
   isOptional: boolean;
+  maxChars: number;
   status: SectionStatus;
   lastEditedAt: string | null;
   updatedAt: string;
@@ -302,6 +303,7 @@ export interface CreateJournalInput {
     title: string;
     sectionOrder: number;
     isOptional?: boolean;
+    maxChars: number;
     description?: string;
     checklists: Array<{
       title: string | null;
