@@ -403,12 +403,21 @@ export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
       description:
         "Summarize the key findings and explain their significance. Compare the case with existing literature and similar reports. Discuss clinical implications and potential impact on practice. Highlight the main lessons learned and any recommendations for future cases.",
       checklist: [
-        { title: "Summary", items: ["Summarize key findings", "Explain conclusions"] },
-        { title: "Literature Comparison", items: ["Compare with published cases"] },
+        {
+          title: "Summary",
+          items: ["Summarize key findings", "Explain conclusions"],
+        },
+        {
+          title: "Literature Comparison",
+          items: ["Compare with published cases"],
+        },
         { title: "Implications", items: ["Explain future clinical relevance"] },
         {
           title: "Lessons Learned",
-          items: ["State clinical takeaways", "Mention future practice changes"],
+          items: [
+            "State clinical takeaways",
+            "Mention future practice changes",
+          ],
         },
       ],
     },
@@ -509,6 +518,24 @@ export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
             "Add captions",
             "Highlight key points",
             "Add video link if available",
+          ],
+        },
+      ],
+    },
+    {
+      key: "REFERENCES",
+      title: "References",
+      order: 20,
+      optional: false,
+      description:
+        "Provide a complete list of all references cited in the case report, formatted according to the appropriate citation style. Ensure accuracy, completeness, and proper formatting.",
+      checklist: [
+        {
+          title: null,
+          items: [
+            "Include all cited studies",
+            "Use consistent citation style (Vancouver/MLA/APA)",
+            "Avoid uncited references",
           ],
         },
       ],
