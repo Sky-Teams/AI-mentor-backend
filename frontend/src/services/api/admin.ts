@@ -7,6 +7,7 @@ import type {
   GuidelinePack,
   Journal,
   PromptTemplate,
+  Specialty,
 } from "../../types/api";
 
 type Plan = BillingOverview["plans"][number];
@@ -34,6 +35,13 @@ export const adminApi = {
   async getUsersUsage(): Promise<AdminUsageUserSummary[]> {
     const response = await apiClient.get<ApiSuccessResponse<AdminUsageUserSummary[]>>(
       "/admin/users/usage",
+    );
+    return unwrap(response.data);
+  },
+
+  async getSpecialties(): Promise<Specialty[]> {
+    const response = await apiClient.get<ApiSuccessResponse<Specialty[]>>(
+      "/admin/specialties",
     );
     return unwrap(response.data);
   },
