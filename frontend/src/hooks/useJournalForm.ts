@@ -1,5 +1,6 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { adminApi } from "../services/api/admin";
+import type { Specialty } from "../types/api";
 import {
   buildJournalPayload,
   countJournalChecklists,
@@ -17,8 +18,29 @@ import {
 export const useJournalForm = () => {
   const [form, setForm] = useState<JournalFormState>(createEmptyJournalForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingSpecialties, setIsLoadingSpecialties] = useState(true);
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSpecialties = async () => {
+      try {
+        const specialtyList = await adminApi.getSpecialties();
+        setSpecialties(specialtyList);
+        setForm((current) => ({
+          ...current,
+          specialtyId: current.specialtyId || specialtyList[0]?.id || "",
+        }));
+      } catch {
+        setError("Could not load specialties. Please refresh and try again.");
+      } finally {
+        setIsLoadingSpecialties(false);
+      }
+    };
+
+    loadSpecialties();
+  }, []);
 
   const totalChecklistCount = useMemo(
     () => countJournalChecklists(form.sections),
@@ -101,7 +123,10 @@ export const useJournalForm = () => {
   };
 
   const resetForm = () => {
-    setForm(createEmptyJournalForm());
+    setForm({
+      ...createEmptyJournalForm(),
+      specialtyId: specialties[0]?.id || "",
+    });
   };
 
   const submitJournal = async (event: FormEvent<HTMLFormElement>) => {
@@ -111,8 +136,8 @@ export const useJournalForm = () => {
 
     const payload = buildJournalPayload(form);
 
-    if (!payload.name || !payload.guidelinePack) {
-      setError("Journal name and guideline pack are required.");
+    if (!payload.name || !payload.guidelinePack || !payload.specialtyId) {
+      setError("Journal name, specialty, and guideline pack are required.");
       return;
     }
 
@@ -145,11 +170,13 @@ export const useJournalForm = () => {
     addSection,
     error,
     form,
+    isLoadingSpecialties,
     isSubmitting,
     message,
     removeChecklist,
     removeSection,
     submitJournal,
+    specialties,
     totalChecklistCount,
     totalItemCount,
     updateBasicInfo,
