@@ -26,6 +26,7 @@ export type JournalFormState = {
   publisher: string;
   description: string;
   guidelinePack: string;
+  specialtyId: string;
   sections: SectionDraft[];
 };
 
@@ -61,6 +62,7 @@ export const createEmptyJournalForm = (): JournalFormState => ({
   publisher: "",
   description: "",
   guidelinePack: "",
+  specialtyId: "",
   sections: [createSection()],
 });
 
@@ -84,6 +86,7 @@ export const buildJournalPayload = (
   description: form.description.trim() || undefined,
   manuscriptType: "CASE_REPORT",
   guidelinePack: form.guidelinePack.trim(),
+  specialtyId: form.specialtyId,
   sections: form.sections.map((section, sectionIndex) => ({
     key: makeSectionKey(section.title, sectionIndex),
     title: section.title.trim(),
