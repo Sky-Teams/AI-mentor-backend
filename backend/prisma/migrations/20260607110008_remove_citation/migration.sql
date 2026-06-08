@@ -40,9 +40,3 @@ DROP TABLE "ReportCitation";
 
 -- DropTable
 DROP TABLE "WebsiteCitation";
-
--- DropEnum
-DROP TYPE "CitationFormatType";
-
--- DropEnum
-DROP TYPE "CitationType";
