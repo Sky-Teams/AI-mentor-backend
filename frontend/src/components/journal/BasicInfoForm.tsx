@@ -1,11 +1,19 @@
 import type { JournalFormState } from "../../utils/journalForm";
+import type { Specialty } from "../../types/api";
 
 type BasicInfoFormProps = {
   form: JournalFormState;
+  isLoadingSpecialties: boolean;
   onChange: (field: keyof Omit<JournalFormState, "sections">, value: string) => void;
+  specialties: Specialty[];
 };
 
-export const BasicInfoForm = ({ form, onChange }: BasicInfoFormProps) => (
+export const BasicInfoForm = ({
+  form,
+  isLoadingSpecialties,
+  onChange,
+  specialties,
+}: BasicInfoFormProps) => (
   <section className="card journal-card">
     <div className="card-header">
       <div>
@@ -31,6 +39,24 @@ export const BasicInfoForm = ({ form, onChange }: BasicInfoFormProps) => (
           placeholder="AI Mentor"
           value={form.publisher}
         />
+      </label>
+
+      <label className="field">
+        <span>Specialty</span>
+        <select
+          disabled={isLoadingSpecialties || specialties.length === 0}
+          onChange={(event) => onChange("specialtyId", event.target.value)}
+          value={form.specialtyId}
+        >
+          <option value="">
+            {isLoadingSpecialties ? "Loading specialties..." : "Choose specialty"}
+          </option>
+          {specialties.map((specialty) => (
+            <option key={specialty.id} value={specialty.id}>
+              {specialty.name}
+            </option>
+          ))}
+        </select>
       </label>
     </div>
 
