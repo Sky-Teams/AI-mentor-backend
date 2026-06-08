@@ -17,7 +17,11 @@ export const JournalPage = () => {
         </div>
         <button
           className="primary-button"
-          disabled={journalForm.isSubmitting}
+          disabled={
+            journalForm.isSubmitting ||
+            journalForm.isLoadingSpecialties ||
+            journalForm.specialties.length === 0
+          }
           type="submit"
         >
           {journalForm.isSubmitting ? "Creating..." : "Create Journal"}
@@ -33,7 +37,9 @@ export const JournalPage = () => {
 
       <BasicInfoForm
         form={journalForm.form}
+        isLoadingSpecialties={journalForm.isLoadingSpecialties}
         onChange={journalForm.updateBasicInfo}
+        specialties={journalForm.specialties}
       />
 
       <section className="card journal-card">
