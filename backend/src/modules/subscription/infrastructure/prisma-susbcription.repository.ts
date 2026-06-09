@@ -71,4 +71,10 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
       },
     });
   }
+
+  public async getRequestedPlans(): Promise<SubscriptionRequest[]> {
+    return await this.prisma.subscriptionRequest.findMany({
+      include: { subscriptionPlan: true },
+    });
+  }
 }
