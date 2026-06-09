@@ -4,7 +4,7 @@ import { asyncHandler } from "src/shared/http/async-handler";
 import { TokenService } from "src/modules/auth/domain/token-service";
 import { authenticate } from "src/shared/middleware/authenticate";
 import { validate } from "src/shared/http/validation";
-import { queryRefereceSchema } from "./reference.schema";
+import { queryReferenceSchema } from "./reference.schema";
 
 export const createReferenceRouter = (
   controller: ReferenceController,
@@ -15,7 +15,7 @@ export const createReferenceRouter = (
 
   router.get(
     "/search",
-    validate(queryRefereceSchema, "query"),
+    validate(queryReferenceSchema, "query"),
     asyncHandler((request, response) =>
       controller.getReferences(request, response),
     ),
