@@ -7,4 +7,5 @@ export interface SubscriptionRepository {
     subscriptionPlanId: string,
     userId: string,
   ): Promise<SubscriptionRequest>;
+  getRequestedPlans(): Promise<SubscriptionRequest[]>;
 }
