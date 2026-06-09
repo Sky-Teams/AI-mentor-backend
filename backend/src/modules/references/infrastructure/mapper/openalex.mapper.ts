@@ -5,7 +5,7 @@ const mapOpenAlexAuthors = (item: any): Authors => ({
   lastName: item.author.display_name.split(" ").slice(1).join(" "),
 });
 
-export const mapOpenAlexRespones = (items: any): JournalSearchResponse => {
+export const mapOpenAlexResponse = (items: any): JournalSearchResponse => {
   const datePublished = items?.publication_date ? items.publication_date : null;
   return {
     id: crypto.randomUUID(),
@@ -26,9 +26,9 @@ export const mapOpenAlexRespones = (items: any): JournalSearchResponse => {
 };
 
 export interface OpenAlexTitleResponse {
-  items: Parameters<typeof mapOpenAlexRespones>[0][];
+  items: Parameters<typeof mapOpenAlexResponse>[0][];
 }
 
 export interface OpenAlexDoiResponse {
-  item: Parameters<typeof mapOpenAlexRespones>[0];
+  item: Parameters<typeof mapOpenAlexResponse>[0];
 }

@@ -1,6 +1,8 @@
 import crypto from "crypto";
-import { Authors } from "src/modules/citations/domain/citation";
-import { JournalSearchResponse } from "src/modules/references/domain/reference";
+import {
+  Authors,
+  JournalSearchResponse,
+} from "src/modules/references/domain/reference";
 
 const mapAuthors = (items: { given: string; family: string }): Authors => ({
   firstName: items.given,
@@ -17,7 +19,7 @@ const mapDatePublished = (item: {
   return datePublished;
 };
 
-export const mapCrossrefResponse = (items: {
+export const mapCrossRefResponse = (items: {
   publisher?: string;
   URL: string;
   issue?: string;
@@ -44,11 +46,11 @@ export const mapCrossrefResponse = (items: {
   };
 };
 
-export interface CrossrefTitleResponse {
+export interface CrossRefTitleResponse {
   message: {
-    items: Parameters<typeof mapCrossrefResponse>[0][];
+    items: Parameters<typeof mapCrossRefResponse>[0][];
   };
 }
-export interface CrossrefDoiResponse {
-  message: Parameters<typeof mapCrossrefResponse>[0];
+export interface CrossRefDoiResponse {
+  message: Parameters<typeof mapCrossRefResponse>[0];
 }
