@@ -77,4 +77,33 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
       include: { subscriptionPlan: true },
     });
   }
+
+  public async approveRequestedPlan(
+    userId: string,
+    id: string,
+  ): Promise<SubscriptionRequest> {
+    const result = await this.prisma.$transaction(async (transaction) => {
+      const updateRequestedPlan = await transaction.subscriptionRequest.update({
+        where: { id, userId },
+        data: { status: "APPROVED" },
+        include: { subscriptionPlan: true },
+      });
+
+      await transaction.creditWallet.update({
+        where: { userId },
+        data: {
+          balance: {
+            increment: updateRequestedPlan.subscriptionPlan.includedCredits,
+          },
+          lifetimeCreditsGranted: {
+            increment: updateRequestedPlan.subscriptionPlan.includedCredits,
+          },
+        },
+      });
+
+      return updateRequestedPlan;
+    });
+
+    return result;
+  }
 }
