@@ -10,6 +10,10 @@ import {
   planSchema,
   promptTemplateSchema,
 } from "./admin.schemas";
+import {
+  requestedPlanIdSchema,
+  userIdSchema,
+} from "src/modules/subscription/interfaces/subscription.schema";
 
 export const createAdminRouter = (
   controller: AdminController,
@@ -73,5 +77,11 @@ export const createAdminRouter = (
     ),
   );
 
+  router.patch(
+    "/subscriptions/requested-plans/:id",
+    validate(requestedPlanIdSchema, "params"),
+    validate(userIdSchema, "body"),
+    asyncHandler((req, res) => controller.approveRequestedPlan(req, res)),
+  );
   return router;
 };

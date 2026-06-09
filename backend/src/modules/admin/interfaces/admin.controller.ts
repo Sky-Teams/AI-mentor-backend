@@ -69,4 +69,19 @@ export class AdminController {
     const result = await this.subscriptionService.getRequestedPlans();
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async approveRequestedPlan(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { id } = request.params as { id: string };
+    const { userId } = request.body;
+
+    const result = await this.subscriptionService.approveRequestedPlan(
+      userId,
+      id,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }
