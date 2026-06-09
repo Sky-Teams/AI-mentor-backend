@@ -17,5 +17,3 @@ export interface JournalSearchResponse {
   journalName?: string | null;
   datePublished?: string | null;
 }
-
-export type Reference = JournalSearchResponse;
