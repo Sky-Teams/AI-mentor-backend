@@ -21,6 +21,9 @@ export const AppLayout = () => {
           <NavLink to="/projects/new">Create Project</NavLink>
           <NavLink to="/billing">Billing</NavLink>
           {user?.role === "ADMIN" ? <NavLink to="/admin">Admin</NavLink> : null}
+          {user?.role === "ADMIN" ? (
+            <NavLink to="/admin/subscriptions">Subscription</NavLink>
+          ) : null}
         </nav>
 
         <div className="sidebar-footer">
