@@ -28,6 +28,15 @@ export interface SubscriptionRequest {
   status: SubscriptionRequestStatus;
 }
 
+export type RequestedPlans = Pick<SubscriptionRequest, "status" | "id"> & {
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+  };
+  subscriptionPlan: SubscriptionPlan;
+};
+
 export const subscriptionApi = {
   async listPlans() {
     const response =
