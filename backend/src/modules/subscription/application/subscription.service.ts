@@ -39,4 +39,13 @@ export class SubscriptionService {
   public async getRequestedPlans(): Promise<SubscriptionRequest[]> {
     return this.subscriptionRepository.getRequestedPlans();
   }
+
+  public async approveRequestedPlan(
+    userId: string,
+    id: string,
+  ): Promise<SubscriptionRequest> {
+    await this.userRepository.getUserById(userId);
+
+    return await this.subscriptionRepository.approveRequestedPlan(userId, id);
+  }
 }
