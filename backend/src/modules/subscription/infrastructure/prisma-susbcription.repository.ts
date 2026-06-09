@@ -1,5 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { SubscriptionPlan, SubscriptionRequest } from "../domain/subscription";
+import {
+  RequestedPlans,
+  SubscriptionPlan,
+  SubscriptionRequest,
+} from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
@@ -72,21 +76,22 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     });
   }
 
-  public async getRequestedPlans(): Promise<SubscriptionRequest[]> {
+  public async getRequestedPlans(): Promise<RequestedPlans[]> {
     return await this.prisma.subscriptionRequest.findMany({
-      include: { subscriptionPlan: true },
+      where: { status: "PENDING" },
+      include: { subscriptionPlan: true, user: true },
     });
   }
 
   public async approveRequestedPlan(
     userId: string,
     id: string,
-  ): Promise<SubscriptionRequest> {
+  ): Promise<RequestedPlans> {
     const result = await this.prisma.$transaction(async (transaction) => {
       const updateRequestedPlan = await transaction.subscriptionRequest.update({
         where: { id, userId },
         data: { status: "APPROVED" },
-        include: { subscriptionPlan: true },
+        include: { subscriptionPlan: true, user: true },
       });
 
       await transaction.creditWallet.update({

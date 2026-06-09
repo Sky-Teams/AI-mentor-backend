@@ -1,5 +1,9 @@
 import { UserSubscription } from "src/modules/billing/domain/billing";
-import { SubscriptionPlan, SubscriptionRequest } from "../domain/subscription";
+import {
+  RequestedPlans,
+  SubscriptionPlan,
+  SubscriptionRequest,
+} from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { AppError } from "src/shared/errors/app-error";
@@ -36,14 +40,14 @@ export class SubscriptionService {
     );
   }
 
-  public async getRequestedPlans(): Promise<SubscriptionRequest[]> {
+  public async getRequestedPlans(): Promise<RequestedPlans[]> {
     return this.subscriptionRepository.getRequestedPlans();
   }
 
   public async approveRequestedPlan(
     userId: string,
     id: string,
-  ): Promise<SubscriptionRequest> {
+  ): Promise<RequestedPlans> {
     await this.userRepository.getUserById(userId);
 
     return await this.subscriptionRepository.approveRequestedPlan(userId, id);
