@@ -8,4 +8,8 @@ export interface SubscriptionRepository {
     userId: string,
   ): Promise<SubscriptionRequest>;
   getRequestedPlans(): Promise<SubscriptionRequest[]>;
+  approveRequestedPlan(
+    userId: string,
+    id: string,
+  ): Promise<SubscriptionRequest>;
 }
