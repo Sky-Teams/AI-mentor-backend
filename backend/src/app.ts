@@ -118,7 +118,10 @@ export const createApp = (): express.Express => {
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
   const citationController = new CitationController(citationService);
-  const adminController = new AdminController(adminService);
+  const adminController = new AdminController(
+    adminService,
+    subscriptionService,
+  );
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);
   const subscriptionController = new SubscriptionController(
@@ -186,7 +189,7 @@ export const createApp = (): express.Express => {
     `${env.API_PREFIX}/subscriptions`,
     createSubscriptionRouter(subscriptionController, tokenService),
   );
-  
+
   app.use(createErrorHandler(logger));
   return app;
 };
