@@ -1,5 +1,5 @@
 import { JournalRepository } from "src/modules/journal/domain/journal.repository.js";
-import { JournalDefinition } from "src/shared/seed-data/journals.js";
+import { CreateJournalInput } from "src/shared/seed-data/journals.js";
 
 export class JournalService {
   public constructor(private readonly journalRepository: JournalRepository) {}
@@ -12,7 +12,7 @@ export class JournalService {
     return this.journalRepository.findById(journalId);
   }
 
-  public async createJournal(journal: JournalDefinition) {
+  public async createJournal(journal: CreateJournalInput) {
     return this.journalRepository.createJournal(journal);
   }
 }

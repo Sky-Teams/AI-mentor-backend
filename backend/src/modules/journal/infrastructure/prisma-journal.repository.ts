@@ -5,7 +5,7 @@ import {
   JournalRepository,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
-import { JournalDefinition } from "src/shared/seed-data/journals.js";
+import { CreateJournalInput } from "src/shared/seed-data/journals.js";
 
 const mapJournal = (journal: any): CreatedJournal => ({
   id: journal.id,
@@ -53,7 +53,7 @@ export class PrismaJournalRepository implements JournalRepository {
   }
 
   public async createJournal(
-    input: JournalDefinition,
+    input: CreateJournalInput,
   ): Promise<CreatedJournal> {
     const existing = await this.prisma.journal.findFirst({
       where: { name: input.name },
