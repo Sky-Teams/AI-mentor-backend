@@ -27,7 +27,10 @@ export function SubscriptionPage() {
   const handleApproveRequestedPlan = async (userId: string, id: string) => {
     try {
       setRequestId(id);
-      await adminApi.approveRequestedPlan(userId, id);
+      const result = await adminApi.approveRequestedPlan(userId, id);
+      setRequestedPlan((prevPlans) =>
+        prevPlans.filter((prevPlan) => prevPlan.id !== result.id),
+      );
       alert("The Request approved successfully");
     } catch (error: any) {
       setErrorMessage(error.response?.data?.error?.message);
