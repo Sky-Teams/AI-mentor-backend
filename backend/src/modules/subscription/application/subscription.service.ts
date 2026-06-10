@@ -1,4 +1,3 @@
-import { UserSubscription } from "src/modules/billing/domain/billing";
 import { SubscriptionPlan, SubscriptionRequest } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserRepository } from "src/modules/users/domain/user";
