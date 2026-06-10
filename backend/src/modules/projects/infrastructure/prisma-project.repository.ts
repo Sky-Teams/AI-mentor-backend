@@ -45,7 +45,6 @@ const mapProject = (project: {
   status: Project["status"];
   targetJournal: string | null;
   journal: {
-    code: string;
     guidelinePack?: {
       id: string;
       rules: Prisma.JsonValue | null;
@@ -71,10 +70,8 @@ const mapProject = (project: {
 }): Project => ({
   id: project.id,
   ownerId: project.ownerId,
-  journalCode: project.journal?.code ?? "unknown",
   journal: project.journal
     ? {
-        code: project.journal.code,
         guidelinePack: project.journal.guidelinePack
           ? {
               id: project.journal.guidelinePack.id,
@@ -130,7 +127,7 @@ export class PrismaProjectRepository implements ProjectRepository {
 
         if (templates.length === 0) {
           throw new AppError(
-            `Journal '${journal.code}' has no section templates.`,
+            `Journal '${journal.name}' has no section templates.`,
             StatusCodes.NOT_FOUND,
             "JOURNAL_HAS_NO_SECTIONS",
           );
@@ -163,7 +160,6 @@ export class PrismaProjectRepository implements ProjectRepository {
           include: {
             journal: {
               select: {
-                code: true,
                 guidelinePack: {
                   select: { id: true, rules: true },
                 },
@@ -191,7 +187,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       include: {
         journal: {
           select: {
-            code: true,
             guidelinePack: {
               select: { id: true, rules: true },
             },
@@ -224,7 +219,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       include: {
         journal: {
           select: {
-            code: true,
             guidelinePack: {
               select: { id: true, rules: true },
             },
@@ -255,7 +249,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       include: {
         journal: {
           select: {
-            code: true,
             guidelinePack: {
               select: { id: true, rules: true },
             },
@@ -407,11 +400,11 @@ export class PrismaProjectRepository implements ProjectRepository {
         key: sectionKey,
       },
       include: {
-        checklist: {},
+        checklists: {},
       },
     });
 
-    const checklists = sectionTemplate?.checklist ?? [];
+    const checklists = sectionTemplate?.checklists ?? [];
 
     const checklistIds = checklists.map((item) => item.id);
 
@@ -427,7 +420,7 @@ export class PrismaProjectRepository implements ProjectRepository {
 
     return {
       ...mapSection(section),
-      checklist: sectionTemplate?.checklist.map((item) => ({
+      checklist: sectionTemplate?.checklists.map((item) => ({
         id: item.id,
         title: item.title,
         items: item.items.map((text, index) => ({
