@@ -27,9 +27,7 @@ export type RequestedPlans = Pick<SubscriptionRequest, "id" | "status"> & {
     fullName: string;
     email: string;
   };
-  subscriptionPlan:  {
-    createdAt: Date;
-    updatedAt: Date;
+  subscriptionPlan: SubscriptionPlan & {
     status: SubscriptionPlanStatus;
   };
 };
