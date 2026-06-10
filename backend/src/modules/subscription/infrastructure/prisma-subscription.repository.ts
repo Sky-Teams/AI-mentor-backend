@@ -2,11 +2,14 @@ import { PrismaClient } from "@prisma/client";
 import {
   RequestedPlans,
   SubscriptionPlan,
+  SubscriptionPlanStatus,
   SubscriptionRequest,
+  SubscriptionRequestStatus,
 } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
+import { PlanBillingModel } from "src/modules/billing/domain/billing";
 
 const mapPlan = (plan: {
   id: string;
@@ -24,6 +27,44 @@ const mapPlan = (plan: {
   billingModel: plan.billingModel,
   monthlyPriceCents: plan.monthlyPriceCents,
   includedCredits: plan.includedCredits,
+});
+
+const mapRequestedPlan = (item: {
+  id: string;
+  status: SubscriptionRequestStatus;
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+  };
+  subscriptionPlan: {
+    id: string;
+    name: string;
+    code: string;
+    description: string | null;
+    billingModel: PlanBillingModel;
+    monthlyPriceCents: number | null;
+    includedCredits: number;
+    status: SubscriptionPlanStatus;
+  };
+}): RequestedPlans => ({
+  id: item.id,
+  status: item.status,
+  user: {
+    id: item.user.id,
+    fullName: item.user.fullName,
+    email: item.user.email,
+  },
+  subscriptionPlan: {
+    id: item.subscriptionPlan.id,
+    name: item.subscriptionPlan.name,
+    code: item.subscriptionPlan.code,
+    description: item.subscriptionPlan.description,
+    billingModel: item.subscriptionPlan.billingModel,
+    monthlyPriceCents: item.subscriptionPlan.monthlyPriceCents,
+    includedCredits: item.subscriptionPlan.includedCredits,
+    status: item.subscriptionPlan.status,
+  },
 });
 
 export class PrismaSubscriptionRepository implements SubscriptionRepository {
@@ -77,21 +118,32 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
   }
 
   public async getRequestedPlans(): Promise<RequestedPlans[]> {
-    return await this.prisma.subscriptionRequest.findMany({
+    const result = await this.prisma.subscriptionRequest.findMany({
       where: { status: "PENDING" },
-      select: {
-        id: true,
-        status: true,
+      include: {
         subscriptionPlan: true,
-        user: { select: { id: true, fullName: true, email: true } },
+        user: true,
       },
     });
+
+    return result.map(mapRequestedPlan);
   }
 
   public async approveRequestedPlan(
     userId: string,
     id: string,
   ): Promise<RequestedPlans> {
+    const existing = await this.prisma.subscriptionRequest.findFirst({
+      where: { id, userId, status: "PENDING" },
+    });
+
+    if (!existing)
+      throw new AppError(
+        "Request does not exists",
+        StatusCodes.NOT_FOUND,
+        "SUBSCRIPTION_REQUEST_NOT_FOUND",
+      );
+
     const result = await this.prisma.$transaction(async (transaction) => {
       const updateRequestedPlan = await transaction.subscriptionRequest.update({
         where: { id, userId },
@@ -114,6 +166,6 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
       return updateRequestedPlan;
     });
 
-    return result;
+    return mapRequestedPlan(result);
   }
 }
