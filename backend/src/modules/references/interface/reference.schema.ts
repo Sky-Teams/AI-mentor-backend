@@ -10,5 +10,6 @@ export const queryReferenceSchema = z
     type: z.enum(ReferenceValue),
   })
   .refine((data) => data.doi || data.title, {
+    message: 'Please enter title or DOI',
     path: ["title"],
   });
