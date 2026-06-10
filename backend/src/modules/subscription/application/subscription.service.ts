@@ -1,4 +1,3 @@
-import { UserSubscription } from "src/modules/billing/domain/billing";
 import {
   RequestedPlans,
   SubscriptionPlan,
@@ -48,8 +47,6 @@ export class SubscriptionService {
     userId: string,
     id: string,
   ): Promise<RequestedPlans> {
-    await this.userRepository.getUserById(userId);
-
     return await this.subscriptionRepository.approveRequestedPlan(userId, id);
   }
 }
