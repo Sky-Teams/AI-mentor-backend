@@ -121,6 +121,7 @@ export const createApp = (): express.Express => {
   const adminController = new AdminController(
     adminService,
     subscriptionService,
+    journalService,
   );
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);

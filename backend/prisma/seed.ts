@@ -183,7 +183,7 @@ async function main() {
   });
 
   const guidelinePack = await prisma.guidelinePack.upsert({
-    where: { code: j.code },
+    where: { name: j.name },
     update: {
       type: "REVIEW",
       name: "CARE-like Case Report Guidance",
@@ -196,7 +196,6 @@ async function main() {
     create: {
       type: "REVIEW",
       name: "CARE-like Case Report Guidance",
-      code: j.code,
       version: "1.0.0",
       description: "Baseline case report completeness and safety rules.",
       status: "ACTIVE",
@@ -206,7 +205,7 @@ async function main() {
   });
 
   await prisma.guidelinePack.upsert({
-    where: { code: "section-paraphrase-v1" },
+    where: { name: "section-paraphrase-v1" },
     update: {
       type: "PARAPHRASE",
       name: "Paraphrasing Guidance",
@@ -344,7 +343,7 @@ async function main() {
 
   //  create journal
   const journal = await prisma.journal.upsert({
-    where: { code: j.code },
+    where: { name: j.name },
     update: {
       name: j.name,
       publisher: j.publisher,
@@ -356,7 +355,6 @@ async function main() {
       },
     },
     create: {
-      code: j.code,
       name: j.name,
       publisher: j.publisher,
       description: j.description,
@@ -380,15 +378,15 @@ async function main() {
         journalId: journal.id,
         key: section.key,
         title: section.title,
-        sectionOrder: section.order,
-        isOptional: section.optional,
+        sectionOrder: section.sectionOrder,
+        isOptional: section.isOptional,
         description: section.description,
       },
     });
 
-    if (section.checklist?.length) {
+    if (section.checklists?.length) {
       await prisma.sectionChecklist.createMany({
-        data: section.checklist.map((group) => ({
+        data: section.checklists.map((group) => ({
           journalSectionTemplateId: createdSection.id,
           title: group.title,
           items: group.items,
@@ -444,7 +442,7 @@ async function main() {
 
     if (templates.length === 0) {
       throw new Error(
-        `Default journal '${journal.code}' has no section templates after seed.`,
+        `Default journal '${journal.name}' has no section templates after seed.`,
       );
     }
 

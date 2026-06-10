@@ -4,7 +4,7 @@ import type { PlanBillingModel, SubscriptionPlan } from "../../billing/domain/bi
 export interface GuidelinePack {
   id: string;
   name: string;
-  code: string;
+  code: string | null;
   version: string;
   description: string | null;
   manuscriptType: ManuscriptType;

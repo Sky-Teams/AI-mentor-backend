@@ -3,11 +3,13 @@ import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { AdminService } from "../application/admin.service";
 import { SubscriptionService } from "src/modules/subscription/application/subscription.service";
+import { JournalService } from "src/modules/journal/application/journal.service.js";
 
 export class AdminController {
   public constructor(
     private readonly adminService: AdminService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly journalService: JournalService,
   ) {}
 
   public async listGuidelines(
@@ -83,5 +85,10 @@ export class AdminController {
     );
 
     response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
+  public async createJournal(req: Request, res: Response) {
+    const journal = await this.journalService.createJournal(req.body);
+    res.status(StatusCodes.CREATED).json(successResponse(journal));
   }
 }

@@ -14,6 +14,7 @@ import {
   requestedPlanIdSchema,
   userIdSchema,
 } from "src/modules/subscription/interfaces/subscription.schema";
+import { createJournalSchema } from "src/modules/journal/interface/journal.schema.js";
 
 export const createAdminRouter = (
   controller: AdminController,
@@ -67,6 +68,12 @@ export const createAdminRouter = (
     asyncHandler((request, response) =>
       controller.listUsersUsage(request, response),
     ),
+  );
+
+  router.post(
+    "/journals",
+    validate(createJournalSchema),
+    asyncHandler((req, res) => controller.createJournal(req, res)),
   );
 
   // Subscription Routes

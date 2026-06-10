@@ -11,7 +11,7 @@ import type {
 const mapGuidelinePack = (guidelinePack: {
   id: string;
   name: string;
-  code: string;
+  code: string | null;
   version: string;
   description: string | null;
   manuscriptType: "CASE_REPORT";
