@@ -51,7 +51,7 @@ import { JournalController } from "src/modules/journal/interface/journal.control
 import { JournalService } from "src/modules/journal/application/journal.service.js";
 import { createJournalRouter } from "src/modules/journal/interface/journal.routes.js";
 import { PrismaJournalRepository } from "src/modules/journal/infrastructure/prisma-journal.repository.js";
-import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-susbcription.repository";
+import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-subscription.repository";
 import { SubscriptionService } from "./modules/subscription/application/subscription.service";
 import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
 import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
