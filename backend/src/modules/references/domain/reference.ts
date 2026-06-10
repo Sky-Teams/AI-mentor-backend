@@ -1,4 +1,6 @@
-export type ReferenceTypes = "JOURNAL" | "BOOK";
+export const ReferenceValue = ["JOURNAL"] as const;
+
+export type ReferenceTypes = (typeof ReferenceValue)[number];
 
 export interface Authors {
   firstName: string;
