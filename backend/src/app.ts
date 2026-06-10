@@ -49,7 +49,7 @@ import { createReferenceRouter } from "./modules/references/interface/reference.
 import { ReferenceSearchService } from "./modules/references/application/reference.search.service";
 import { JournalReferenceService } from "./modules/references/application/journal.reference.search.service";
 import { JournalExternalApiRepository } from "./modules/references/infrastructure/journal.external-api.repository";
-import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-susbcription.repository";
+import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-subscription.repository";
 import { SubscriptionService } from "./modules/subscription/application/subscription.service";
 import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
 import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
@@ -110,7 +110,7 @@ export const createApp = (): express.Express => {
   const projectController = new ProjectController(projectService);
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
-  const adminController = new AdminController(adminService);
+  const adminController = new AdminController(adminService, journalService);
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);
   const referenceController = new ReferenceController(referenceService);
