@@ -2,6 +2,8 @@ import { PlanBillingModel } from "src/modules/billing/domain/billing";
 
 export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+export type SubscriptionPlanStatus = "ACTIVE" | "ARCHIVED";
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -25,5 +27,9 @@ export type RequestedPlans = Pick<SubscriptionRequest, "id" | "status"> & {
     fullName: string;
     email: string;
   };
-  subscriptionPlan: SubscriptionPlan;
+  subscriptionPlan:  {
+    createdAt: Date;
+    updatedAt: Date;
+    status: SubscriptionPlanStatus;
+  };
 };
