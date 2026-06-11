@@ -1,11 +1,8 @@
-import {
-  CreateJournalInput,
-  JournalDefinition,
-} from "src/shared/seed-data/journals.js";
+import { CreateJournalInput } from "src/shared/seed-data/journals.js";
 
-// This CreateJournal type also includes JournalDefinition type, and Omit means to dont use that guidelinePack from JournalDefinition
+// This CreateJournal type also includes CreateJournalInput type, and Omit means to dont use that guidelinePack from CreateJournalInput
 export type CreatedJournal = Omit<
-  JournalDefinition,
+  CreateJournalInput,
   "guidelinePack" | "specialtyId"
 > & {
   id: string;
@@ -20,13 +17,13 @@ export type CreatedJournal = Omit<
   createdAt: Date;
   updatedAt: Date;
   sections: Array<
-    JournalDefinition["sections"][number] & {
+    CreateJournalInput["sections"][number] & {
       id: string;
       journalId: string;
       createdAt: Date;
       updatedAt: Date;
       checklists: Array<
-        JournalDefinition["sections"][number]["checklists"][number] & {
+        CreateJournalInput["sections"][number]["checklists"][number] & {
           id: string;
           createdAt: Date;
           updatedAt: Date;

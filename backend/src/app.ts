@@ -51,6 +51,10 @@ import { JournalController } from "src/modules/journal/interface/journal.control
 import { JournalService } from "src/modules/journal/application/journal.service.js";
 import { createJournalRouter } from "src/modules/journal/interface/journal.routes.js";
 import { PrismaJournalRepository } from "src/modules/journal/infrastructure/prisma-journal.repository.js";
+import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-susbcription.repository";
+import { SubscriptionService } from "./modules/subscription/application/subscription.service";
+import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
+import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -65,6 +69,7 @@ export const createApp = (): express.Express => {
   const adminRepository = new PrismaAdminRepository(prisma);
   const paraphraseRepository = new PrismaParaphraseRepository(prisma);
   const userRepository = new PrismaUserRepository(prisma);
+  const subscriptionRepository = new PrismaSubscriptionRepository(prisma);
 
   const authService = new AuthService(
     authRepository,
@@ -100,6 +105,10 @@ export const createApp = (): express.Express => {
     reviewRepository,
     userRepository,
   );
+  const subscriptionService = new SubscriptionService(
+    subscriptionRepository,
+    userRepository,
+  );
 
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalService = new JournalService(journalRepository);
@@ -112,6 +121,9 @@ export const createApp = (): express.Express => {
   const adminController = new AdminController(adminService, journalService);
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);
+  const subscriptionController = new SubscriptionController(
+    subscriptionService,
+  );
 
   const app = express();
   app.disable("x-powered-by");
@@ -170,6 +182,11 @@ export const createApp = (): express.Express => {
     createJournalRouter(journalController, tokenService),
   );
 
+  app.use(
+    `${env.API_PREFIX}/subscriptions`,
+    createSubscriptionRouter(subscriptionController, tokenService),
+  );
+  
   app.use(createErrorHandler(logger));
   return app;
 };

@@ -51,7 +51,7 @@ export interface JournalSectionDefinition {
   checklists: SectionChecklistsGroup[];
 }
 
-export interface JournalDefinition {
+export interface CreateJournalInput {
   name: string;
   publisher: string;
   description?: string;
@@ -62,9 +62,7 @@ export interface JournalDefinition {
   specialtyId: string;
 }
 
-export type CreateJournalInput = JournalDefinition;
-
-export const ELSEVIER_SCARE_JOURNAL: JournalDefinition = {
+export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
   isDefault: true,
   name: "Elsevier Surgical Case Report (SCARE 2025)",
   publisher: "Elsevier",
