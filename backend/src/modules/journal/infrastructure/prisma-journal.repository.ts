@@ -93,7 +93,7 @@ export class PrismaJournalRepository implements JournalRepository {
       if (!specialty)
         throw new AppError(
           "Specialty not found",
-          StatusCodes.BAD_REQUEST,
+          StatusCodes.NOT_FOUND,
           "SPECIALTY_NOT_FOUND",
         );
 
