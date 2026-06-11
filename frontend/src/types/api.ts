@@ -60,6 +60,7 @@ export interface ProjectSection {
   content: string;
   sectionOrder: number;
   isOptional: boolean;
+  maxChars: number;
   status: SectionStatus;
   lastEditedAt: string | null;
   updatedAt: string;
@@ -289,4 +290,44 @@ export interface AdminUsageUserSummary {
   walletBalance: number;
   totalTechnicalTokens: number;
   totalBilledCredits: number;
+}
+
+export interface Specialty {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateJournalInput {
+  name: string;
+  publisher?: string;
+  description?: string;
+  manuscriptType?: "CASE_REPORT";
+  guidelinePack: string;
+  specialtyId: string;
+  sections: Array<{
+    key: string;
+    title: string;
+    sectionOrder: number;
+    isOptional?: boolean;
+    maxChars: number;
+    description?: string;
+    checklists: Array<{
+      title: string | null;
+      items: string[];
+    }>;
+  }>;
+}
+
+export interface Journal extends CreateJournalInput {
+  id: string;
+  guidelinePackId: string;
+  specialty: {
+    id: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
