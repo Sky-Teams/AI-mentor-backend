@@ -1,3 +1,5 @@
+import { ArticleTypesStatus } from "@prisma/client";
+
 export const SPECIALTIES = [
   "General Medicine",
   "Internal Medicine",
@@ -36,7 +38,11 @@ export const SPECIALTIES = [
   "Rehabilitation Medicine",
 ];
 
-export const ARTICLE_TYPES = [
+export const ARTICLE_TYPES: {
+  name: string;
+  description: string;
+  status: ArticleTypesStatus;
+}[] = [
   {
     name: "Case Report",
     description:
