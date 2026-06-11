@@ -138,6 +138,11 @@ enum paraphraseRunStatuses {
   CANCELLED
 }
 
+enum ArticleTypesStatuses {
+  ACTIVE
+  INACTIVE
+}
+
 model Journal {
   id              String           @id @default(cuid())
   name            String           @unique
@@ -219,8 +224,16 @@ model JournalSpecialty {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   journals    Journal[]
+}
 
-  @@index([name])
+model ArticleTypes {
+  id          String               @id @default(cuid())
+  name        String               @unique
+  description String?
+  status      ArticleTypesStatuses @default(INACTIVE)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  projects    Project[]
 }
 
 model User {
@@ -285,6 +298,8 @@ model Project {
   journalId          String?
   journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
   paraphraseRuns     ParaphraseRun[]
+  articleTypes       ArticleTypes        @relation(fields: [articleTypesId], references: [id], onDelete: SetNull)
+  articleTypesId     String
 
   @@index([ownerId, updatedAt])
   @@index([status])
