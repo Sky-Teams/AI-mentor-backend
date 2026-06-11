@@ -33,13 +33,6 @@ import { AdminService } from "./modules/admin/application/admin.service";
 import { AdminController } from "./modules/admin/interfaces/admin.controller";
 import { createAdminRouter } from "./modules/admin/interfaces/admin.routes";
 import { createHealthRouter } from "./modules/health/interfaces/health.routes";
-import { createCitationRouter } from "./modules/citations/interface/citation.routes";
-import { CitationController } from "./modules/citations/interface/citation.controller";
-import { APAFormatter } from "./modules/citations/infrastructure/APAFormatter";
-import { CitationService } from "./modules/citations/application/citation.service";
-import { CitationFormatterService } from "./modules/citations/application/formatter.service";
-import { PrismaCitationRepository } from "./modules/citations/infrastructure/prisma-citation-repository";
-import { MLAFormatter } from "./modules/citations/infrastructure/MLAFormatter";
 import { ParaphraseController } from "./modules/paraphrasing/interface/paraphrase.controller";
 import { ParaphraseService } from "./modules/paraphrasing/application/paraphrase.service";
 import { PrismaParaphraseRepository } from "./modules/paraphrasing/infrastructure/prisma-paraphrase.repository";
@@ -51,7 +44,12 @@ import { JournalController } from "src/modules/journal/interface/journal.control
 import { JournalService } from "src/modules/journal/application/journal.service.js";
 import { createJournalRouter } from "src/modules/journal/interface/journal.routes.js";
 import { PrismaJournalRepository } from "src/modules/journal/infrastructure/prisma-journal.repository.js";
-import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-susbcription.repository";
+import { ReferenceController } from "./modules/references/interface/reference.controller";
+import { createReferenceRouter } from "./modules/references/interface/reference.routes";
+import { ReferenceSearchService } from "./modules/references/application/reference.search.service";
+import { JournalReferenceService } from "./modules/references/application/journal.reference.search.service";
+import { JournalExternalApiRepository } from "./modules/references/infrastructure/journal.external-api.repository";
+import { PrismaSubscriptionRepository } from "./modules/subscription/infrastructure/prisma-subscription.repository";
 import { SubscriptionService } from "./modules/subscription/application/subscription.service";
 import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
 import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
@@ -65,7 +63,6 @@ export const createApp = (): express.Express => {
   const projectRepository = new PrismaProjectRepository(prisma);
   const billingRepository = new PrismaBillingRepository(prisma);
   const reviewRepository = new PrismaReviewRepository(prisma);
-  const citationRepository = new PrismaCitationRepository(prisma);
   const adminRepository = new PrismaAdminRepository(prisma);
   const paraphraseRepository = new PrismaParaphraseRepository(prisma);
   const userRepository = new PrismaUserRepository(prisma);
@@ -86,14 +83,9 @@ export const createApp = (): express.Express => {
     billingService,
     CreditEstimator,
   );
-  const apa = new APAFormatter();
-  const mla = new MLAFormatter();
-  const citationFormatterService = new CitationFormatterService(apa, mla);
-  const citationService = new CitationService(
-    citationFormatterService,
-    citationRepository,
-    userRepository,
-    projectService,
+  const journalExternalApiRepository = new JournalExternalApiRepository();
+  const journalReferenceService = new JournalReferenceService(
+    journalExternalApiRepository,
   );
   const adminService = new AdminService(adminRepository);
   const paraphraseService = new ParaphraseService(
@@ -105,6 +97,7 @@ export const createApp = (): express.Express => {
     reviewRepository,
     userRepository,
   );
+  const referenceService = new ReferenceSearchService(journalReferenceService);
   const subscriptionService = new SubscriptionService(
     subscriptionRepository,
     userRepository,
@@ -117,10 +110,10 @@ export const createApp = (): express.Express => {
   const projectController = new ProjectController(projectService);
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
-  const citationController = new CitationController(citationService);
   const adminController = new AdminController(adminService, journalService);
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);
+  const referenceController = new ReferenceController(referenceService);
   const subscriptionController = new SubscriptionController(
     subscriptionService,
   );
@@ -168,10 +161,7 @@ export const createApp = (): express.Express => {
     `${env.API_PREFIX}/billing`,
     createBillingRouter(billingController, tokenService),
   );
-  app.use(
-    `${env.API_PREFIX}/projects/citation`,
-    createCitationRouter(citationController, tokenService),
-  );
+
   app.use(
     `${env.API_PREFIX}/admin`,
     createAdminRouter(adminController, tokenService),
@@ -183,10 +173,15 @@ export const createApp = (): express.Express => {
   );
 
   app.use(
+    `${env.API_PREFIX}/references`,
+    createReferenceRouter(referenceController, tokenService),
+  );
+
+  app.use(
     `${env.API_PREFIX}/subscriptions`,
     createSubscriptionRouter(subscriptionController, tokenService),
   );
-  
+
   app.use(createErrorHandler(logger));
   return app;
 };

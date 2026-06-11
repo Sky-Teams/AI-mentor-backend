@@ -1,24 +1,25 @@
 import { Router } from "express";
-import { CitationController } from "./citation.controller";
+import { ReferenceController } from "./reference.controller";
 import { asyncHandler } from "src/shared/http/async-handler";
 import { TokenService } from "src/modules/auth/domain/token-service";
 import { authenticate } from "src/shared/middleware/authenticate";
 import { validate } from "src/shared/http/validation";
-import { CreateCitationSchema } from "./citation.schema";
+import { queryReferenceSchema } from "./reference.schema";
 
-export const createCitationRouter = (
-  controller: CitationController,
+export const createReferenceRouter = (
+  controller: ReferenceController,
   tokenService: TokenService,
 ): Router => {
   const router = Router();
   router.use(authenticate(tokenService));
 
-  router.post(
-    "/:projectId",
-    validate(CreateCitationSchema,"body"),
+  router.get(
+    "/search",
+    validate(queryReferenceSchema, "query"),
     asyncHandler((request, response) =>
-      controller.CreateCitation(request, response),
+      controller.getReferences(request, response),
     ),
   );
+
   return router;
 };
