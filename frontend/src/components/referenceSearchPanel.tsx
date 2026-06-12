@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  CreateReferenceInput,
   Reference,
   referenceApi,
   ReferenceTypes,
@@ -8,10 +9,7 @@ import {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSaveReference: (
-    selectedReference: Reference,
-    searchType: ReferenceTypes,
-  ) => Promise<void>;
+  onSaveReference: (references: CreateReferenceInput) => Promise<void>;
 }
 
 export const ReferenceSearchPanel = ({
@@ -23,17 +21,17 @@ export const ReferenceSearchPanel = ({
     "Search for journal article title or DOI",
   );
   const [searchType, setSearchType] = useState<ReferenceTypes>("JOURNAL");
-  const [inputSearch, setInputSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [references, setReferences] = useState<Reference[] | []>([]);
+  const [references, setReferences] = useState<Reference[]>([]);
   const [selectedReference, setSelectedReference] = useState<Reference | null>(
     null,
   );
 
   useEffect(() => {
     if (!isOpen) {
-      setInputSearch("");
+      setSearchInput("");
       setReferences([]);
       setIsLoading(false);
       setSelectedReference(null);
@@ -43,7 +41,6 @@ export const ReferenceSearchPanel = ({
 
   if (!isOpen) return null;
 
-  // Hanlde Placeholder Text
   const handlePlaceholderText = (
     newPlaceholder: string,
     type: ReferenceTypes,
@@ -52,49 +49,50 @@ export const ReferenceSearchPanel = ({
     setSearchType(type);
   };
 
-  // Handle Input Search
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputSearch(event.target.value);
-  };
-
-  // Handle Save Reference
-  const handleSaveClick = async (item: Reference) => {
+  const handleSaveReference = async (references: CreateReferenceInput) => {
     try {
       setIsLoading(true);
-      await onSaveReference(item, searchType);
+      await onSaveReference(references);
+      setSelectedReference(null);
       setErrorMessage("");
     } catch (error: any) {
-      setErrorMessage(error?.response?.data?.error?.message);
-      console.log(error);
+      setErrorMessage(
+        error?.response?.data?.error?.message ||
+          "Error to handle save reference",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleReferences = async () => {
-    const isIdentifier = inputSearch.includes("/") || /\d/.test(inputSearch);
-    let searcParams = {};
-    setIsLoading(true);
-    searcParams = isIdentifier ? { doi: inputSearch } : { title: inputSearch };
+  const handleSearchReferences = async () => {
+    const isIdentifier = searchInput.includes("/") || /\d/.test(searchInput);
+    let searchParams = {};
+    searchParams = isIdentifier ? { doi: searchInput } : { title: searchInput };
     try {
-      const references = await referenceApi.getReferences(
-        searcParams,
+      setIsLoading(true);
+
+      const searchedReferences = await referenceApi.getReferences(
+        searchParams,
         searchType,
       );
-      if (Array.isArray(references)) {
-        setReferences(references);
-      } else if (references && typeof references === "object") {
-        setReferences([references]);
+
+      if (Array.isArray(searchedReferences)) {
+        setReferences(searchedReferences);
+      } else if (searchedReferences && typeof searchedReferences === "object") {
+        setReferences([searchedReferences]);
       } else {
         setErrorMessage("Result was not found");
       }
     } catch (error: any) {
       setReferences([]);
-      setErrorMessage(error?.response?.data?.error?.message);
-      console.log(error);
+      setErrorMessage(
+        error?.response?.data?.error?.message ||
+          "Error to handle search references",
+      );
     } finally {
       setIsLoading(false);
-      setInputSearch("");
+      setSearchInput("");
     }
   };
 
@@ -111,17 +109,17 @@ export const ReferenceSearchPanel = ({
                 );
               }}
             >
-              <a href="#">Journal</a>
+              <a> Journal</a>
             </li>
           </ul>
           <div className="search">
             <input
               type="text"
               placeholder={placeholderText}
-              value={inputSearch}
-              onChange={handleInputChange}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
             />
-            <button onClick={handleReferences} disabled={isLoading}>
+            <button onClick={handleSearchReferences} disabled={isLoading}>
               {isLoading ? "Searching..." : "Search"}
             </button>
           </div>
@@ -138,54 +136,46 @@ export const ReferenceSearchPanel = ({
         {isLoading
           ? ""
           : references &&
-            references.map((item, index) => {
+            references.map((item) => {
               return (
-                <ul key={item.id || index} className="reference-list">
+                <ul key={item.id} className="reference-list">
                   <li onClick={() => setSelectedReference(item)}>
-                    <a href="#">
-                      {item.title ? (
-                        <div>
-                          <strong>{item.title}</strong>
-                        </div>
-                      ) : (
-                        ""
-                      )}
-                      {item.publisher ? (
-                        <div>Publisher: {item.publisher}</div>
-                      ) : (
-                        ""
-                      )}
-                      {item.authors?.length !== 0 &&
-                        item.authors?.map((author, index) => {
+                    {item.title && (
+                      <div>
+                        <strong>{item.title}</strong>
+                      </div>
+                    )}
+
+                    {item.publisher && <div>Publisher: {item.publisher}</div>}
+
+                    {item.authors?.length !== 0
+                      ? item.authors?.map((author, index) => {
                           return (
                             <span key={index}>
-                              {author.firstName} {author.lastName},{" "}
+                              {author.firstName} {author.lastName}
+                              {index < (item.authors?.length ?? 0) - 1
+                                ? ", "
+                                : ""}
                             </span>
                           );
-                        })}
+                        })
+                      : ""}
 
-                      <div className="reference-list details">
-                        {item.datePublished ? (
-                          <p>Year: {item.datePublished}</p>
-                        ) : (
-                          ""
-                        )}
+                    <div className="reference-list details">
+                      {item.datePublished && <p>Year: {item.datePublished}</p>}
 
-                        {item.journalName ? (
-                          <p>Journal Name: {item.journalName}</p>
-                        ) : (
-                          ""
-                        )}
+                      {item.journalName && (
+                        <p>Journal Name: {item.journalName}</p>
+                      )}
 
-                        {item.volume ? <p>Volume: {item.volume}</p> : ""}
+                      {item.volume && <p>Volume: {item.volume}</p>}
 
-                        {item.issue ? <p>Isuue: {item.issue}</p> : ""}
+                      {item.issue && <p>Issue: {item.issue}</p>}
 
-                        {item.page ? <p>Page: {item.page}</p> : ""}
+                      {item.page && <p>Page: {item.page}</p>}
 
-                        {item.doi ? <p>URL: {item.doi}</p> : ""}
-                      </div>
-                    </a>
+                      {item.doi && <p>URL: {item.doi}</p>}
+                    </div>
                   </li>
                 </ul>
               );
@@ -239,65 +229,60 @@ export const ReferenceSearchPanel = ({
                 ""
               )}
 
-              {selectedReference.journalName ? (
+              {selectedReference.journalName && (
                 <p>
                   <strong>Journal Name:</strong> {selectedReference.journalName}
                 </p>
-              ) : (
-                ""
               )}
 
-              {selectedReference.doi ? (
+              {selectedReference.doi && (
                 <p>
                   <strong>DOI:</strong> {selectedReference.doi}
                 </p>
-              ) : (
-                ""
               )}
 
-              {selectedReference.publisher ? (
+              {selectedReference.publisher && (
                 <p>
                   <strong>Publisher:</strong> {selectedReference.publisher}
                 </p>
-              ) : (
-                ""
               )}
 
-              {selectedReference.datePublished ? (
+              {selectedReference.datePublished && (
                 <p>
                   <strong>Published Date:</strong>{" "}
                   {selectedReference.datePublished}
                 </p>
-              ) : (
-                ""
               )}
 
-              {selectedReference.page ? (
+              {selectedReference.page && (
                 <p>
                   <strong>Page: </strong>
                   {selectedReference.page}
                 </p>
-              ) : (
-                ""
               )}
 
-              {selectedReference.volume ? (
+              {selectedReference.volume && (
                 <p>
                   <strong>Volume Number:</strong> {selectedReference.volume}
                 </p>
-              ) : (
-                ""
               )}
 
-              {selectedReference.issue ? (
+              {selectedReference.issue && (
                 <p>
                   <strong>Issue Number:</strong> {selectedReference.issue}
                 </p>
-              ) : (
-                ""
               )}
-              <button onClick={() => handleSaveClick(selectedReference)}>
-                Save
+
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  handleSaveReference({
+                    reference: selectedReference,
+                    type: searchType,
+                  })
+                }
+              >
+                {isLoading ? "Saving" : "Save"}
               </button>
             </div>
           </div>
