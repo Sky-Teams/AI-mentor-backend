@@ -78,6 +78,9 @@ export const ReferenceSearchPanel = ({
       );
 
       if (Array.isArray(searchedReferences)) {
+        if (searchedReferences.length === 0)
+          return setErrorMessage("Result was not found");
+
         setReferences(searchedReferences);
       } else if (searchedReferences && typeof searchedReferences === "object") {
         setReferences([searchedReferences]);
@@ -282,7 +285,7 @@ export const ReferenceSearchPanel = ({
                   })
                 }
               >
-                {isLoading ? "Saving" : "Save"}
+                {isLoading ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
