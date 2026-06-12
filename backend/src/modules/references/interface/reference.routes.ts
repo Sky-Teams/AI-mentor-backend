@@ -21,5 +21,12 @@ export const createReferenceRouter = (
     ),
   );
 
+  router.post(
+    "/format-style",
+    asyncHandler((request, response) =>
+      controller.formatReference(request, response),
+    ),
+  );
+
   return router;
 };
