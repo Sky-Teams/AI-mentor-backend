@@ -1,9 +1,12 @@
 import { ApiSuccessResponse } from "../../types/api";
 import { apiClient, unwrap } from "./client";
 
-export type ReferenceTypes = "JOURNAL" | "BOOK";
+export const ReferenceValue = ["JOURNAL"] as const;
 
-export type ReferenceStyle = "APA" | "MLA" | "VANCOUVER";
+export type ReferenceTypes = (typeof ReferenceValue)[number];
+
+export const ReferenceStyles = ["APA", "MLA", "VANCOUVER"] as const;
+export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
 export interface Authors {
   firstName: string;
@@ -25,6 +28,11 @@ export interface JournalSearchResponse {
 
 export type Reference = JournalSearchResponse;
 
+export interface CreateReferenceInput {
+  reference: Reference;
+  type: ReferenceTypes;
+}
+
 export const referenceApi = {
   async getReferences(
     input: { doi?: string; title?: string },
@@ -35,6 +43,18 @@ export const referenceApi = {
       {
         params: { doi: input.doi, title: input.title, type: type },
       },
+    );
+
+    return unwrap(response.data);
+  },
+
+  async formatReference(data: {
+    references: CreateReferenceInput[];
+    style: ReferenceStyle;
+  }) {
+    const response = await apiClient.post<ApiSuccessResponse<string[]>>(
+      "/references/format-style",
+      data,
     );
 
     return unwrap(response.data);
