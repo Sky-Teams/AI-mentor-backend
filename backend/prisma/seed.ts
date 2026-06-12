@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
 import { env } from "../src/shared/config/env";
-import { ELSEVIER_SCARE_JOURNAL } from "../src/shared/seed-data/journals";
+import {
+  ELSEVIER_SCARE_JOURNAL,
+  SPECIALTIES,
+} from "../src/shared/seed-data/journals";
 
 const j = ELSEVIER_SCARE_JOURNAL;
 
@@ -341,6 +344,16 @@ async function main() {
     },
   });
 
+  // Create journal specialties
+  await prisma.journalSpecialty.deleteMany();
+  await prisma.journalSpecialty.createMany({
+    data: SPECIALTIES.map((name) => ({ name: name! })),
+  });
+
+  const specialty = await prisma.journalSpecialty.findUnique({
+    where: { name: SPECIALTIES[0] },
+  });
+
   //  create journal
   const journal = await prisma.journal.upsert({
     where: { name: j.name },
@@ -363,6 +376,9 @@ async function main() {
       guidelinePack: {
         connect: { id: guidelinePack.id },
       },
+      specialty: {
+        connect: { id: specialty?.id },
+      },
     },
   });
 
@@ -381,6 +397,7 @@ async function main() {
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
         description: section.description,
+        maxChars: section.maxChars,
       },
     });
 
@@ -453,6 +470,7 @@ async function main() {
         title: t.title,
         sectionOrder: t.sectionOrder,
         isOptional: t.isOptional,
+        maxChars: t.maxChars,
       })),
     });
   }
