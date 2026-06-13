@@ -151,15 +151,29 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         include: { subscriptionPlan: true, user: true },
       });
 
-      await transaction.creditWallet.update({
+      const credit = updateRequestedPlan.subscriptionPlan.includedCredits;
+
+      const wallet = await transaction.creditWallet.update({
         where: { userId },
         data: {
           balance: {
-            increment: updateRequestedPlan.subscriptionPlan.includedCredits,
+            increment: credit,
           },
           lifetimeCreditsGranted: {
-            increment: updateRequestedPlan.subscriptionPlan.includedCredits,
+            increment: credit,
           },
+        },
+      });
+
+      await transaction.creditTransaction.create({
+        data: {
+          walletId: wallet.id,
+          userId: userId,
+          type: "PURCHASE",
+          source: "SUBSCRIPTION",
+          amount: credit,
+          balanceAfter: wallet.balance,
+          description: "Subscription approved and credits added",
         },
       });
 
