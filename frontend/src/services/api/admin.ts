@@ -3,8 +3,11 @@ import type {
   AdminUsageUserSummary,
   ApiSuccessResponse,
   BillingOverview,
+  CreateJournalInput,
   GuidelinePack,
+  Journal,
   PromptTemplate,
+  Specialty,
 } from "../../types/api";
 import { RequestedPlans } from "./subscription";
 
@@ -62,6 +65,22 @@ export const adminApi = {
       },
     );
 
+    return unwrap(response.data);
+  },
+
+  async getSpecialties(): Promise<Specialty[]> {
+    const response =
+      await apiClient.get<ApiSuccessResponse<Specialty[]>>(
+        "/admin/specialties",
+      );
+    return unwrap(response.data);
+  },
+
+  async createJournal(input: CreateJournalInput): Promise<Journal> {
+    const response = await apiClient.post<ApiSuccessResponse<Journal>>(
+      "/admin/journals",
+      input,
+    );
     return unwrap(response.data);
   },
 };

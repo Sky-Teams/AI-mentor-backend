@@ -6,6 +6,7 @@ import { BillingPage } from "./pages/BillingPage";
 import { CreateProjectPage } from "./pages/CreateProjectPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { JournalPage } from "./pages/JournalPage";
 import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SectionEditorPage } from "./pages/SectionEditorPage";
@@ -29,6 +30,7 @@ export const App = () => (
             element={<SectionEditorPage />}
             path="/projects/:projectId/sections/:sectionKey"
           />
+          <Route element={<JournalPage />} path="/journals/new" />
           <Route element={<BillingPage />} path="/billing" />
           <Route element={<AdminPage />} path="/admin" />
           <Route element={<SubscriptionPage />} path="/admin/subscriptions" />

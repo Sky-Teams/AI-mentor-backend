@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import {
   CreatedJournal,
   JournalRepository,
+  Specialty,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
 import { CreateJournalInput } from "src/shared/seed-data/journals.js";
@@ -13,8 +14,14 @@ const mapJournal = (journal: any): CreatedJournal => ({
   publisher: journal.publisher,
   description: journal.description,
   manuscriptType: journal.manuscriptType,
-  guidelinePackId: journal.guidelinePackId,
-  guidelinePack: journal.guidelinePack,
+  guidelinePack: {
+    id: journal.guidelinePack.id,
+    rules: journal.guidelinePack.rules,
+  },
+  specialty: {
+    id: journal.specialty.id,
+    name: journal.specialty.name,
+  },
   createdAt: journal.createdAt,
   updatedAt: journal.updatedAt,
   sections: journal.sectionTemplates.map((section: any) => ({
@@ -24,6 +31,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
     title: section.title,
     sectionOrder: section.sectionOrder,
     isOptional: section.isOptional,
+    maxChars: section.maxChars,
     description: section.description,
     createdAt: section.createdAt,
     updatedAt: section.updatedAt,
@@ -62,11 +70,12 @@ export class PrismaJournalRepository implements JournalRepository {
     if (existing)
       throw new AppError(
         "Journal with this name already exists",
-        StatusCodes.BAD_REQUEST,
+        StatusCodes.NOT_FOUND,
         "JOURNAL_ALREADY_EXISTS",
       );
 
     const journal = await this.prisma.$transaction(async (transaction) => {
+      // Find guidelinePack
       const guidelinePack = await transaction.guidelinePack.create({
         data: {
           name: `${input.name} Guideline Pack`,
@@ -76,6 +85,19 @@ export class PrismaJournalRepository implements JournalRepository {
         },
       });
 
+      // Find specialties
+      const specialty = await this.prisma.journalSpecialty.findUnique({
+        where: { id: input.specialtyId },
+      });
+
+      if (!specialty)
+        throw new AppError(
+          "Specialty not found",
+          StatusCodes.NOT_FOUND,
+          "SPECIALTY_NOT_FOUND",
+        );
+
+      // Create journal
       return transaction.journal.create({
         data: {
           name: input.name,
@@ -83,12 +105,14 @@ export class PrismaJournalRepository implements JournalRepository {
           description: input.description,
           guidelinePackId: guidelinePack.id,
           manuscriptType: input.manuscriptType || "CASE_REPORT",
+          specialtyId: specialty.id,
           sectionTemplates: {
             create: input.sections.map((section) => ({
               key: section.key,
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
+              maxChars: section.maxChars,
               description: section.description,
               checklists: {
                 create: section.checklists.map((checklist) => ({
@@ -104,10 +128,15 @@ export class PrismaJournalRepository implements JournalRepository {
           sectionTemplates: {
             include: { checklists: true },
           },
+          specialty: true,
         },
       });
     });
 
     return mapJournal(journal);
+  }
+
+  public async getAllSpecialties(): Promise<Specialty[]> {
+    return await this.prisma.journalSpecialty.findMany();
   }
 }

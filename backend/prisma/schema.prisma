@@ -23,77 +23,6 @@ enum ManuscriptType {
   CASE_REPORT
 }
 
-model Journal {
-  id              String         @id @default(cuid())
-  name            String         @unique
-  publisher       String?
-  description     String?
-  manuscriptType  ManuscriptType @default(CASE_REPORT)
-  guidelinePackId String
-  guidelinePack   GuidelinePack  @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
-  isDefault       Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  sectionTemplates JournalSectionTemplate[]
-  projects         Project[]
-
-  @@index([isDefault])
-  @@map("journals")
-}
-
-model JournalSectionTemplate {
-  id           String             @id @default(cuid())
-  journalId    String
-  key          String
-  title        String
-  sectionOrder Int
-  isOptional   Boolean            @default(false)
-  description  String?
-  checklists   SectionChecklist[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-
-  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
-
-  @@unique([journalId, key])
-  @@index([journalId, sectionOrder])
-  @@map("journal_section_templates")
-}
-
-model SectionChecklist {
-  id                       String   @id @default(cuid())
-  journalSectionTemplateId String
-  title                    String?
-  items                    String[]
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-
-  journalSectionTemplate JournalSectionTemplate      @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
-  itemChecks             SectionChecklistItemCheck[]
-
-  @@index([journalSectionTemplateId])
-  @@map("journal_section_checklist_groups")
-}
-
-model SectionChecklistItemCheck {
-  id          String   @id @default(cuid())
-  sectionId   String
-  checklistId String
-  itemIndex   Int
-  checked     Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  section   ProjectSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  checklist SectionChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
-
-  @@unique([sectionId, checklistId, itemIndex])
-  @@index([sectionId])
-  @@index([checklistId])
-  @@map("section_checklist_item_checks")
-}
-
 enum SectionStatus {
   NOT_STARTED
   DRAFT
@@ -209,6 +138,91 @@ enum paraphraseRunStatuses {
   CANCELLED
 }
 
+model Journal {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  publisher       String?
+  description     String?
+  manuscriptType  ManuscriptType   @default(CASE_REPORT)
+  guidelinePackId String
+  guidelinePack   GuidelinePack    @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  isDefault       Boolean          @default(false)
+  specialtyId     String
+  specialty       JournalSpecialty @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  sectionTemplates JournalSectionTemplate[]
+  projects         Project[]
+
+  @@index([isDefault])
+  @@map("journals")
+}
+
+model JournalSectionTemplate {
+  id           String             @id @default(cuid())
+  journalId    String
+  key          String
+  title        String
+  sectionOrder Int
+  isOptional   Boolean            @default(false)
+  maxChars     Int
+  description  String?
+  checklists   SectionChecklist[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([journalId, key])
+  @@index([journalId, sectionOrder])
+  @@map("journal_section_templates")
+}
+
+model SectionChecklist {
+  id                       String   @id @default(cuid())
+  journalSectionTemplateId String
+  title                    String?
+  items                    String[]
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  journalSectionTemplate JournalSectionTemplate      @relation(fields: [journalSectionTemplateId], references: [id], onDelete: Cascade)
+  itemChecks             SectionChecklistItemCheck[]
+
+  @@index([journalSectionTemplateId])
+  @@map("journal_section_checklist_groups")
+}
+
+model SectionChecklistItemCheck {
+  id          String   @id @default(cuid())
+  sectionId   String
+  checklistId String
+  itemIndex   Int
+  checked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  section   ProjectSection   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  checklist SectionChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, checklistId, itemIndex])
+  @@index([sectionId])
+  @@index([checklistId])
+  @@map("section_checklist_item_checks")
+}
+
+model JournalSpecialty {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  journals    Journal[]
+
+  @@index([name])
+}
+
 model User {
   id                   String                @id @default(cuid())
   email                String                @unique
@@ -229,7 +243,6 @@ model User {
   creditTransactions   CreditTransaction[]
   aiUsageLogs          AiUsageLog[]
   auditLogs            AuditLog[]            @relation("AuditActor")
-  citations            Citation[]
   paraphraseRuns       ParaphraseRun[]       @relation("ParaphraseInitiator")
   subscriptionRequests SubscriptionRequest[]
 
@@ -267,7 +280,6 @@ model Project {
   reviewIssues       ReviewIssue[]
   readinessSnapshots ReadinessSnapshot[]
   aiUsageLogs        AiUsageLog[]
-  citations          Citation[]
   journalId          String?
   journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
   paraphraseRuns     ParaphraseRun[]
@@ -287,6 +299,7 @@ model ProjectSection {
   isOptional                 Boolean                     @default(false)
   status                     SectionStatus               @default(NOT_STARTED)
   lastEditedAt               DateTime?
+  maxChars                   Int
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
   project                    Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -600,100 +613,6 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([actorUserId, createdAt])
-}
-
-enum CitationType {
-  BOOK
-  WEBSITE
-  JOURNAL
-  REPORT
-}
-
-model BookCitation {
-  id             String    @id @default(cuid())
-  citationId     String    @unique
-  citation       Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
-  title          String
-  authors        Json
-  datePublished  DateTime?
-  publisher      String
-  page           String?
-  edition        String?
-  volumeNumber   Int?
-  placePublished String?
-  isbn           String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  @@index([title])
-}
-
-model WebsiteCitation {
-  id            String    @id @default(cuid())
-  citationId    String    @unique
-  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
-  title         String
-  authors       Json
-  websiteName   String
-  url           String
-  dateAccess    DateTime
-  datePublished DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([title])
-}
-
-model JournalCitation {
-  id            String    @id @default(cuid())
-  citationId    String    @unique
-  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
-  title         String
-  authors       Json
-  journalName   String
-  page          String?
-  volumeNumber  Int?
-  issueNumber   Int?
-  doi           String?
-  datePublished DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([title])
-}
-
-model ReportCitation {
-  id            String    @id @default(cuid())
-  citationId    String    @unique
-  citation      Citation  @relation(fields: [citationId], references: [id], onDelete: Cascade)
-  title         String
-  authors       Json
-  datePublished DateTime?
-  publisher     String?
-  url           String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([title])
-}
-
-model Citation {
-  id              String           @id @default(cuid())
-  userId          String
-  projectId       String
-  type            CitationType
-  book            BookCitation?
-  createdAt       DateTime         @default(now())
-  websiteCitation WebsiteCitation?
-  journalCitation JournalCitation?
-  reportCitation  ReportCitation?
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updatedAt       DateTime         @updatedAt
-  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([type])
-  @@index([type, createdAt])
 }
 
 model ParaphraseRun {

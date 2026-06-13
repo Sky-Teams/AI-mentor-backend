@@ -150,6 +150,7 @@ export class PrismaProjectRepository implements ProjectRepository {
             title: section.title,
             sectionOrder: section.sectionOrder,
             isOptional: section.isOptional,
+            maxChars: section.maxChars,
           })),
         });
 
