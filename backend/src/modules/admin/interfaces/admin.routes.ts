@@ -10,6 +10,10 @@ import {
   planSchema,
   promptTemplateSchema,
 } from "./admin.schemas";
+import {
+  requestedPlanIdSchema,
+  userIdSchema,
+} from "src/modules/subscription/interfaces/subscription.schema";
 import { createJournalSchema } from "src/modules/journal/interface/journal.schema.js";
 
 export const createAdminRouter = (
@@ -75,6 +79,21 @@ export const createAdminRouter = (
   router.get(
     "/specialties",
     asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
+  );
+
+  // Subscription Routes
+  router.get(
+    "/subscriptions/requested-plans",
+    asyncHandler((request, response) =>
+      controller.getRequestedPlans(request, response),
+    ),
+  );
+
+  router.patch(
+    "/subscriptions/requested-plans/:id",
+    validate(requestedPlanIdSchema, "params"),
+    validate(userIdSchema, "body"),
+    asyncHandler((req, res) => controller.approveRequestedPlan(req, res)),
   );
 
   return router;

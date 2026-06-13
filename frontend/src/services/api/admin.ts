@@ -9,6 +9,7 @@ import type {
   PromptTemplate,
   Specialty,
 } from "../../types/api";
+import { RequestedPlans } from "./subscription";
 
 type Plan = BillingOverview["plans"][number];
 
@@ -28,21 +29,50 @@ export const adminApi = {
   },
 
   async getPlans(): Promise<Plan[]> {
-    const response = await apiClient.get<ApiSuccessResponse<Plan[]>>("/admin/plans");
+    const response =
+      await apiClient.get<ApiSuccessResponse<Plan[]>>("/admin/plans");
     return unwrap(response.data);
   },
 
   async getUsersUsage(): Promise<AdminUsageUserSummary[]> {
-    const response = await apiClient.get<ApiSuccessResponse<AdminUsageUserSummary[]>>(
-      "/admin/users/usage",
+    const response =
+      await apiClient.get<ApiSuccessResponse<AdminUsageUserSummary[]>>(
+        "/admin/users/usage",
+      );
+    return unwrap(response.data);
+  },
+
+  async getRequestedPlans(): Promise<RequestedPlans[]> {
+    const response = await apiClient.get<ApiSuccessResponse<RequestedPlans[]>>(
+      "/admin/subscriptions/requested-plans",
     );
     return unwrap(response.data);
   },
 
-  async getSpecialties(): Promise<Specialty[]> {
-    const response = await apiClient.get<ApiSuccessResponse<Specialty[]>>(
-      "/admin/specialties",
+  async approveRequestedPlan(
+    userId: string,
+    id: string,
+  ): Promise<RequestedPlans> {
+    const response = await apiClient.patch<ApiSuccessResponse<RequestedPlans>>(
+      `/admin/subscriptions/requested-plans/${id}`,
+      {
+        userId: userId,
+      },
+      {
+        params: {
+          id: id,
+        },
+      },
     );
+
+    return unwrap(response.data);
+  },
+
+  async getSpecialties(): Promise<Specialty[]> {
+    const response =
+      await apiClient.get<ApiSuccessResponse<Specialty[]>>(
+        "/admin/specialties",
+      );
     return unwrap(response.data);
   },
 
