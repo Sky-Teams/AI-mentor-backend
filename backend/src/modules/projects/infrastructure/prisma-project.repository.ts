@@ -40,7 +40,6 @@ const mapSection = (section: {
 const mapProject = (project: {
   id: string;
   ownerId: string;
-  manuscriptType: "CASE_REPORT";
   title: string;
   status: Project["status"];
   targetJournal: string | null;
@@ -50,7 +49,7 @@ const mapProject = (project: {
       rules: Prisma.JsonValue | null;
     } | null;
   } | null;
-  metadata: unknown;
+  articleTypeId: string;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
@@ -83,11 +82,11 @@ const mapProject = (project: {
           : null,
       }
     : null,
-  manuscriptType: project.manuscriptType,
   title: project.title,
   status: project.status,
   targetJournal: project.targetJournal,
-  metadata: (project.metadata as Project["metadata"]) ?? null,
+  specialty: project.specialty,
+  articleType: project.articleType,
   readinessScore: project.readinessScore,
   lastReviewedAt: project.lastReviewedAt,
   createdAt: project.createdAt,
@@ -99,6 +98,31 @@ export class PrismaProjectRepository implements ProjectRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async createProject(input: CreateProjectInput): Promise<Project> {
+    // 1) Find article type
+    const articleType = await this.prisma.articleType.findUnique({
+      where: { id: input.articleTypeId },
+    });
+
+    if (!articleType)
+      throw new AppError(
+        `ArticleType not found.`,
+        StatusCodes.NOT_FOUND,
+        "ARTICLE_TYPE_NOT_FOUND",
+      );
+
+    // 2) Find specialty
+    const specialty = await this.prisma.journalSpecialty.findUnique({
+      where: { id: input.specialtyId },
+    });
+
+    if (!specialty)
+      throw new AppError(
+        `Specialty not found.`,
+        StatusCodes.NOT_FOUND,
+        "SPECIALTY_NOT_FOUND",
+      );
+
+    // 3) Find journals by specialty
     const journal = input.targetJournal
       ? await this.prisma.journal.findFirst({
           where: { id: input.targetJournal },
@@ -139,7 +163,8 @@ export class PrismaProjectRepository implements ProjectRepository {
             title: input.title,
             targetJournal: journal.name,
             journalId: journal.id,
-            metadata: input.metadata as Prisma.InputJsonValue | undefined,
+            specialtyId: specialty.id,
+            articleTypeId: articleType.id,
           },
         });
 

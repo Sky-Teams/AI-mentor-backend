@@ -13,7 +13,6 @@ const mapJournal = (journal: any): CreatedJournal => ({
   name: journal.name,
   publisher: journal.publisher,
   description: journal.description,
-  manuscriptType: journal.manuscriptType,
   guidelinePack: {
     id: journal.guidelinePack.id,
     rules: journal.guidelinePack.rules,
@@ -104,7 +103,6 @@ export class PrismaJournalRepository implements JournalRepository {
           publisher: input.publisher,
           description: input.description,
           guidelinePackId: guidelinePack.id,
-          manuscriptType: input.manuscriptType || "CASE_REPORT",
           specialtyId: specialty.id,
           sectionTemplates: {
             create: input.sections.map((section) => ({

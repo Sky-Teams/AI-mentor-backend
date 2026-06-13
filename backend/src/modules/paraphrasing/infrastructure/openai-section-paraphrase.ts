@@ -93,7 +93,6 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
     const userPrompt = JSON.stringify(
       {
         originalText: content.originalText,
-        manuscriptType: content.project.manuscriptType,
         projectTitle: content.project.title,
         targetJournal: content.project.targetJournal,
         guidelineRules: content.guidelineRules,
