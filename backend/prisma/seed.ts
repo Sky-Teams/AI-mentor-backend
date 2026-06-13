@@ -373,7 +373,7 @@ async function main() {
       name: j.name,
       publisher: j.publisher,
       description: j.description,
-      manuscriptType: j.manuscriptType,
+      articleTypeId: activeArticleType?.id,
       isDefault: j.isDefault,
       guidelinePack: {
         connect: { id: guidelinePack.id },
@@ -383,7 +383,6 @@ async function main() {
       name: j.name,
       publisher: j.publisher,
       description: j.description,
-      manuscriptType: j.manuscriptType,
       isDefault: j.isDefault,
       guidelinePack: {
         connect: { id: guidelinePack.id },
@@ -391,6 +390,7 @@ async function main() {
       specialty: {
         connect: { id: specialty?.id },
       },
+      articleTypeId: activeArticleType?.id,
     },
   });
 
@@ -445,16 +445,8 @@ async function main() {
         targetJournal: journal.name,
         journalId: journal.id,
         articleTypeId: activeArticleType?.id as string,
+        specialty: specialty?.id,
         status: "IN_REVIEW",
-        metadata: {
-          specialty: "Neurology",
-          patientAge: "34 years",
-          patientSex: "Female",
-          country: "United States",
-          institution: "Regional Academic Hospital",
-          articleGoals:
-            "Demonstrate a rare presentation and diagnostic learning points.",
-        },
       },
     }));
 
