@@ -146,7 +146,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     const result = await this.prisma.$transaction(async (transaction) => {
       const updateRequestedPlan = await transaction.subscriptionRequest.update({
-        where: { id, userId },
+        where: { id },
         data: { status: "APPROVED" },
         include: { subscriptionPlan: true, user: true },
       });
