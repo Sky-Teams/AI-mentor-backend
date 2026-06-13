@@ -1,3 +1,5 @@
+import { ArticleTypesStatus } from "@prisma/client";
+
 export const projectStatuses = [
   "DRAFT",
   "IN_REVIEW",
@@ -5,7 +7,6 @@ export const projectStatuses = [
   "ARCHIVED",
 ] as const;
 export type ProjectStatus = (typeof projectStatuses)[number];
-export type ManuscriptType = "CASE_REPORT";
 
 export const sectionStatuses = [
   "NOT_STARTED",
@@ -14,16 +15,6 @@ export const sectionStatuses = [
   "READY",
 ] as const;
 export type SectionStatus = (typeof sectionStatuses)[number];
-
-export interface CaseReportMetadata {
-  journalTarget?: string;
-  specialty?: string;
-  patientAge?: string;
-  patientSex?: string;
-  country?: string;
-  institution?: string;
-  articleGoals?: string;
-}
 
 export interface ProjectSection {
   id: string;
@@ -60,18 +51,23 @@ export interface Journal {
   } | null;
 }
 
+export type ArticleType = {
+  name: string;
+  description?: string;
+  status: ArticleTypesStatus;
+};
 export interface Project {
   id: string;
   ownerId: string;
   targetJournal: string | null;
   journal?: Journal | null;
-  manuscriptType: ManuscriptType;
   title: string;
   status: ProjectStatus;
-  metadata: CaseReportMetadata | null;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   sections?: ProjectSection[];
+  specialty: string;
+  articleType: ArticleType;
 }

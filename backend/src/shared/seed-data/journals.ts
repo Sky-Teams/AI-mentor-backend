@@ -19,7 +19,6 @@ export interface CreateJournalInput {
   name: string;
   publisher: string;
   description?: string;
-  manuscriptType: "CASE_REPORT";
   isDefault?: boolean;
   sections: JournalSectionDefinition[];
   guidelinePack: string;
@@ -32,7 +31,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
   publisher: "Elsevier",
   description:
     "Elsevier surgical case report template aligned with the approved SCARE Guideline Checklists 2025.",
-  manuscriptType: "CASE_REPORT",
   specialtyId: SPECIALTIES[0]!, // this is like a temporary fake id as we dont have real specialtyId here to use then in seed file when create the journal it use the real one
   sections: [
     {

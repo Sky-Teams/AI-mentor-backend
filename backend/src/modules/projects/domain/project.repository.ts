@@ -2,10 +2,10 @@ import type { Project, ProjectSection, SectionVersion } from "./project";
 
 export interface CreateProjectInput {
   ownerId: string;
+  articleTypeId: string;
+  specialtyId: string;
+  targetJournal: string;
   title: string;
-  targetJournal?: string;
-  journalCode?: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateProjectInput {
