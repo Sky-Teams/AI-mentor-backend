@@ -151,6 +151,28 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         include: { subscriptionPlan: true, user: true },
       });
 
+      const billingModel = updateRequestedPlan.subscriptionPlan.billingModel;
+
+      const startDate = new Date();
+      let endDate = new Date(startDate);
+
+      if (billingModel === "CREDIT_PACK") {
+        endDate.setFullYear(endDate.getFullYear() + 50);
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1);
+      }
+
+      await transaction.userSubscription.create({
+        data: {
+          userId: userId,
+          subscriptionPlanId: updateRequestedPlan.subscriptionPlanId,
+          status: "ACTIVE",
+          currentPeriodStart: startDate,
+          currentPeriodEnd: endDate,
+          autoRenew: false,
+        },
+      });
+
       const credit = updateRequestedPlan.subscriptionPlan.includedCredits;
 
       const wallet = await transaction.creditWallet.update({
