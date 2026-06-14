@@ -71,6 +71,7 @@ export const ReferenceSearchPanel = ({
     searchParams = isIdentifier ? { doi: searchInput } : { title: searchInput };
     try {
       setIsLoading(true);
+      setErrorMessage("");
 
       const searchedReferences = await referenceApi.getReferences(
         searchParams,

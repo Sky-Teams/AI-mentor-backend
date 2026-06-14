@@ -21,6 +21,7 @@ export const ReferencePage = () => {
   const handleAddReference = async (references: CreateReferenceInput) => {
     try {
       setIsLoading(true);
+      setErrorMessage("");
       const [formattedText] = await referenceApi.formatReference({
         references: [
           {
@@ -53,7 +54,7 @@ export const ReferencePage = () => {
     try {
       setCurrentStyle(newStyle);
       setIsLoading(true);
-
+      setErrorMessage("");
       const formattedTexts = await referenceApi.formatReference({
         references: saveReferences.map((item) => ({
           reference: item.raw,
