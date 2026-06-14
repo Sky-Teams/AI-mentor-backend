@@ -1,5 +1,3 @@
-import { ArticleTypesStatus } from "@prisma/client";
-
 export const projectStatuses = [
   "DRAFT",
   "IN_REVIEW",
@@ -51,11 +49,6 @@ export interface Journal {
   } | null;
 }
 
-export type ArticleType = {
-  name: string;
-  description?: string;
-  status: ArticleTypesStatus;
-};
 export interface Project {
   id: string;
   ownerId: string;
@@ -68,6 +61,6 @@ export interface Project {
   createdAt: Date;
   updatedAt: Date;
   sections?: ProjectSection[];
-  specialty: string;
-  articleType: ArticleType;
+  specialtyId: string;
+  articleTypeId: string;
 }

@@ -1,4 +1,4 @@
-import { PrismaClient, type Prisma } from "@prisma/client";
+import { ArticleType, PrismaClient, type Prisma } from "@prisma/client";
 import type {
   Project,
   ProjectSection,
@@ -49,6 +49,7 @@ const mapProject = (project: {
       rules: Prisma.JsonValue | null;
     } | null;
   } | null;
+  specialtyId: string;
   articleTypeId: string;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
@@ -85,8 +86,8 @@ const mapProject = (project: {
   title: project.title,
   status: project.status,
   targetJournal: project.targetJournal,
-  specialty: project.specialty,
-  articleType: project.articleType,
+  specialtyId: project.specialtyId,
+  articleTypeId: project.articleTypeId,
   readinessScore: project.readinessScore,
   lastReviewedAt: project.lastReviewedAt,
   createdAt: project.createdAt,
@@ -270,7 +271,6 @@ export class PrismaProjectRepository implements ProjectRepository {
         title: input.title,
         targetJournal: input.targetJournal,
         status: input.status,
-        metadata: input.metadata as Prisma.InputJsonValue | undefined,
       },
       include: {
         journal: {
