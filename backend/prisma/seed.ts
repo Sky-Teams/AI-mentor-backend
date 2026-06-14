@@ -373,7 +373,6 @@ async function main() {
       name: j.name,
       publisher: j.publisher,
       description: j.description,
-      articleTypeId: activeArticleType?.id,
       isDefault: j.isDefault,
       guidelinePack: {
         connect: { id: guidelinePack.id },
@@ -390,7 +389,9 @@ async function main() {
       specialty: {
         connect: { id: specialty?.id },
       },
-      articleTypeId: activeArticleType?.id,
+      articleType: {
+        connect: { id: activeArticleType?.id },
+      },
     },
   });
 
@@ -445,7 +446,7 @@ async function main() {
         targetJournal: journal.name,
         journalId: journal.id,
         articleTypeId: activeArticleType?.id as string,
-        specialty: specialty?.id,
+        specialtyId: specialty!.id,
         status: "IN_REVIEW",
       },
     }));
