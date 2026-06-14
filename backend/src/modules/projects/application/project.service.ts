@@ -131,4 +131,8 @@ export class ProjectService {
       itemIndex,
     );
   }
+
+  public async getAllSpecialties() {
+    return await this.projectRepository.getAllSpecialties();
+  }
 }

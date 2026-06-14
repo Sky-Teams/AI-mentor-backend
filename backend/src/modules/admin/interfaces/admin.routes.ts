@@ -72,10 +72,5 @@ export const createAdminRouter = (
     asyncHandler((req, res) => controller.createJournal(req, res)),
   );
 
-  router.get(
-    "/specialties",
-    asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
-  );
-
   return router;
 };

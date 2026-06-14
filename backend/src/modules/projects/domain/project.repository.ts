@@ -1,4 +1,9 @@
-import type { Project, ProjectSection, SectionVersion } from "./project";
+import type {
+  Project,
+  ProjectSection,
+  SectionVersion,
+  Specialty,
+} from "./project";
 
 export interface CreateProjectInput {
   ownerId: string;
@@ -55,4 +60,5 @@ export interface ProjectRepository {
     checklistId: string,
     itemIndex: number,
   ): Promise<{ checked: boolean }>;
+  getAllSpecialties(): Promise<Specialty[]>;
 }

@@ -133,8 +133,4 @@ export class PrismaJournalRepository implements JournalRepository {
 
     return mapJournal(journal);
   }
-
-  public async getAllSpecialties(): Promise<Specialty[]> {
-    return await this.prisma.journalSpecialty.findMany();
-  }
 }

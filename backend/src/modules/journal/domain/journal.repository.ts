@@ -33,16 +33,8 @@ export type CreatedJournal = Omit<
   >;
 };
 
-export interface Specialty {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
 export interface JournalRepository {
   findAll(): Promise<Array<{ id: string; name: string }>>;
   findById(id: string): Promise<{ id: string; name: string } | null>;
   createJournal(input: CreateJournalInput): Promise<CreatedJournal>;
-  getAllSpecialties(): Promise<Specialty[]>;
 }

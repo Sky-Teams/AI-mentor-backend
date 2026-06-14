@@ -3,6 +3,7 @@ import type {
   Project,
   ProjectSection,
   SectionVersion,
+  Specialty,
 } from "../domain/project";
 import type {
   CreateProjectInput,
@@ -575,5 +576,9 @@ export class PrismaProjectRepository implements ProjectRepository {
         });
 
     return { checked: result.checked };
+  }
+
+  public async getAllSpecialties(): Promise<Specialty[]> {
+    return await this.prisma.journalSpecialty.findMany();
   }
 }

@@ -64,3 +64,11 @@ export interface Project {
   specialtyId: string;
   articleTypeId: string;
 }
+
+export interface Specialty {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}

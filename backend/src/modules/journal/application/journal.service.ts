@@ -15,8 +15,4 @@ export class JournalService {
   public async createJournal(journal: CreateJournalInput) {
     return this.journalRepository.createJournal(journal);
   }
-
-  public async getAllSpecialties() {
-    return await this.journalRepository.getAllSpecialties();
-  }
 }

@@ -75,9 +75,12 @@ export const createProjectRouter = (
   router.patch(
     "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
     validate(toggleSectionChecklistItemSchema, "params"),
-    asyncHandler((req, res) =>
-      controller.toggleSectionChecklistItem(req, res),
-    ),
+    asyncHandler((req, res) => controller.toggleSectionChecklistItem(req, res)),
+  );
+
+  router.get(
+    "/specialties",
+    asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
   );
 
   return router;
