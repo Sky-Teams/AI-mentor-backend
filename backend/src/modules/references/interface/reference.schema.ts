@@ -15,8 +15,12 @@ export const queryReferenceSchema = z
   });
 
 const authorSchema = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
+  firstName: z
+    .string({ message: "First name is required" })
+    .min(1, { message: "First name is required" }),
+  lastName: z
+    .string({ message: "Last name is required" })
+    .min(1, { message: "Last name is required" }),
 });
 
 const journalSchema = z.object({
