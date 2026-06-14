@@ -24,7 +24,7 @@ export class ReferenceFormatterService {
         throw new AppError(
           "Unsupported format style",
           StatusCodes.BAD_REQUEST,
-          "UNSUPPORTED_FORMATE_STYLE",
+          "UNSUPPORTED_FORMAT_STYLE",
         );
     }
   }
