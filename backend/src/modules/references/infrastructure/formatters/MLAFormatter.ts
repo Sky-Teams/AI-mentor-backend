@@ -86,15 +86,25 @@ export class MLAFormatter {
     const count = authorsArray.length;
 
     if (count === 0) return "";
+
+    const initials = authorsArray.slice(0, 3).map((author) => {
+      const firstName =
+        author.firstName
+          ?.split(" ")
+          ?.map((n: string) => n.charAt(0).toUpperCase() + n.slice(1))
+          ?.join(" ") || "";
+
+      return firstName;
+    });
     if (count === 1) {
-      return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}. `;
+      return `${authorsArray[0].lastName}, ${initials[0]}. `;
     }
 
     if (count === 2) {
-      return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}, and ${authorsArray[1].firstName} ${authorsArray[1].lastName}.`;
+      return `${authorsArray[0].lastName}, ${initials[0]}, and ${initials[1]} ${authorsArray[1].lastName}. `;
     }
 
-    return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}, et al.`;
+    return `${authorsArray[0].lastName}, ${initials[0]}, et al. `;
   }
 
   private getYear(dateInput: any): string {
