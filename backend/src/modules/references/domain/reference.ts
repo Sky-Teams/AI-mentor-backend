@@ -2,7 +2,8 @@ export const ReferenceValue = ["JOURNAL"] as const;
 
 export type ReferenceTypes = (typeof ReferenceValue)[number];
 
-export type ReferenceStyle = "APA" | "MLA" | "VANCOUVER";
+export const ReferenceStyles = ["APA", "MLA", "VANCOUVER"] as const;
+export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
 export interface Authors {
   firstName: string;
