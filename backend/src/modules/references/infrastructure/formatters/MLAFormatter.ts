@@ -40,19 +40,21 @@ export class MLAFormatter {
   }
 
   private async formatJournal(c: JournalSearchResponse) {
-    let authors = await this.formateAuthors(c.authors);
+    let authors = await this.formatAuthors(c?.authors);
 
     if (authors.endsWith("et al.")) {
       authors = authors.substring(0, authors.length - 1);
     }
 
-    const pagesFormatted = this.formatPagesMLA(c.page);
-    const volume = c.volume ? `vol. ${c.volume}, ` : "";
-    const issue = c.issue ? `no. ${c.issue}, ` : "";
-    const year = this.getYear(c.datePublished);
-    const doiPart = c.doi ? `, ${c.doi}` : "";
+    const pagesFormatted = this.formatPagesMLA(c?.page);
+    const volume = c?.volume ? `vol. ${c.volume}, ` : "";
+    const issue = c?.issue ? `no. ${c.issue}, ` : "";
+    const year = this.getYear(c?.datePublished);
+    const doiPart = c?.doi ? `  ${c.doi}` : "";
+    const title = c?.title ? `"${c.title}." ` : "";
+    const journalName = c?.journalName ? `${c.journalName}, ` : "";
 
-    return `${authors}. "${c.title}." ${c.journalName}, ${volume}${issue}${year}, ${pagesFormatted}${doiPart}.`;
+    return `${authors}${title}${journalName}${volume}${issue}${year ? year + ", " : ""}${pagesFormatted}${doiPart}.`;
   }
 
   // These functions will be needed in the future.
@@ -77,24 +79,27 @@ export class MLAFormatter {
   //   return `${authors}. ${c.title}. ${c.publisher ? c.publisher + ", " : ""}${this.getYear(c.datePublished)}.`;
   // }
 
-  public async formateAuthors(authors: any): Promise<string> {
+  public async formatAuthors(authors: any): Promise<string> {
+    if (!authors) return "";
+
     const authorsArray = Array.isArray(authors) ? authors : [authors];
     const count = authorsArray.length;
 
-    if (count === 0) return "n.a.";
+    if (count === 0) return "";
     if (count === 1) {
-      return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}`;
+      return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}. `;
     }
 
     if (count === 2) {
-      return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}, and ${authorsArray[1].firstName} ${authorsArray[1].lastName}`;
+      return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}, and ${authorsArray[1].firstName} ${authorsArray[1].lastName}.`;
     }
 
     return `${authorsArray[0].lastName}, ${authorsArray[0].firstName}, et al.`;
   }
 
   private getYear(dateInput: any): string {
+    if (!dateInput) return "";
     const date = new Date(dateInput);
-    return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "n.d.";
+    return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "";
   }
 }

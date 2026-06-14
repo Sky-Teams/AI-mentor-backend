@@ -71,7 +71,10 @@ export class APAFormatter {
   // }
 
   public async formatAuthors(authors: any) {
+    if (!authors) return "";
     const authorsArray = authors ? Object.values(authors) : [];
+
+    if (authorsArray.length === 0) return "";
 
     const formatted = authorsArray.map((author: any) => {
       const initials = author.firstName
@@ -91,7 +94,8 @@ export class APAFormatter {
   }
 
   private getYear(dateInput: any): string {
+    if (!dateInput) return "";
     const date = new Date(dateInput);
-    return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "n.d.";
+    return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "";
   }
 }
