@@ -33,6 +33,17 @@ export const createProjectRouter = (
       controller.createProject(request, response),
     ),
   );
+
+  router.get(
+    "/specialties",
+    asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
+  );
+
+  router.get(
+    "/articleTypes",
+    asyncHandler((req, res) => controller.getAllArticleTypes(req, res)),
+  );
+
   router.get(
     "/:projectId",
     validate(projectIdParamsSchema, "params"),
@@ -76,11 +87,6 @@ export const createProjectRouter = (
     "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
     validate(toggleSectionChecklistItemSchema, "params"),
     asyncHandler((req, res) => controller.toggleSectionChecklistItem(req, res)),
-  );
-
-  router.get(
-    "/specialties",
-    asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
   );
 
   return router;

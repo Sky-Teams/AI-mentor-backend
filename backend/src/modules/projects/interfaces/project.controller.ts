@@ -114,4 +114,9 @@ export class ProjectController {
     const specialties = await this.projectService.getAllSpecialties();
     res.status(StatusCodes.OK).json(successResponse(specialties));
   }
+
+  public async getAllArticleTypes(req: Request, res: Response) {
+    const specialties = await this.projectService.getAllArticleTypes();
+    res.status(StatusCodes.OK).json(successResponse(specialties));
+  }
 }

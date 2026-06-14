@@ -581,4 +581,8 @@ export class PrismaProjectRepository implements ProjectRepository {
   public async getAllSpecialties(): Promise<Specialty[]> {
     return await this.prisma.journalSpecialty.findMany();
   }
+
+  public async getAllArticleTypes(): Promise<ArticleType[]> {
+    return await this.prisma.articleType.findMany();
+  }
 }
