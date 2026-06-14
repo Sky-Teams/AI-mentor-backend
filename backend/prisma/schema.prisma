@@ -147,10 +147,10 @@ model Journal {
   guidelinePackId  String
   guidelinePack    GuidelinePack            @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
   isDefault        Boolean                  @default(false)
-  specialtyId      String
-  specialty        JournalSpecialty         @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
-  articleTypeId    String
-  articleType      ArticleType              @relation(fields: [articleTypeId], references: [id], onDelete: SetNull)
+  specialtyId      String?
+  specialty        JournalSpecialty?        @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
+  articleTypeId    String?
+  articleType      ArticleType?             @relation(fields: [articleTypeId], references: [id], onDelete: SetNull)
   sectionTemplates JournalSectionTemplate[]
   projects         Project[]
   createdAt        DateTime                 @default(now())
@@ -295,10 +295,10 @@ model Project {
   journalId          String?
   journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
   paraphraseRuns     ParaphraseRun[]
-  articleType        ArticleType         @relation(fields: [articleTypeId], references: [id], onDelete: SetNull)
-  articleTypeId      String
-  specialtyId        String
-  specialty          JournalSpecialty    @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
+  articleType        ArticleType?        @relation(fields: [articleTypeId], references: [id], onDelete: SetNull)
+  articleTypeId      String?
+  specialtyId        String?
+  specialty          JournalSpecialty?   @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
 
   @@index([ownerId, updatedAt])
   @@index([status])
