@@ -29,3 +29,7 @@ export const createJournalSchema = z.object({
     )
     .min(1),
 });
+
+export const specialtyIdQuerySchema = z.object({
+  specialtyId: z.string().cuid().optional(),
+});

@@ -4,8 +4,8 @@ import { CreateJournalInput } from "src/shared/seed-data/journals.js";
 export class JournalService {
   public constructor(private readonly journalRepository: JournalRepository) {}
 
-  public async getAllJournals() {
-    return this.journalRepository.findAll();
+  public async getAllJournals(specialtyId: string) {
+    return this.journalRepository.findAll(specialtyId);
   }
 
   public async getJournalById(journalId: string) {

@@ -3,7 +3,6 @@ import { StatusCodes } from "http-status-codes";
 import {
   CreatedJournal,
   JournalRepository,
-  Specialty,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
 import { CreateJournalInput } from "src/shared/seed-data/journals.js";
@@ -47,8 +46,12 @@ const mapJournal = (journal: any): CreatedJournal => ({
 export class PrismaJournalRepository implements JournalRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
-  public async findAll(): Promise<Array<{ id: string; name: string }>> {
-    return this.prisma.journal.findMany();
+  public async findAll(
+    specialtyId?: string,
+  ): Promise<Array<{ id: string; name: string }>> {
+    return this.prisma.journal.findMany({
+      where: specialtyId ? { specialtyId: specialtyId } : {},
+    });
   }
 
   public async findById(

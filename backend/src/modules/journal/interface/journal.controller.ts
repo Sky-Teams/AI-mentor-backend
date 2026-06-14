@@ -7,7 +7,9 @@ export class JournalController {
   public constructor(private readonly journalService: JournalService) {}
 
   public async getAllJournals(req: Request, res: Response): Promise<void> {
-    const journals = await this.journalService.getAllJournals();
+    const { specialtyId } = req.query as { specialtyId: string };
+
+    const journals = await this.journalService.getAllJournals(specialtyId);
     res.status(StatusCodes.OK).json(successResponse(journals));
   }
 
