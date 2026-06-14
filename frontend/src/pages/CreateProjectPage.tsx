@@ -57,13 +57,12 @@ export const CreateProjectPage = () => {
       </div>
 
       <form className="card stack" onSubmit={handleSubmit}>
-        <Field label="Project title">
-          <input
-            name="title"
-            placeholder="Rare cardiac presentation with..."
-            required
-            type="text"
-          />
+        <Field label="Article Type">
+          <input name="articleType" placeholder="Article Type" type="text" />
+        </Field>
+
+        <Field label="Specialty">
+          <input name="specialty" placeholder="Specialty" type="text" />
         </Field>
 
         <Field label="Target journal">
@@ -79,34 +78,12 @@ export const CreateProjectPage = () => {
           </select>
         </Field>
 
-        <div className="form-grid">
-          <Field label="Specialty">
-            <input name="specialty" placeholder="Cardiology" type="text" />
-          </Field>
-          <Field label="Patient age">
-            <input name="patientAge" placeholder="42 years" type="text" />
-          </Field>
-          <Field label="Patient sex">
-            <input name="patientSex" placeholder="Female" type="text" />
-          </Field>
-          <Field label="Country">
-            <input name="country" placeholder="United States" type="text" />
-          </Field>
-        </div>
-
-        <Field label="Institution">
+        <Field label="Project title">
           <input
-            name="institution"
-            placeholder="University Hospital"
+            name="title"
+            placeholder="Rare cardiac presentation with..."
+            required
             type="text"
-          />
-        </Field>
-
-        <Field label="Article goals">
-          <textarea
-            name="articleGoals"
-            placeholder="Why this case matters for publication"
-            rows={4}
           />
         </Field>
 
