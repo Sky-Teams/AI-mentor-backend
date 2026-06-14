@@ -23,7 +23,7 @@ export const createReferenceRouter = (
 
   router.post(
     "/format-style",
-    validate(referenceSchema),
+    validate(referenceSchema, "body"),
     asyncHandler((request, response) =>
       controller.formatReference(request, response),
     ),
