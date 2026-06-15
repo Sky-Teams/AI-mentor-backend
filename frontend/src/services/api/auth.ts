@@ -1,5 +1,10 @@
 import { apiClient, setAccessToken, unwrap } from "./client";
-import type { ApiSuccessResponse, AuthResult, AuthTokens, User } from "../../types/api";
+import type {
+  ApiSuccessResponse,
+  AuthResult,
+  AuthTokens,
+  User,
+} from "../../types/api";
 
 const REFRESH_TOKEN_STORAGE_KEY = "ai-mentor-refresh-token";
 const AUTH_USER_STORAGE_KEY = "ai-mentor-user";
@@ -42,12 +47,11 @@ export const authApi = {
     email: string;
     fullName: string;
     password: string;
-  }): Promise<AuthResult> {
-    const response = await apiClient.post<ApiSuccessResponse<AuthResult>>(
-      "/auth/register",
-      input,
-    );
-    return persistAuth(unwrap(response.data));
+  }): Promise<{ message: string }> {
+    const response = await apiClient.post<
+      ApiSuccessResponse<{ message: string }>
+    >("/auth/register", input);
+    return unwrap(response.data);
   },
 
   async login(input: { email: string; password: string }): Promise<AuthResult> {
@@ -85,5 +89,14 @@ export const authApi = {
     setAccessToken(null);
     setStoredRefreshToken(null);
     setStoredUser(null);
+  },
+
+  async verifyEmail(token: string): Promise<AuthResult> {
+    const response = await apiClient.put<ApiSuccessResponse<AuthResult>>(
+      `/auth/verify-email/${token}`,
+      {}
+    );
+
+    return persistAuth(unwrap(response.data));
   },
 };
