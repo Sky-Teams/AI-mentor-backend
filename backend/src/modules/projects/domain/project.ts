@@ -49,6 +49,12 @@ export interface Journal {
   } | null;
 }
 
+export interface Specialty {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 export interface Project {
   id: string;
   ownerId: string;

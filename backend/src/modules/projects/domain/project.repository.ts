@@ -1,5 +1,10 @@
-import { ArticleType, JournalSpecialty } from "@prisma/client";
-import type { Project, ProjectSection, SectionVersion } from "./project";
+import type { ArticleType } from "@prisma/client";
+import type {
+  Project,
+  ProjectSection,
+  SectionVersion,
+  Specialty,
+} from "./project";
 
 export interface CreateProjectInput {
   ownerId: string;
@@ -56,6 +61,6 @@ export interface ProjectRepository {
     checklistId: string,
     itemIndex: number,
   ): Promise<{ checked: boolean }>;
-  getAllSpecialties(): Promise<JournalSpecialty[]>;
+  getAllSpecialties(): Promise<Specialty[]>;
   getAllArticleTypes(): Promise<ArticleType[]>;
 }

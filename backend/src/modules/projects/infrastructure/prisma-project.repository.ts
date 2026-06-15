@@ -50,8 +50,8 @@ const mapProject = (project: {
       rules: Prisma.JsonValue | null;
     } | null;
   } | null;
-  specialtyId: string;
-  articleTypeId: string;
+  specialtyId: string | null;
+  articleTypeId: string | null;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
@@ -71,6 +71,15 @@ const mapProject = (project: {
 }): Project => ({
   id: project.id,
   ownerId: project.ownerId,
+  title: project.title,
+  status: project.status,
+  targetJournal: project.targetJournal,
+  specialtyId: project.specialtyId ?? "",
+  articleTypeId: project.articleTypeId ?? "",
+  readinessScore: project.readinessScore,
+  lastReviewedAt: project.lastReviewedAt,
+  createdAt: project.createdAt,
+  updatedAt: project.updatedAt,
   journal: project.journal
     ? {
         guidelinePack: project.journal.guidelinePack
@@ -84,15 +93,6 @@ const mapProject = (project: {
           : null,
       }
     : null,
-  title: project.title,
-  status: project.status,
-  targetJournal: project.targetJournal,
-  specialtyId: project.specialtyId,
-  articleTypeId: project.articleTypeId,
-  readinessScore: project.readinessScore,
-  lastReviewedAt: project.lastReviewedAt,
-  createdAt: project.createdAt,
-  updatedAt: project.updatedAt,
   sections: project.sections?.map(mapSection),
 });
 
@@ -579,7 +579,15 @@ export class PrismaProjectRepository implements ProjectRepository {
   }
 
   public async getAllSpecialties(): Promise<Specialty[]> {
-    return await this.prisma.journalSpecialty.findMany();
+    const specialties = await this.prisma.journalSpecialty.findMany({
+      include: { _count: { select: { journals: true } } },
+    });
+    return specialties.map((s) => ({
+      id: s.id,
+      name: s.name,
+      description: s.description,
+      journalCount: s._count.journals,
+    }));
   }
 
   public async getAllArticleTypes(): Promise<ArticleType[]> {
