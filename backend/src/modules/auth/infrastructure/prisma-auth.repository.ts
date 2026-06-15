@@ -146,4 +146,39 @@ export class PrismaAuthRepository implements AuthRepository {
       },
     });
   }
+
+  public async verifyEmail(token: string): Promise<User> {
+    let user = await this.prisma.user.findFirst({
+      where: {
+        emailVerificationToken: hashToken(token),
+        emailVerificationExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user)
+      throw new AppError(
+        "Invalid or expired token",
+        StatusCodes.BAD_REQUEST,
+        "INVALID_EMAIL_VERIFICATION_TOKEN",
+      );
+
+    user = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        emailVerificationExpires: null,
+        emailVerificationToken: null,
+      },
+    });
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      isActive: user.isActive,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
 }
