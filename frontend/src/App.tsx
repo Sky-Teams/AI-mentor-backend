@@ -11,6 +11,7 @@ import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SectionEditorPage } from "./pages/SectionEditorPage";
 import { AdminPage } from "./pages/AdminPage";
+import { SubscriptionPage } from "./pages/SubscriptionPage";
 // import { ParaphraseDetails } from "./pages/ParaphraseDetails";
 
 export const App = () => (
@@ -32,6 +33,7 @@ export const App = () => (
           <Route element={<JournalPage />} path="/journals/new" />
           <Route element={<BillingPage />} path="/billing" />
           <Route element={<AdminPage />} path="/admin" />
+          <Route element={<SubscriptionPage />} path="/admin/subscriptions" />
           {/* <Route
             element={<ParaphraseDetails />}
             path="/projects/paraphrase/:paraphraseRunId"

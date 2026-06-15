@@ -2,11 +2,13 @@ import { StatusCodes } from "http-status-codes";
 import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { AdminService } from "../application/admin.service";
+import { SubscriptionService } from "src/modules/subscription/application/subscription.service";
 import { JournalService } from "src/modules/journal/application/journal.service.js";
 
 export class AdminController {
   public constructor(
     private readonly adminService: AdminService,
+    private readonly subscriptionService: SubscriptionService,
     private readonly journalService: JournalService,
   ) {}
 
@@ -60,6 +62,29 @@ export class AdminController {
   ): Promise<void> {
     const users = await this.adminService.listUsersUsage();
     response.status(StatusCodes.OK).json(successResponse(users));
+  }
+
+  public async getRequestedPlans(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const result = await this.subscriptionService.getRequestedPlans();
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
+  public async approveRequestedPlan(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { id } = request.params as { id: string };
+    const { userId } = request.body;
+
+    const result = await this.subscriptionService.approveRequestedPlan(
+      userId,
+      id,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
   }
 
   public async createJournal(req: Request, res: Response) {

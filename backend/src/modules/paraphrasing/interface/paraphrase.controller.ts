@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { ParaphraseService } from "../application/paraphrase.service";
-import { LengthStrategy, ParaphraseRun, ToneType } from "../domain/paraphrase";
 import { StatusCodes } from "http-status-codes";
 import { successResponse } from "src/shared/http/api-response";
 
