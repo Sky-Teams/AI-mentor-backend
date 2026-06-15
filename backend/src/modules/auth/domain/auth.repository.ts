@@ -15,7 +15,7 @@ export interface AuthRepository {
     email: string;
     fullName: string;
     passwordHash: string;
-  }): Promise<User>;
+  }): Promise<{ message: string }>;
   storeRefreshToken(input: {
     userId: string;
     tokenHash: string;
@@ -23,4 +23,5 @@ export interface AuthRepository {
   }): Promise<void>;
   findRefreshToken(tokenHash: string): Promise<StoredRefreshToken | null>;
   revokeRefreshToken(tokenHash: string): Promise<void>;
+  verifyEmail(token: string): Promise<User>;
 }
