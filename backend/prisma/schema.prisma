@@ -171,7 +171,7 @@ model JournalSectionTemplate {
   checklists      SectionChecklist[]
   parentSectionId String?
   parentSection   JournalSectionTemplate?  @relation("sectionToSubsection", fields: [parentSectionId], references: [id], onDelete: SetNull)
-  subSections     JournalSectionTemplate[] @relation("sectionToSubsection", fields: [journalSectionTemplateId], references: [id])
+  subSections     JournalSectionTemplate[] @relation("sectionToSubsection")
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
