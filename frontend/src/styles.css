@@ -248,7 +248,7 @@ textarea {
 .content-layout {
   display: grid;
   gap: 0.65rem;
-  background-color: white;
+  background-color: rgb(247, 247, 247);
 }
 .content-layout {
   border: 1px solid var(--line);
@@ -451,42 +451,29 @@ td {
 .paraphrase-actions {
   position: relative;
 }
-.paraphrase-item {
-  display: flex;
+.paraphrase-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  box-sizing: border-box;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border: 1px solid #eee;
-  margin: 5px 10px;
-  border-radius: 10px;
-  background: #fff;
+  width: 100%;
+  background-color: rgb(255, 255, 255);
+  grid-gap: 25px;
+  margin: auto;
 }
-.paraphrase-item:hover {
+.paraphrase-content > div {
+  padding: 5px 20px;
+  text-align: start;
+  box-sizing: border-box;
+  width: 100%;
+  font-size: 14px;
+}
+.paraphrase-content:hover {
   background-color: rgb(242, 242, 252);
   border: 1px solid blueviolet;
   cursor: pointer;
 }
-.paraphrase-content {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-}
-
-.paraphrase-content > *:not(:last-child) {
-  border-right: 1px solid rgb(201, 201, 201);
-}
-
-.paraphrase-row {
-  display: grid;
-  width: 150px;
-  justify-content: start;
-}
-
-.main-info {
-  font-size: 14px;
-  color: #333;
-}
-
 .sub-info {
   font-size: 12px;
   color: #888;

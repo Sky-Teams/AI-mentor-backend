@@ -1,4 +1,8 @@
-import { SubscriptionPlan, SubscriptionRequest } from "./subscription";
+import {
+  RequestedPlans,
+  SubscriptionPlan,
+  SubscriptionRequest,
+} from "./subscription";
 
 export interface SubscriptionRepository {
   listPlans(): Promise<SubscriptionPlan[]>;
@@ -7,4 +11,6 @@ export interface SubscriptionRepository {
     subscriptionPlanId: string,
     userId: string,
   ): Promise<SubscriptionRequest>;
+  getRequestedPlans(): Promise<RequestedPlans[]>;
+  approveRequestedPlan(userId: string, id: string): Promise<RequestedPlans>;
 }
