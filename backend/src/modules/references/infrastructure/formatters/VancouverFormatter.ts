@@ -32,6 +32,7 @@ export class VancouverFormatter {
       ? `${c.journalName.replace(/&amp;/g, "&").trim()}. `
       : "";
     const title = c?.title ? `${c.title}. ` : "";
+    const formatPages = this.formatPages(c?.page);
 
     let citationDetails = year;
     if (c?.volume || c?.page || c?.issue) {
@@ -40,9 +41,9 @@ export class VancouverFormatter {
       if (c?.issue) citationDetails += `(${c.issue})`;
       if (c?.page) {
         if (c?.volume || c?.issue) {
-          citationDetails += `:${c.page.trim()}`;
+          citationDetails += `:${formatPages}`;
         } else {
-          citationDetails += c.page.trim();
+          citationDetails += formatPages;
         }
       }
     }
@@ -77,6 +78,22 @@ export class VancouverFormatter {
     }
 
     return formatted.join(", ");
+  }
+
+  private formatPages(pages?: string | null): string {
+    if (!pages || pages.trim() === "") return "";
+    const parts = pages.split("-");
+
+    if (parts.length === 2) {
+      const start = parts[0]?.trim();
+      const end = parts[1]?.trim();
+
+      if (start?.length === 3 && end?.length === 3 && start[0] === end[0]) {
+        return ` ${start}-${end.substring(1)}`;
+      }
+      return ` ${start}-${end}`;
+    }
+    return ` ${pages.trim()}`;
   }
 
   private getYear(dateInput: any): string {

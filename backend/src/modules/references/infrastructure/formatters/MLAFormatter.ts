@@ -23,22 +23,6 @@ export class MLAFormatter {
     }
   }
 
-  private formatPagesMLA(pages?: string | null): string {
-    if (!pages || pages.trim() === "") return "";
-    const parts = pages.split("-");
-
-    if (parts.length === 2) {
-      const start = parts[0]?.trim();
-      const end = parts[1]?.trim();
-
-      if (start?.length === 3 && end?.length === 3 && start[0] === end[0]) {
-        return `pp. ${start}-${end.substring(1)}`;
-      }
-      return `pp. ${start}-${end}`;
-    }
-    return `p. ${pages.trim()}`;
-  }
-
   private async formatJournal(c: JournalSearchResponse) {
     let authors = await this.formatAuthors(c?.authors);
 
@@ -46,7 +30,7 @@ export class MLAFormatter {
       authors = authors.substring(0, authors.length - 1);
     }
 
-    const pagesFormatted = this.formatPagesMLA(c?.page);
+    const page = c?.page ? `pp. ${c.page}, ` : "";
     const volume = c?.volume ? `vol. ${c.volume}, ` : "";
     const issue = c?.issue ? `no. ${c.issue}, ` : "";
     const year = this.getYear(c?.datePublished);
@@ -54,7 +38,7 @@ export class MLAFormatter {
     const title = c?.title ? `"${c.title}." ` : "";
     const journalName = c?.journalName ? `${c.journalName}, ` : "";
 
-    return `${authors}${title}${journalName}${volume}${issue}${year ? year + ", " : ""}${pagesFormatted}${doiPart}.`;
+    return `${authors}${title}${journalName}${volume}${issue}${year ? year + ", " : ""}${page}${doiPart}.`;
   }
 
   // These functions will be needed in the future.
