@@ -110,7 +110,11 @@ export const createApp = (): express.Express => {
   const projectController = new ProjectController(projectService);
   const reviewController = new ReviewController(reviewService);
   const billingController = new BillingController(billingService);
-  const adminController = new AdminController(adminService, journalService);
+  const adminController = new AdminController(
+    adminService,
+    subscriptionService,
+    journalService,
+  );
   const paraphraseController = new ParaphraseController(paraphraseService);
   const journalController = new JournalController(journalService);
   const referenceController = new ReferenceController(referenceService);
