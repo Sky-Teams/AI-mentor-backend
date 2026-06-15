@@ -23,10 +23,14 @@ export const LoginPage = () => {
         password: String(formData.get("password")),
       });
 
-      const next = (location.state as { from?: string } | null)?.from ?? "/dashboard";
+      const next =
+        (location.state as { from?: string } | null)?.from ?? "/dashboard";
       navigate(next, { replace: true });
-    } catch (submitError) {
-      setError("Login failed. Check the seeded user or your credentials.");
+    } catch (error: any) {
+      setError(
+        error?.response?.data?.error?.message ||
+          "Login failed. Check the seeded user or your credentials.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -44,16 +48,30 @@ export const LoginPage = () => {
         </div>
 
         <Field label="Email">
-          <input name="email" placeholder="researcher@example.com" required type="email" />
+          <input
+            name="email"
+            placeholder="researcher@example.com"
+            required
+            type="email"
+          />
         </Field>
 
         <Field label="Password">
-          <input name="password" placeholder="Enter password" required type="password" />
+          <input
+            name="password"
+            placeholder="Enter password"
+            required
+            type="password"
+          />
         </Field>
 
         {error ? <p className="error-text">{error}</p> : null}
 
-        <button className="primary-button" disabled={isSubmitting} type="submit">
+        <button
+          className="primary-button"
+          disabled={isSubmitting}
+          type="submit"
+        >
           {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
 
