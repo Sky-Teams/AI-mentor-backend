@@ -12,10 +12,25 @@ export const projectsApi = {
     return unwrap(response.data);
   },
 
+  async getArticleTypes(): Promise<any[]> {
+    const response = await apiClient.get<ApiSuccessResponse<any[]>>(
+      "/projects/articleTypes",
+    );
+    return unwrap(response.data);
+  },
+
+  async getSpecialties(): Promise<any[]> {
+    const response = await apiClient.get<ApiSuccessResponse<any[]>>(
+      "/projects/specialties",
+    );
+    return unwrap(response.data);
+  },
+
   async create(input: {
     title: string;
+    articleTypeId: string;
+    specialtyId: string;
     targetJournal?: string;
-    metadata?: Record<string, string>;
   }): Promise<Project> {
     const response = await apiClient.post<ApiSuccessResponse<Project>>(
       "/projects",
