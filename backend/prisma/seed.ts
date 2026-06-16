@@ -410,6 +410,33 @@ async function main() {
         })),
       });
     }
+
+    if (section.subsections?.length) {
+      for (const sub of section.subsections) {
+        const createdSub = await prisma.journalSectionTemplate.create({
+          data: {
+            journalId: journal.id,
+            parentSectionId: createdSection.id,
+            key: sub.key,
+            title: sub.title,
+            sectionOrder: sub.sectionOrder,
+            isOptional: sub.isOptional,
+            description: sub.description,
+            maxChars: sub.maxChars,
+          },
+        });
+
+        if (sub.checklists?.length) {
+          await prisma.sectionChecklist.createMany({
+            data: sub.checklists.map((group) => ({
+              journalSectionTemplateId: createdSub.id,
+              title: group.title,
+              items: group.items,
+            })),
+          });
+        }
+      }
+    }
   }
 
   const existingProject = await prisma.project.findFirst({
