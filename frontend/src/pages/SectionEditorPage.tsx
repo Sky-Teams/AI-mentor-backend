@@ -21,6 +21,7 @@ export const SectionEditorPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [sectionId, setSectionId] = useState("");
+  const [error, setError] = useState("");
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
@@ -59,12 +60,15 @@ export const SectionEditorPage = () => {
     setIsSaving(true);
     setStatusMessage(null);
     try {
+      setError("");
       await projectsApi.updateSection(projectId, sectionKey, {
         content,
         changeSummary: "Updated from internal web UI",
       });
       setStatusMessage("Section saved and versioned.");
       await loadData();
+    } catch (error: any) {
+      setError(error?.response?.data?.error?.message || "An error occurred.");
     } finally {
       setIsSaving(false);
     }
@@ -74,6 +78,7 @@ export const SectionEditorPage = () => {
     setIsReviewing(true);
     setStatusMessage(null);
     try {
+      setError("");
       await projectsApi.updateSection(projectId, sectionKey, {
         content,
         changeSummary: "Saved before AI review",
@@ -81,6 +86,8 @@ export const SectionEditorPage = () => {
       await reviewsApi.triggerReview(projectId, sectionKey);
       setStatusMessage("Review triggered. Refreshing review state...");
       await loadData();
+    } catch (error: any) {
+      setError(error?.response?.data?.error?.message || "An error occurred.");
     } finally {
       setIsReviewing(false);
     }
@@ -88,20 +95,25 @@ export const SectionEditorPage = () => {
 
   // Navigate to another section (with save check)
   const goToSection = async (targetKey: string) => {
-    if (hasUnsavedChanges) {
-      const ok = window.confirm(
-        "You have unsaved changes. Save before leaving?",
-      );
-      if (ok) {
-        await projectsApi.updateSection(projectId, sectionKey, {
-          content,
-          changeSummary: "Saved before navigation",
-        });
+    try {
+      setError("");
+      if (hasUnsavedChanges) {
+        const ok = window.confirm(
+          "You have unsaved changes. Save before leaving?",
+        );
+        if (ok) {
+          await projectsApi.updateSection(projectId, sectionKey, {
+            content,
+            changeSummary: "Saved before navigation",
+          });
+        }
       }
-    }
 
-    navigate(`/projects/${projectId}/sections/${targetKey}`);
-    window.scrollTo(0, 0);
+      navigate(`/projects/${projectId}/sections/${targetKey}`);
+      window.scrollTo(0, 0);
+    } catch (error: any) {
+      setError(error?.response?.data?.error?.message || "An error occurred.");
+    }
   };
 
   const latestSectionReview = useMemo(
@@ -138,6 +150,7 @@ export const SectionEditorPage = () => {
           </button>
         </div>
       </div>
+      {error && <p className="error-text">{error}</p>}
       {statusMessage ? <p className="success-text">{statusMessage}</p> : null}
 
       <div className="content-layout">
@@ -146,17 +159,24 @@ export const SectionEditorPage = () => {
             <div className="card section-editor__content-card">
               <div className="card-header">
                 <h3>Content</h3>
-                <span className="badge">{content.length} chars</span>
                 {hasUnsavedChanges && (
                   <span className="badge warning">Unsaved</span>
                 )}
               </div>
               <textarea
+                style={
+                  (section?.maxChars as number) < content.trim().length
+                    ? { border: "1px solid red", outline: "none" }
+                    : { outline: "none" }
+                }
                 className="editor-area"
                 onChange={(event) => setContent(event.target.value)}
                 rows={10}
                 value={content}
               />
+              <span className="badge" style={{ float: "right" }}>
+                {content.trim().length} chars
+              </span>
             </div>
 
             <div className="section-editor__checklist-divider">
