@@ -174,6 +174,16 @@ export const SectionEditorPage = () => {
                 rows={10}
                 value={content}
               />
+              <span
+                style={{
+                  color: "green",
+                  fontSize: "12px",
+                  backgroundColor: "#f6f7fb",
+                }}
+                className="badge"
+              >
+                Max chars {section?.maxChars}
+              </span>
               <span className="badge" style={{ float: "right" }}>
                 {content.trim().length} chars
               </span>
