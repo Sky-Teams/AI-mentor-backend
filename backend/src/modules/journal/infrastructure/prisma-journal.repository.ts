@@ -42,6 +42,20 @@ const mapJournal = (journal: any): CreatedJournal => ({
       createdAt: checklist.createdAt,
       updatedAt: checklist.updatedAt,
     })),
+    subSections: section.subSections.map((sub: any) => ({
+      id: sub.id,
+      key: sub.key,
+      title: sub.title,
+      sectionOrder: sub.sectionOrder,
+      isOptional: sub.isOptional,
+      maxChars: sub.maxChars,
+      description: sub.description,
+      checklists: sub.checklists.map((checklist: any) => ({
+        id: checklist.id,
+        title: checklist.title,
+        items: checklist.items,
+      })),
+    })),
   })),
 });
 
@@ -126,7 +140,13 @@ export class PrismaJournalRepository implements JournalRepository {
         include: {
           guidelinePack: true,
           sectionTemplates: {
-            include: { checklists: true },
+            where: { parentSectionId: null },
+            include: {
+              checklists: true,
+              subSections: {
+                include: { checklists: true },
+              },
+            },
           },
           specialty: true,
         },
