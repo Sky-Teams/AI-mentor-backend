@@ -49,6 +49,7 @@ export interface JournalSectionDefinition {
   description?: string;
   maxChars: number;
   checklists: SectionChecklistsGroup[];
+  subsections?: JournalSectionDefinition[];
 }
 
 export interface CreateJournalInput {
@@ -170,6 +171,26 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
             "Mention impact on practice",
             "Include at least 3 take-away lessons",
           ],
+        },
+      ],
+      subsections: [
+        {
+          key: "ABSTRACT_INTRODUCTION",
+          title: "Abstract - Introduction",
+          sectionOrder: 1,
+          isOptional: false,
+          maxChars: 500,
+          description: "Introduction part of abstract",
+          checklists: [],
+        },
+        {
+          key: "ABSTRACT_CONCLUSION",
+          title: "Abstract - Conclusion",
+          sectionOrder: 2,
+          isOptional: false,
+          maxChars: 500,
+          description: "Conclusion part of abstract",
+          checklists: [],
         },
       ],
     },
