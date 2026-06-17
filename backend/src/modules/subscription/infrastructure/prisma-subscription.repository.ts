@@ -204,4 +204,30 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     return mapRequestedPlan(result);
   }
+
+  public async cancelRequestedPlan(
+    id: string,
+    userId: string,
+  ): Promise<RequestedPlans> {
+    const existing = await this.prisma.subscriptionRequest.findFirst({
+      where: { id, userId, status: "PENDING" },
+    });
+
+    if (!existing)
+      throw new AppError(
+        "Request does not exists",
+        StatusCodes.NOT_FOUND,
+        "SUBSCRIPTION_REQUEST_NOT_FOUND",
+      );
+
+    const result = await this.prisma.subscriptionRequest.update({
+      where: { id: existing.id },
+      data: {
+        status: "CANCELLED",
+      },
+      include: { subscriptionPlan: true, user: true },
+    });
+
+    return mapRequestedPlan(result);
+  }
 }
