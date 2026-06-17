@@ -1,10 +1,13 @@
-import { Router } from "express";
+import {  Router } from "express";
 import { asyncHandler } from "../../../shared/http/async-handler";
 import { authenticate } from "../../../shared/middleware/authenticate";
 import type { TokenService } from "../../auth/domain/token-service";
 import { SubscriptionController } from "./subscription.controller";
 import { validate } from "src/shared/http/validation";
-import { subscriptionPlanIdSchema } from "./subscription.schema";
+import {
+  subscriptionPlanIdSchema,
+  subscriptionRequestIdSchema,
+} from "./subscription.schema";
 
 export const createSubscriptionRouter = (
   controller: SubscriptionController,
@@ -27,6 +30,13 @@ export const createSubscriptionRouter = (
     asyncHandler((request, response) => controller.buyPlan(request, response)),
   );
 
-  // Admin Routes
+  
+  router.patch(
+    "/plans/requested-cancel/:id",
+    validate(subscriptionRequestIdSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.cancelRequestedPlan(request, response),
+    ),
+  );
   return router;
 };
