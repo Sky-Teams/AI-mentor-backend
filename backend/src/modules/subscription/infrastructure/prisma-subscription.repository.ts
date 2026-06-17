@@ -230,4 +230,16 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     return mapRequestedPlan(result);
   }
+
+  public async getUserRequestedPlan(
+    userId: string,
+  ): Promise<RequestedPlans | null> {
+    const result = await this.prisma.subscriptionRequest.findFirst({
+      where: { userId, status: "PENDING" },
+      include: { subscriptionPlan: true, user: true },
+    });
+
+    if (!result) return null;
+    return mapRequestedPlan(result);
+  }
 }
