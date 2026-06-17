@@ -103,19 +103,18 @@ export const buildJournalPayload = (
         .filter((item) => item.length > 0),
     })),
     subsections: section.subsections.map((sub, subIndex) => ({
-      // NEW
       key: makeSectionKey(sub.title, subIndex),
       title: sub.title.trim(),
       description: sub.description.trim() || undefined,
       sectionOrder: subIndex + 1,
       isOptional: sub.isOptional,
       maxChars: Number(sub.maxChars),
-      checklists: sub.checklists.map((checklist) => ({
-        title: checklist.title.trim() || null,
-        items: checklist.items
-          .map((item) => item.text.trim())
-          .filter((item) => item.length > 0),
-      })),
+      checklists: sub.checklists
+        .map((c) => ({
+          title: c.title.trim() || null,
+          items: c.items.map((i) => i.text.trim()).filter((i) => i.length > 0),
+        }))
+        .filter((c) => c.items.length > 0),
     })),
   })),
 });
