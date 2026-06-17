@@ -131,7 +131,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           where: { journalId: journal.id, parentSectionId: null },
           orderBy: { sectionOrder: "asc" },
           include: {
-            subSections: { orderBy: { sectionOrder: "asc" } },
+            subsections: { orderBy: { sectionOrder: "asc" } },
           },
         });
 
@@ -148,9 +148,9 @@ export class PrismaProjectRepository implements ProjectRepository {
             },
           });
 
-          if (template.subSections.length > 0) {
+          if (template.subsections.length > 0) {
             await transaction.projectSection.createMany({
-              data: template.subSections.map((sub) => ({
+              data: template.subsections.map((sub) => ({
                 projectId: createdProject.id,
                 parentSectionId: createdSection.id,
                 key: sub.key,

@@ -171,7 +171,7 @@ model JournalSectionTemplate {
   checklists      SectionChecklist[]
   parentSectionId String?
   parentSection   JournalSectionTemplate?  @relation("sectionToSubsection", fields: [parentSectionId], references: [id], onDelete: SetNull)
-  subSections     JournalSectionTemplate[] @relation("sectionToSubsection")
+  subsections     JournalSectionTemplate[] @relation("sectionToSubsection")
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
@@ -312,8 +312,8 @@ model ProjectSection {
   paraphraseRuns             ParaphraseRun[]
   sectionChecklistItemChecks SectionChecklistItemCheck[]
   parentSectionId            String?
-  parentSection              ProjectSection?             @relation("ProjectSectionSubsections", fields: [parentSectionId], references: [id], onDelete: SetNull)
-  subSections                ProjectSection[]            @relation("ProjectSectionSubsections")
+  parentSection              ProjectSection?             @relation("ProjectSectionsubsections", fields: [parentSectionId], references: [id], onDelete: SetNull)
+  subsections                ProjectSection[]            @relation("ProjectSectionsubsections")
 
   @@unique([projectId, key])
   @@index([projectId, sectionOrder])
