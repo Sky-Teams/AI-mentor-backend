@@ -42,24 +42,26 @@ const mapJournal = (journal: any): CreatedJournal => ({
       createdAt: checklist.createdAt,
       updatedAt: checklist.updatedAt,
     })),
-    subsections: section.subsections?.map((sub: any) => ({
-      id: sub.id,
-      key: sub.key,
-      title: sub.title,
-      sectionOrder: sub.sectionOrder,
-      isOptional: sub.isOptional,
-      maxChars: sub.maxChars,
-      description: sub.description,
-      createdAt: sub.createdAt,
-      updatedAt: sub.updatedAt,
-      checklists: sub.checklists?.map((checklist: any) => ({
-        id: checklist.id,
-        title: checklist.title,
-        items: checklist.items,
-        createdAt: checklist.createdAt,
-        updatedAt: checklist.updatedAt,
+    subsections:
+      section.subsections?.map((sub: any) => ({
+        id: sub.id,
+        key: sub.key,
+        title: sub.title,
+        sectionOrder: sub.sectionOrder,
+        isOptional: sub.isOptional,
+        maxChars: sub.maxChars,
+        description: sub.description,
+        createdAt: sub.createdAt,
+        updatedAt: sub.updatedAt,
+        checklists:
+          sub.checklists?.map((checklist: any) => ({
+            id: checklist.id,
+            title: checklist.title,
+            items: checklist.items,
+            createdAt: checklist.createdAt,
+            updatedAt: checklist.updatedAt,
+          })) ?? [],
       })) ?? [],
-    })) ?? [],
   })),
 });
 
@@ -88,7 +90,7 @@ export class PrismaJournalRepository implements JournalRepository {
     if (existing)
       throw new AppError(
         "Journal with this name already exists",
-          StatusCodes.CONFLICT,
+        StatusCodes.CONFLICT,
         "JOURNAL_ALREADY_EXISTS",
       );
 
