@@ -42,7 +42,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
       createdAt: checklist.createdAt,
       updatedAt: checklist.updatedAt,
     })),
-    subsections: section.subsections.map((sub: any) => ({
+    subsections: section.subsections?.map((sub: any) => ({
       id: sub.id,
       key: sub.key,
       title: sub.title,
@@ -50,12 +50,16 @@ const mapJournal = (journal: any): CreatedJournal => ({
       isOptional: sub.isOptional,
       maxChars: sub.maxChars,
       description: sub.description,
-      checklists: sub.checklists.map((checklist: any) => ({
+      createdAt: sub.createdAt,
+      updatedAt: sub.updatedAt,
+      checklists: sub.checklists?.map((checklist: any) => ({
         id: checklist.id,
         title: checklist.title,
         items: checklist.items,
-      })),
-    })),
+        createdAt: checklist.createdAt,
+        updatedAt: checklist.updatedAt,
+      })) ?? [],
+    })) ?? [],
   })),
 });
 
@@ -84,7 +88,7 @@ export class PrismaJournalRepository implements JournalRepository {
     if (existing)
       throw new AppError(
         "Journal with this name already exists",
-        StatusCodes.NOT_FOUND,
+          StatusCodes.CONFLICT,
         "JOURNAL_ALREADY_EXISTS",
       );
 
@@ -153,7 +157,7 @@ export class PrismaJournalRepository implements JournalRepository {
       });
 
       for (const section of input.sections) {
-        if (!section.subsections || section.subsections?.length === 0) continue;
+        if (!section.subsections || section.subsections.length === 0) continue;
 
         // find the created parent section
         const parentSection = journal.sectionTemplates.find(
