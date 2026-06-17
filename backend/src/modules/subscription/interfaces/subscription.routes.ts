@@ -1,4 +1,4 @@
-import {  Router } from "express";
+import { Router } from "express";
 import { asyncHandler } from "../../../shared/http/async-handler";
 import { authenticate } from "../../../shared/middleware/authenticate";
 import type { TokenService } from "../../auth/domain/token-service";
@@ -30,7 +30,6 @@ export const createSubscriptionRouter = (
     asyncHandler((request, response) => controller.buyPlan(request, response)),
   );
 
-  
   router.patch(
     "/plans/requested-cancel/:id",
     validate(subscriptionRequestIdSchema, "params"),
@@ -38,5 +37,13 @@ export const createSubscriptionRouter = (
       controller.cancelRequestedPlan(request, response),
     ),
   );
+
+  router.get(
+    "/plans/requested-plan",
+    asyncHandler((request, response) =>
+      controller.getUserRequestedPlan(request, response),
+    ),
+  );
+
   return router;
 };
