@@ -43,14 +43,21 @@ export const SectionEditorPage = () => {
     loadData();
   }, [projectId, sectionKey]);
 
-  // Find the current section's position
-  const currentIndex = allSections.findIndex((s) => s.key === sectionKey);
-  const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
+  // Only root sections for prev/next navigation
+  const rootSections = allSections.filter((s) => !s.parentSectionId);
+  const currentIndex = rootSections.findIndex((s) => s.key === sectionKey);
+  const prevSection = currentIndex > 0 ? rootSections[currentIndex - 1] : null;
   const nextSection =
-    currentIndex < allSections.length - 1
-      ? allSections[currentIndex + 1]
+    currentIndex < rootSections.length - 1
+      ? rootSections[currentIndex + 1]
       : null;
-  const isLast = currentIndex === allSections.length - 1;
+  const isLast = currentIndex === rootSections.length - 1;
+
+  // subsections of current section
+  const subsections = useMemo(
+    () => allSections.filter((s) => s.parentSectionId === section?.id),
+    [allSections, section],
+  );
 
   // Check if user made changes
   const hasUnsavedChanges = section && section.content !== content;
@@ -138,6 +145,7 @@ export const SectionEditorPage = () => {
           </button>
         </div>
       </div>
+
       {statusMessage ? <p className="success-text">{statusMessage}</p> : null}
 
       <div className="content-layout">
@@ -174,6 +182,37 @@ export const SectionEditorPage = () => {
         <ReviewLayout review={latestSectionReview} />
       </div>
 
+      {/* subsections LIST */}
+      {subsections.length > 0 && (
+        <div className="card" style={{ marginTop: "1.5rem" }}>
+          <div className="card-header">
+            <h3>subsections</h3>
+            <span className="badge">{subsections.length}</span>
+          </div>
+          <div className="stack">
+            {subsections.map((sub) => (
+              <Link
+                key={sub.id}
+                className="section-link"
+                to={`/projects/${projectId}/sections/${sub.key}`}
+                style={{
+                  paddingLeft: "0.75rem",
+                  borderLeft: "3px solid #e5e7eb",
+                }}
+              >
+                <div>
+                  <strong>{sub.title}</strong>
+                  <p className="muted-text">
+                    {sub.status} {sub.isOptional ? "· Optional" : ""}
+                  </p>
+                </div>
+                <span>{sub.content.trim().length} chars</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       <ParaphrasePanel
         sectionId={sectionId}
         content={content}
@@ -181,7 +220,7 @@ export const SectionEditorPage = () => {
         onSaveSuccess={loadData}
       />
 
-      {/* Navigation buttons moved to the very bottom, after ParaphrasePanel */}
+      {/* Navigation buttons */}
       <div
         className="button-row"
         style={{ justifyContent: "space-between", marginTop: "1rem" }}
