@@ -47,13 +47,18 @@ export const SectionEditorPage = () => {
   // otherwise navigate among root sections.
   const navigationSections = (() => {
     if (section?.parentSectionId) {
-      return allSections.filter((s) => s.parentSectionId === section.parentSectionId);
+      return allSections.filter(
+        (s) => s.parentSectionId === section.parentSectionId,
+      );
     }
     return allSections.filter((s) => !s.parentSectionId);
   })();
 
-  const currentIndex = navigationSections.findIndex((s) => s.key === sectionKey);
-  const prevSection = currentIndex > 0 ? navigationSections[currentIndex - 1] : null;
+  const currentIndex = navigationSections.findIndex(
+    (s) => s.key === sectionKey,
+  );
+  const prevSection =
+    currentIndex > 0 ? navigationSections[currentIndex - 1] : null;
   const nextSection =
     currentIndex < navigationSections.length - 1
       ? navigationSections[currentIndex + 1]
