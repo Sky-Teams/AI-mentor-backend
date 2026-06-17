@@ -37,4 +37,15 @@ export class SubscriptionController {
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async getUserRequestedPlan(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const result = await this.subscriptionService.getUserRequestedPlan(
+      request.auth!.userId,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }
