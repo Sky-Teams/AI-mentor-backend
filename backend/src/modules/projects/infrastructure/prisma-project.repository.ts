@@ -16,7 +16,7 @@ import { StatusCodes } from "http-status-codes";
 const mapSection = (section: {
   id: string;
   projectId: string;
-  key: ProjectSection["key"];
+  key: string;
   title: string;
   content: string;
   sectionOrder: number;
@@ -24,6 +24,7 @@ const mapSection = (section: {
   status: ProjectSection["status"];
   lastEditedAt: Date | null;
   updatedAt: Date;
+  parentSectionId?: string | null;
 }): ProjectSection => ({
   id: section.id,
   projectId: section.projectId,
@@ -35,6 +36,7 @@ const mapSection = (section: {
   status: section.status,
   lastEditedAt: section.lastEditedAt,
   updatedAt: section.updatedAt,
+  parentSectionId: section.parentSectionId ?? null,
 });
 
 const mapProject = (project: {
@@ -66,6 +68,7 @@ const mapProject = (project: {
     status: ProjectSection["status"];
     lastEditedAt: Date | null;
     updatedAt: Date;
+    parentSectionId?: string | null;
   }>;
 }): Project => ({
   id: project.id,

@@ -41,6 +41,7 @@ export interface ProjectSection {
     title: string | null;
     items: Array<{ text: string; checked: boolean }>;
   }>;
+  parentSectionId: string | null;
 }
 
 export interface SectionVersion {

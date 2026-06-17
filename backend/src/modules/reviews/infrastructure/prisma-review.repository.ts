@@ -435,6 +435,7 @@ export class PrismaReviewRepository implements ReviewRepository {
       status: section.status,
       lastEditedAt: section.lastEditedAt,
       updatedAt: section.updatedAt,
+      parentSectionId: section.parentSectionId,
     };
   }
 
