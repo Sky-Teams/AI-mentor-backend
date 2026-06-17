@@ -19,6 +19,7 @@ export type SectionDraft = {
   isOptional: boolean;
   maxChars: string;
   checklists: ChecklistDraft[];
+  subsections: SectionDraft[]; // NEW
 };
 
 export type JournalFormState = {
@@ -55,6 +56,7 @@ export const createSection = (): SectionDraft => ({
   isOptional: false,
   maxChars: "",
   checklists: [createChecklist()],
+  subsections: [], // NEW
 });
 
 export const createEmptyJournalForm = (): JournalFormState => ({
@@ -99,6 +101,21 @@ export const buildJournalPayload = (
       items: checklist.items
         .map((item) => item.text.trim())
         .filter((item) => item.length > 0),
+    })),
+    subsections: section.subsections.map((sub, subIndex) => ({
+      // NEW
+      key: makeSectionKey(sub.title, subIndex),
+      title: sub.title.trim(),
+      description: sub.description.trim() || undefined,
+      sectionOrder: subIndex + 1,
+      isOptional: sub.isOptional,
+      maxChars: Number(sub.maxChars),
+      checklists: sub.checklists.map((checklist) => ({
+        title: checklist.title.trim() || null,
+        items: checklist.items
+          .map((item) => item.text.trim())
+          .filter((item) => item.length > 0),
+      })),
     })),
   })),
 });
