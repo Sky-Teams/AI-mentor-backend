@@ -61,4 +61,12 @@ export class SubscriptionService {
       userId,
     );
   }
+
+  public async getUserRequestedPlan(
+    userId: string,
+  ): Promise<RequestedPlans | null> {
+    await this.userRepository.getUserById(userId);
+
+    return await this.subscriptionRepository.getUserRequestedPlan(userId);
+  }
 }
