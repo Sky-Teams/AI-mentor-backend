@@ -43,15 +43,22 @@ export const SectionEditorPage = () => {
     loadData();
   }, [projectId, sectionKey]);
 
-  // Only root sections for prev/next navigation
-  const rootSections = allSections.filter((s) => !s.parentSectionId);
-  const currentIndex = rootSections.findIndex((s) => s.key === sectionKey);
-  const prevSection = currentIndex > 0 ? rootSections[currentIndex - 1] : null;
+  // Determine navigation list: if viewing a subsection, navigate among siblings;
+  // otherwise navigate among root sections.
+  const navigationSections = (() => {
+    if (section?.parentSectionId) {
+      return allSections.filter((s) => s.parentSectionId === section.parentSectionId);
+    }
+    return allSections.filter((s) => !s.parentSectionId);
+  })();
+
+  const currentIndex = navigationSections.findIndex((s) => s.key === sectionKey);
+  const prevSection = currentIndex > 0 ? navigationSections[currentIndex - 1] : null;
   const nextSection =
-    currentIndex < rootSections.length - 1
-      ? rootSections[currentIndex + 1]
+    currentIndex < navigationSections.length - 1
+      ? navigationSections[currentIndex + 1]
       : null;
-  const isLast = currentIndex === rootSections.length - 1;
+  const isLast = currentIndex === navigationSections.length - 1;
 
   // subsections of current section
   const subsections = useMemo(
