@@ -4,7 +4,7 @@ export const subscriptionPlanIdSchema = z.object({
   subscriptionPlanId: z.string().min(1),
 });
 
-export const requestedPlanIdSchema = z.object({
+export const subscriptionRequestIdSchema = z.object({
   id: z.string().min(1),
 });
 
