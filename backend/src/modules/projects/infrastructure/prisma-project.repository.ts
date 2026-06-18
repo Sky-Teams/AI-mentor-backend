@@ -124,7 +124,7 @@ export class PrismaProjectRepository implements ProjectRepository {
         "SPECIALTY_NOT_FOUND",
       );
 
-    // 3) Find journals by specialty
+    // 3) Find journal
     const journal = input.targetJournal
       ? await this.prisma.journal.findFirst({
           where: { id: input.targetJournal },
