@@ -3,6 +3,7 @@ import type {
   ApiSuccessResponse,
   Project,
   ProjectSection,
+  Specialty,
 } from "../../types/api";
 
 export const projectsApi = {
@@ -19,8 +20,8 @@ export const projectsApi = {
     return unwrap(response.data);
   },
 
-  async getSpecialties(): Promise<any[]> {
-    const response = await apiClient.get<ApiSuccessResponse<any[]>>(
+  async getSpecialties(): Promise<Specialty[]> {
+    const response = await apiClient.get<ApiSuccessResponse<Specialty[]>>(
       "/projects/specialties",
     );
     return unwrap(response.data);
