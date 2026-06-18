@@ -1,15 +1,15 @@
 import { apiClient, unwrap } from "./client";
-import type { ApiSuccessResponse } from "../../types/api";
+import type { ApiSuccessResponse, Journal } from "../../types/api";
 
 export const journalsApi = {
   async list() {
     const response =
-      await apiClient.get<ApiSuccessResponse<any[]>>("/journals");
+      await apiClient.get<ApiSuccessResponse<Journal[]>>("/journals");
     return unwrap(response.data);
   },
 
   async listBySpecialty(specialtyId: string) {
-    const response = await apiClient.get<ApiSuccessResponse<any[]>>(
+    const response = await apiClient.get<ApiSuccessResponse<Journal[]>>(
       `/journals?specialtyId=${specialtyId}`,
     );
     return unwrap(response.data);
