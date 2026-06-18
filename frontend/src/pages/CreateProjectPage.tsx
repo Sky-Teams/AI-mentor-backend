@@ -188,7 +188,6 @@ export const CreateProjectPage = () => {
             {journals.map((j) => (
               <option key={j.id} value={j.id}>
                 {j.name}
-                {j.description ? ` — ${j.description}` : ""}
               </option>
             ))}
           </select>
