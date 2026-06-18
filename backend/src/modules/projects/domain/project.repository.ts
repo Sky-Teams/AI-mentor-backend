@@ -1,4 +1,3 @@
-import type { ArticleType } from "@prisma/client";
 import type {
   Project,
   ProjectSection,
@@ -29,6 +28,13 @@ export interface UpdateSectionInput {
   sectionKey: ProjectSection["key"];
   content: string;
   changeSummary?: string;
+}
+
+export interface ArticleType {
+  id: string;
+  name: string;
+  description: string | null;
+  status: "ACTIVE" | "INACTIVE";
 }
 
 export interface ProjectRepository {
