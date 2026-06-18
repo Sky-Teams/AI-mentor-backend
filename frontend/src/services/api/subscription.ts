@@ -69,7 +69,7 @@ export const subscriptionApi = {
 
   async cancelRequestedPlan(id: string) {
     const response = await apiClient.patch<ApiSuccessResponse<RequestedPlans>>(
-      `/subscriptions/plans/requested-cancel/${id}`,
+      `/subscriptions/plans/requested-plan/${id}/cancel`,
     );
 
     return unwrap(response.data);

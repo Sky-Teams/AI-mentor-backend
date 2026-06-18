@@ -31,7 +31,7 @@ export const createSubscriptionRouter = (
   );
 
   router.patch(
-    "/plans/requested-cancel/:id",
+    "/plans/requested-plan/:id/cancel",
     validate(subscriptionRequestIdSchema, "params"),
     asyncHandler((request, response) =>
       controller.cancelRequestedPlan(request, response),
