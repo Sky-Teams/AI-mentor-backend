@@ -62,7 +62,7 @@ export const CreateProjectPage = () => {
   useEffect(() => {
     if (!selectedSpecialty) {
       setJournals([]);
-      setSelectedSpecialtyHasJournals(true);
+      setSelectedSpecialtyHasJournals(false);
       return;
     }
 
