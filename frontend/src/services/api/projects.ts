@@ -1,6 +1,7 @@
 import { apiClient, unwrap } from "./client";
 import type {
   ApiSuccessResponse,
+  ArticleType,
   Project,
   ProjectSection,
   Specialty,
@@ -13,8 +14,8 @@ export const projectsApi = {
     return unwrap(response.data);
   },
 
-  async getArticleTypes(): Promise<any[]> {
-    const response = await apiClient.get<ApiSuccessResponse<any[]>>(
+  async getArticleTypes(): Promise<ArticleType[]> {
+    const response = await apiClient.get<ApiSuccessResponse<ArticleType[]>>(
       "/projects/articleTypes",
     );
     return unwrap(response.data);
