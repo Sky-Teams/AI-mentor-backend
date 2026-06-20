@@ -96,6 +96,6 @@ export class APAFormatter {
   private getYear(dateInput: any): string {
     if (!dateInput) return "";
     const date = new Date(dateInput);
-    return !isNaN(date.getTime()) ? date.getUTCFullYear().toString() : "";
+    return !isNaN(date.getTime()) ? date.getFullYear().toString() : "";
   }
 }
