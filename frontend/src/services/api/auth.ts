@@ -92,9 +92,9 @@ export const authApi = {
   },
 
   async verifyEmail(token: string): Promise<AuthResult> {
-    const response = await apiClient.put<ApiSuccessResponse<AuthResult>>(
-      `/auth/verify-email/${token}`,
-      {}
+    const response = await apiClient.get<ApiSuccessResponse<AuthResult>>(
+      `/auth/verify-email?token=${token}`,
+      {},
     );
 
     return persistAuth(unwrap(response.data));
