@@ -36,6 +36,7 @@ export interface ProjectSection {
   status: SectionStatus;
   lastEditedAt: Date | null;
   updatedAt: Date;
+  sectionPrompt?: string;
   checklist?: Array<{
     id: string;
     title: string | null;
