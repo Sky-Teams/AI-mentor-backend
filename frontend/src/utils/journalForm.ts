@@ -90,7 +90,7 @@ export const buildJournalPayload = (
   sections: form.sections.map((section, sectionIndex) => ({
     key: makeSectionKey(section.title, sectionIndex),
     title: section.title.trim(),
-    sectionPrompt: section.sectionPrompt.trim() || undefined,
+    sectionPrompt: section.sectionPrompt.trim(),
     sectionOrder: sectionIndex + 1,
     isOptional: section.isOptional,
     maxChars: Number(section.maxChars),
@@ -110,6 +110,8 @@ export const journalPayloadHasEmptyNestedFields = (
   payload.sections.some(
     (section) =>
       !section.title ||
+      !section.sectionPrompt ||
+      section.sectionPrompt.trim().length === 0 ||
       section.maxChars < 1 ||
       section.checklists.length === 0 ||
       section.checklists.some((checklist) => checklist.items.length === 0),

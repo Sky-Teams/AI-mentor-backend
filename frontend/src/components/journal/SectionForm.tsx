@@ -81,6 +81,7 @@ export const SectionForm = ({
     <label className="field">
       <span>Section AI Review Prompt</span>
       <textarea
+        required
         onChange={(event) =>
           onUpdate({ ...section, sectionPrompt: event.target.value })
         }
