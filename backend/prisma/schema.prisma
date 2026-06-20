@@ -160,17 +160,17 @@ model Journal {
 }
 
 model JournalSectionTemplate {
-  id           String             @id @default(cuid())
-  journalId    String
-  key          String
-  title        String
-  sectionOrder Int
-  isOptional   Boolean            @default(false)
-  maxChars     Int
-  description  String?
-  checklists   SectionChecklist[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id            String             @id @default(cuid())
+  journalId     String
+  key           String
+  title         String
+  sectionOrder  Int
+  isOptional    Boolean            @default(false)
+  maxChars      Int
+  sectionPrompt String             @default("")
+  checklists    SectionChecklist[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
 
