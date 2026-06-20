@@ -35,6 +35,7 @@ async function upsertUser(input: {
       passwordHash,
       role: input.role,
       isActive: true,
+      isVerified: true
     },
   });
 }
