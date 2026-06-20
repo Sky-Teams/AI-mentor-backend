@@ -110,7 +110,10 @@ export class PrismaAuthRepository implements AuthRepository {
       console.log("Failed to send email", result.email);
     }
 
-    return { message: "Please check your email" };
+    return {
+      message:
+        "Registration Successful! Please check your email to activate your account.",
+    };
   }
 
   public async storeRefreshToken(input: {
