@@ -15,7 +15,7 @@ export type ChecklistDraft = {
 export type SectionDraft = {
   id: string;
   title: string;
-  description: string;
+  sectionPrompt: string;
   isOptional: boolean;
   maxChars: string;
   checklists: ChecklistDraft[];
@@ -51,7 +51,7 @@ export const createChecklist = (): ChecklistDraft => ({
 export const createSection = (): SectionDraft => ({
   id: makeId(),
   title: "",
-  description: "",
+  sectionPrompt: "",
   isOptional: false,
   maxChars: "",
   checklists: [createChecklist()],
@@ -90,7 +90,7 @@ export const buildJournalPayload = (
   sections: form.sections.map((section, sectionIndex) => ({
     key: makeSectionKey(section.title, sectionIndex),
     title: section.title.trim(),
-    description: section.description.trim() || undefined,
+    sectionPrompt: section.sectionPrompt.trim() || undefined,
     sectionOrder: sectionIndex + 1,
     isOptional: section.isOptional,
     maxChars: Number(section.maxChars),
