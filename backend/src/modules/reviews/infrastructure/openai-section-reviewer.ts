@@ -77,6 +77,7 @@ export class OpenAiSectionReviewer implements SectionReviewer {
         targetJournal: context.project.targetJournal,
         projectMetadata: context.project.metadata,
         section: context.section,
+        sectionGuideline: context.section.sectionPrompt,
         allSectionStates: (context.project.sections ?? []).map((section) => ({
           key: section.key,
           title: section.title,
