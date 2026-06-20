@@ -78,6 +78,15 @@ export class PrismaAuthRepository implements AuthRepository {
   }): Promise<{ message: string }> {
     const token = crypto.randomBytes(32).toString("hex");
 
+    const frontendURL = process.env.FRONTEND_URL;
+
+    if (!frontendURL)
+      throw new AppError(
+        "Missing environment variable: FRONTEND_URL",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "FRONTEND_URL_NOT_FOUND",
+      );
+
     const result = await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
         const hashedToken = hashToken(token);
@@ -103,9 +112,14 @@ export class PrismaAuthRepository implements AuthRepository {
       },
     );
 
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
+    const verifyUrl = `${frontendURL}/verify-email/${token}`;
     try {
-      await sendEmail(result.email, result.fullName, "Verify your email", verifyUrl);
+      await sendEmail(
+        result.email,
+        result.fullName,
+        "Verify your email",
+        verifyUrl,
+      );
     } catch (error) {
       console.log("Failed to send email", result.email);
     }
