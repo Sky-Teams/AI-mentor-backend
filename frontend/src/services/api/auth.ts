@@ -93,7 +93,7 @@ export const authApi = {
 
   async verifyEmail(token: string): Promise<AuthResult> {
     const response = await apiClient.get<ApiSuccessResponse<AuthResult>>(
-      `/auth/verify-email?token=${token}`,
+      `/auth/verify-email/${token}`,
       {},
     );
 

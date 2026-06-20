@@ -30,7 +30,7 @@ export class AuthController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const { token } = request.query as { token: string };
+    const { token } = request.params as { token: string };
     const result = await this.authService.verifyEmail(token);
 
     response.status(StatusCodes.OK).json(successResponse(result));

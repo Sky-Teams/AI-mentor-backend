@@ -38,8 +38,8 @@ export const createAuthRouter = (
     asyncHandler((request, response) => controller.me(request, response)),
   );
   router.get(
-    "/verify-email",
-    validate(verifiedTokenSchema, "query"),
+    "/verify-email/:token",
+    validate(verifiedTokenSchema, "params"),
     asyncHandler((request, response) =>
       controller.verifyEmail(request, response),
     ),
