@@ -46,7 +46,7 @@ export interface JournalSectionDefinition {
   title: string;
   sectionOrder: number;
   isOptional: boolean;
-  description?: string;
+  sectionPrompt: string;
   maxChars: number;
   checklists: SectionChecklistsGroup[];
 }
@@ -69,7 +69,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
   description:
     "Elsevier surgical case report template aligned with the approved SCARE Guideline Checklists 2025.",
   manuscriptType: "CASE_REPORT",
-  specialtyId: SPECIALTIES[0]!, // this is like a temporary fake id as we dont have real specialtyId here to use then in seed file when create the journal it use the real one
+  specialtyId: SPECIALTIES[0]!,
   sections: [
     {
       key: "TITLE",
@@ -77,7 +77,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 1,
       isOptional: false,
       maxChars: 200,
-      description:
+      sectionPrompt:
         "The words 'case report' should appear in the title, and the title should be concise and highlight the area of focus.",
       checklists: [
         {
@@ -96,7 +96,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 2,
       isOptional: false,
       maxChars: 300,
-      description:
+      sectionPrompt:
         "Include three to six keywords that identify what is covered in the case report, and include 'case report' as one keyword.",
       checklists: [
         {
@@ -115,7 +115,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 3,
       isOptional: true,
       maxChars: 500,
-      description:
+      sectionPrompt:
         "Include three to five bullet points capturing the novel findings, brief background, key results, clinical relevance, and any validation performed.",
       checklists: [
         {
@@ -136,7 +136,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 4,
       isOptional: false,
       maxChars: 3000,
-      description:
+      sectionPrompt:
         "Provide a structured abstract including introduction and importance, case presentation, clinical discussion, and conclusion. Clearly explain what is known, what is unique, and what this case adds to the literature. Summarize patient details, complaints, findings, investigations, diagnosis, interventions, and outcomes. Relate clinical findings to existing knowledge and highlight the relevance and impact of the case, including at least three key take-away lessons.",
       checklists: [
         {
@@ -179,7 +179,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 5,
       isOptional: true,
       maxChars: 1000,
-      description:
+      sectionPrompt:
         "Clearly state whether AI was used in the study or manuscript preparation. If used, describe its purpose, scope, and stage of use, and confirm author responsibility. Provide details about each AI tool including name, vendor, model, version, and usage context. Explain data inputs, privacy safeguards, and approvals. Describe human oversight, verification, and any edits made to AI outputs. Address bias, ethical considerations, and reproducibility where applicable.",
       checklists: [
         {
@@ -202,7 +202,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 6,
       isOptional: false,
       maxChars: 3000,
-      description:
+      sectionPrompt:
         "Introduce the topic with relevant background information and context. Explain why this case is important, unique, or different from existing literature. Support the discussion with references to relevant studies, guidelines, and standard practices.",
       checklists: [
         {
@@ -224,7 +224,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 7,
       isOptional: true,
       maxChars: 300,
-      description:
+      sectionPrompt:
         "State clearly that the case report follows the SCARE (or relevant) guidelines and include the appropriate citation at the end of the introduction.",
       checklists: [{ title: null, items: ["Add SCARE citation statement"] }],
     },
@@ -234,7 +234,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 8,
       isOptional: true,
       maxChars: 1000,
-      description:
+      sectionPrompt:
         "Provide a clear and structured timeline of the case, including key events, delays in diagnosis or treatment, and important clinical milestones using standardized dates where possible.",
       checklists: [
         {
@@ -254,7 +254,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 9,
       isOptional: true,
       maxChars: 2000,
-      description:
+      sectionPrompt:
         "Include de-identified patient demographics and relevant background information. Describe the presenting complaint, history of the condition, past medical and surgical history, medications, allergies, family and social history, and any other relevant contextual details.",
       checklists: [
         {
@@ -307,7 +307,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 10,
       isOptional: true,
       maxChars: 1500,
-      description:
+      sectionPrompt:
         "Describe the key clinical findings from physical examination and initial patient assessment, focusing on relevant and significant observations.",
       checklists: [
         {
@@ -325,7 +325,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 11,
       isOptional: true,
       maxChars: 2000,
-      description:
+      sectionPrompt:
         "Describe all diagnostic evaluations including laboratory tests, imaging, and other assessments. Explain any challenges encountered and how they were addressed. Provide diagnostic reasoning, including differential diagnoses considered and excluded, and include prognostic information if relevant.",
       checklists: [
         {
@@ -363,7 +363,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 12,
       isOptional: true,
       maxChars: 3000,
-      description:
+      sectionPrompt:
         "Describe the intervention in detail, including preparation, type of treatment, techniques used, and any supporting therapies. Explain the rationale, timing, and execution of the intervention. Include details about the clinical setting, operators involved, and any deviations from the planned approach.",
       checklists: [
         {
@@ -408,7 +408,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 13,
       isOptional: true,
       maxChars: 2000,
-      description:
+      sectionPrompt:
         "Describe the follow-up process including timing, methods, and clinical settings. Report patient adherence, response to treatment, and outcomes achieved. Compare expected and actual results, and clearly document any complications or adverse events, or explicitly state if none occurred.",
       checklists: [
         {
@@ -453,7 +453,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 14,
       isOptional: true,
       maxChars: 3000,
-      description:
+      sectionPrompt:
         "Summarize the key findings and explain their significance. Compare the case with existing literature and similar reports. Discuss clinical implications and potential impact on practice. Highlight the main lessons learned and any recommendations for future cases.",
       checklists: [
         {
@@ -480,7 +480,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 15,
       isOptional: true,
       maxChars: 1000,
-      description:
+      sectionPrompt:
         "Describe the strengths of the case, including its uniqueness or multidisciplinary relevance. Also discuss limitations, challenges faced, and any risks or uncertainties related to the case or intervention.",
       checklists: [
         {
@@ -506,7 +506,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 16,
       isOptional: true,
       maxChars: 500,
-      description:
+      sectionPrompt:
         "Include the patient’s perspective on their condition and treatment where appropriate, providing insight into their experience.",
       checklists: [
         {
@@ -524,7 +524,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 17,
       isOptional: true,
       maxChars: 500,
-      description:
+      sectionPrompt:
         "Provide clear confirmation that informed consent was obtained for both treatment and publication. Describe the method of consent and explain any exceptions if applicable.",
       checklists: [
         {
@@ -543,7 +543,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 18,
       isOptional: true,
       maxChars: 1500,
-      description:
+      sectionPrompt:
         "Include additional details such as author contributions, acknowledgments, conflicts of interest, funding sources, ethical approvals, prior presentations, and publication status.",
       checklists: [
         {
@@ -565,7 +565,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 19,
       isOptional: true,
       maxChars: 1000,
-      description:
+      sectionPrompt:
         "Include relevant clinical images or videos with clear captions, annotations, and explanations to support the case findings.",
       checklists: [
         {
