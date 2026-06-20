@@ -22,6 +22,7 @@ const mapSection = (section: {
   content: string;
   sectionOrder: number;
   isOptional: boolean;
+  maxChars: number;
   status: ProjectSection["status"];
   lastEditedAt: Date | null;
   updatedAt: Date;
@@ -29,6 +30,7 @@ const mapSection = (section: {
   id: section.id,
   projectId: section.projectId,
   key: section.key,
+  maxChars: section.maxChars,
   title: section.title,
   content: section.content,
   sectionOrder: section.sectionOrder,
@@ -64,6 +66,7 @@ const mapProject = (project: {
     content: string;
     sectionOrder: number;
     isOptional: boolean;
+    maxChars: number;
     status: ProjectSection["status"];
     lastEditedAt: Date | null;
     updatedAt: Date;
@@ -329,6 +332,15 @@ export class PrismaProjectRepository implements ProjectRepository {
         if (!section) {
           return null;
         }
+
+        const contentCharacters = input.content.trim().length;
+
+        if (section.maxChars < contentCharacters)
+          throw new AppError(
+            `Content exceeds maximum limit of ${section.maxChars} characters.`,
+            StatusCodes.BAD_REQUEST,
+            `CONTENT_EXCEEDS_LIMIT_CHARACTERS`,
+          );
 
         const latestVersion = await transaction.sectionVersion.findFirst({
           where: {
