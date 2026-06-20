@@ -28,6 +28,7 @@ async function upsertUser(input: {
       role: input.role,
       isActive: true,
       deletedAt: null,
+      isVerified: true,
     },
     create: {
       email: input.email,
@@ -35,7 +36,7 @@ async function upsertUser(input: {
       passwordHash,
       role: input.role,
       isActive: true,
-      isVerified: true
+      isVerified: true,
     },
   });
 }
