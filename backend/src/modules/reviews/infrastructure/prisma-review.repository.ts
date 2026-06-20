@@ -418,10 +418,21 @@ export class PrismaReviewRepository implements ReviewRepository {
           deletedAt: null,
         },
       },
+      include: { project: { select: { journalId: true } } },
     });
 
     if (!section) {
       return null;
+    }
+
+    let sectionPrompt = "";
+    const journalId = section.project?.journalId;
+    if (journalId) {
+      const template = await this.prisma.journalSectionTemplate.findFirst({
+        where: { journalId, key: sectionKey },
+        select: { sectionPrompt: true },
+      });
+      sectionPrompt = template?.sectionPrompt ?? "";
     }
 
     return {
@@ -435,6 +446,7 @@ export class PrismaReviewRepository implements ReviewRepository {
       status: section.status,
       lastEditedAt: section.lastEditedAt,
       updatedAt: section.updatedAt,
+      sectionPrompt,
     };
   }
 
