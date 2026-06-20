@@ -105,7 +105,7 @@ export class PrismaAuthRepository implements AuthRepository {
 
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${token}`;
     try {
-      await sendEmail(result.email, result.fullName, "hello", verifyUrl);
+      await sendEmail(result.email, result.fullName, "Verify your email", verifyUrl);
     } catch (error) {
       console.log("Failed to send email", result.email);
     }
