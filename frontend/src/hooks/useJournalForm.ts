@@ -14,6 +14,7 @@ import {
   type JournalFormState,
   type SectionDraft,
 } from "../utils/journalForm";
+import { journalsApi } from "../services/api/journal.js";
 
 export const useJournalForm = () => {
   const [form, setForm] = useState<JournalFormState>(createEmptyJournalForm);
@@ -26,7 +27,7 @@ export const useJournalForm = () => {
   useEffect(() => {
     const loadSpecialties = async () => {
       try {
-        const specialtyList = await adminApi.getSpecialties();
+        const specialtyList = await journalsApi.getSpecialties();
         setSpecialties(specialtyList);
         setForm((current) => ({
           ...current,
