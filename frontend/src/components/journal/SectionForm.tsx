@@ -1,7 +1,4 @@
-import type {
-  ChecklistDraft,
-  SectionDraft,
-} from "../../utils/journalForm";
+import type { ChecklistDraft, SectionDraft } from "../../utils/journalForm";
 import { ChecklistForm } from "./ChecklistForm";
 
 type SectionFormProps = {
@@ -82,14 +79,14 @@ export const SectionForm = ({
     </div>
 
     <label className="field">
-      <span>Section Description</span>
+      <span>Section AI Review Prompt</span>
       <textarea
         onChange={(event) =>
-          onUpdate({ ...section, description: event.target.value })
+          onUpdate({ ...section, sectionPrompt: event.target.value })
         }
-        placeholder="What this section is for."
+        placeholder="Guidelines for AI when reviewing this section"
         rows={2}
-        value={section.description}
+        value={section.sectionPrompt}
       />
     </label>
 
