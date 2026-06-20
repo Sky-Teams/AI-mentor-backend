@@ -24,6 +24,11 @@ export const createJournalRouter = (
   );
 
   router.get(
+    "/specialties",
+    asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
+  );
+
+  router.get(
     "/:id",
     validate(journalIdParamsSchema, "params"),
     asyncHandler((req, res) => controller.getJournalById(req, res)),
