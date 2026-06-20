@@ -601,6 +601,25 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
         },
       ],
     },
+    {
+      key: "REFERENCES",
+      title: "References",
+      sectionOrder: 20,
+      isOptional: false,
+      maxChars: 1000,
+      description:
+        "Provide a complete list of all references cited in the case report, formatted according to the appropriate citation style. Ensure accuracy, completeness, and proper formatting.",
+      checklists: [
+        {
+          title: null,
+          items: [
+            "Include all cited studies",
+            "Use consistent citation style (Vancouver/MLA/APA)",
+            "Avoid uncited references",
+          ],
+        },
+      ],
+    },
   ],
 
   guidelinePack: `
