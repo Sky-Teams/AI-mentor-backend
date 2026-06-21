@@ -19,6 +19,7 @@ export type CreatedJournal = Omit<
   sections: Array<
     CreateJournalInput["sections"][number] & {
       id: string;
+      key: string;
       journalId: string;
       createdAt: Date;
       updatedAt: Date;

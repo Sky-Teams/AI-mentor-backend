@@ -128,7 +128,7 @@ export class PrismaJournalRepository implements JournalRepository {
           specialtyId: specialty.id,
           sectionTemplates: {
             create: input.sections.map((section) => ({
-              key: section.key,
+              key: section.title + Math.floor(Math.random() * 900 + 100),
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
@@ -163,7 +163,7 @@ export class PrismaJournalRepository implements JournalRepository {
 
         // find the created parent section
         const parentSection = journal.sectionTemplates.find(
-          (sec) => sec.key === section.key,
+          (sec) => sec.title === section.title,
         );
 
         if (!parentSection) continue;
@@ -173,7 +173,7 @@ export class PrismaJournalRepository implements JournalRepository {
             data: {
               journalId: journal.id,
               parentSectionId: parentSection.id,
-              key: sub.key,
+              key: sub.title + Math.floor(Math.random() * 900 + 1000),
               title: sub.title,
               sectionOrder: sub.sectionOrder,
               isOptional: sub.isOptional,
