@@ -38,6 +38,39 @@ export const BillingPage = () => {
           <strong>{overview?.wallet.lifetimeCreditsConsumed ?? "-"}</strong>
         </div>
       </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="card-header">
+          <h3>Active Plan</h3>
+        </div>
+        <div className="stack">
+          {overview?.activeSubscription ? (
+            <div className="issue-item">
+              <strong>
+                {overview.activeSubscription.subscriptionPlan?.name ?? "(plan)"}
+              </strong>
+              <p className="muted-text">{overview.activeSubscription.status}</p>
+              <p>
+                Expires:{" "}
+                {new Date(
+                  overview.activeSubscription.currentPeriodEnd,
+                ).toLocaleDateString()}
+              </p>
+              <p>
+                Included credits:{" "}
+                {overview.activeSubscription.subscriptionPlan
+                  ?.includedCredits ?? "-"}
+              </p>
+              <p>
+                {overview.activeSubscription.subscriptionPlan?.monthlyPriceCents
+                  ? `$${(overview.activeSubscription.subscriptionPlan.monthlyPriceCents / 100).toFixed(2)}/mo`
+                  : "No monthly fee"}
+              </p>
+            </div>
+          ) : (
+            <div className="issue-item">No active subscription</div>
+          )}
+        </div>
+      </div>
 
       <div className="two-column-grid">
         <div className="card">
@@ -49,7 +82,8 @@ export const BillingPage = () => {
               <div className="issue-item" key={transaction.id}>
                 <strong>{transaction.amount}</strong>
                 <p className="muted-text">
-                  {transaction.source} · balance after {transaction.balanceAfter}
+                  {transaction.source} · balance after{" "}
+                  {transaction.balanceAfter}
                 </p>
                 <p>{transaction.description}</p>
               </div>
@@ -66,8 +100,8 @@ export const BillingPage = () => {
               <div className="issue-item" key={usage.id}>
                 <strong>{usage.model}</strong>
                 <p className="muted-text">
-                  {usage.status} · {usage.technicalTotalTokens} technical tokens ·{" "}
-                  {usage.billedCredits} app credits
+                  {usage.status} · {usage.technicalTotalTokens} technical tokens
+                  · {usage.billedCredits} app credits
                 </p>
               </div>
             ))}
@@ -75,7 +109,7 @@ export const BillingPage = () => {
         </div>
       </div>
 
-      <SubscriptionListPanel/>
+      <SubscriptionListPanel />
     </div>
   );
 };
