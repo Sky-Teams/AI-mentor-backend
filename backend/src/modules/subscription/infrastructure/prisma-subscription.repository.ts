@@ -9,7 +9,10 @@ import {
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
-import { PlanBillingModel } from "src/modules/billing/domain/billing";
+import {
+  PlanBillingModel,
+  UserSubscription,
+} from "src/modules/billing/domain/billing";
 
 const mapPlan = (plan: {
   id: string;
@@ -203,5 +206,13 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     });
 
     return mapRequestedPlan(result);
+  }
+
+  public async getActivePlan(userId: string): Promise<UserSubscription | null> {
+    const activePlan = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+    });
+
+    return activePlan || null;
   }
 }
