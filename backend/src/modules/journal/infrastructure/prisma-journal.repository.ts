@@ -106,7 +106,7 @@ export class PrismaJournalRepository implements JournalRepository {
       });
 
       // Find specialties
-      const specialty = await this.prisma.journalSpecialty.findUnique({
+      const specialty = await transaction.journalSpecialty.findUnique({
         where: { id: input.specialtyId },
       });
 
