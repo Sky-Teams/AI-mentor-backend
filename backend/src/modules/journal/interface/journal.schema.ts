@@ -14,7 +14,6 @@ export const createJournalSchema = z.object({
   sections: z
     .array(
       z.object({
-        key: z.string().min(1).max(80),
         title: z.string().min(1).max(180),
         sectionOrder: z.number().int().min(1),
         isOptional: z.boolean().optional(),
@@ -29,7 +28,6 @@ export const createJournalSchema = z.object({
         subsections: z
           .array(
             z.object({
-              key: z.string().min(1).max(80),
               title: z.string().min(1).max(180),
               sectionOrder: z.number().int().min(1),
               isOptional: z.boolean().optional(),

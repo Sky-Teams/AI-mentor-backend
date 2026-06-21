@@ -42,7 +42,6 @@ export interface SectionChecklistsGroup {
 }
 
 export interface JournalSectionDefinition {
-  key: string;
   title: string;
   sectionOrder: number;
   isOptional: boolean;
@@ -73,7 +72,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
   specialtyId: SPECIALTIES[0]!, // this is like a temporary fake id as we dont have real specialtyId here to use then in seed file when create the journal it use the real one
   sections: [
     {
-      key: "TITLE",
       title: "Title",
       sectionOrder: 1,
       isOptional: false,
@@ -92,7 +90,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "KEYWORDS",
       title: "Key Words",
       sectionOrder: 2,
       isOptional: false,
@@ -111,7 +108,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "HIGHLIGHTS",
       title: "Highlights",
       sectionOrder: 3,
       isOptional: true,
@@ -132,7 +128,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "ABSTRACT",
       title: "Abstract",
       sectionOrder: 4,
       isOptional: false,
@@ -175,7 +170,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
       subsections: [
         {
-          key: "ABSTRACT_INTRODUCTION",
           title: "Abstract - Introduction",
           sectionOrder: 1,
           isOptional: false,
@@ -184,7 +178,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
           checklists: [],
         },
         {
-          key: "ABSTRACT_CONCLUSION",
           title: "Abstract - Conclusion",
           sectionOrder: 2,
           isOptional: false,
@@ -195,7 +188,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "ARTIFICIAL_INTELLIGENCE",
       title: "Artificial Intelligence (AI)",
       sectionOrder: 5,
       isOptional: true,
@@ -218,7 +210,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "INTRODUCTION",
       title: "Introduction",
       sectionOrder: 6,
       isOptional: false,
@@ -240,7 +231,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "GUIDELINE_CITATION",
       title: "Guideline Citation",
       sectionOrder: 7,
       isOptional: true,
@@ -250,7 +240,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       checklists: [{ title: null, items: ["Add SCARE citation statement"] }],
     },
     {
-      key: "TIMELINE",
       title: "Timeline",
       sectionOrder: 8,
       isOptional: true,
@@ -270,7 +259,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "PATIENT_INFORMATION",
       title: "Patient Information",
       sectionOrder: 9,
       isOptional: true,
@@ -323,7 +311,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "CLINICAL_FINDINGS",
       title: "Clinical Findings",
       sectionOrder: 10,
       isOptional: true,
@@ -341,7 +328,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "DIAGNOSTIC_ASSESSMENT_AND_INTERPRETATION",
       title: "Diagnostic Assessment & Interpretation",
       sectionOrder: 11,
       isOptional: true,
@@ -379,7 +365,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "INTERVENTION",
       title: "Intervention",
       sectionOrder: 12,
       isOptional: true,
@@ -424,7 +409,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "FOLLOW_UP_AND_OUTCOMES",
       title: "Follow-Up and Outcomes",
       sectionOrder: 13,
       isOptional: true,
@@ -469,7 +453,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "DISCUSSION",
       title: "Discussion",
       sectionOrder: 14,
       isOptional: true,
@@ -496,7 +479,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "STRENGTHS_AND_LIMITATIONS",
       title: "Strengths and Limitations",
       sectionOrder: 15,
       isOptional: true,
@@ -522,7 +504,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "PATIENT_PERSPECTIVE",
       title: "Patient Perspective",
       sectionOrder: 16,
       isOptional: true,
@@ -540,7 +521,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "INFORMED_CONSENT",
       title: "Informed Consent",
       sectionOrder: 17,
       isOptional: true,
@@ -559,7 +539,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "ADDITIONAL_INFORMATION",
       title: "Additional Information",
       sectionOrder: 18,
       isOptional: true,
@@ -581,7 +560,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "CLINICAL_IMAGES_AND_VIDEOS",
       title: "Clinical Images and Videos",
       sectionOrder: 19,
       isOptional: true,
@@ -602,7 +580,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       ],
     },
     {
-      key: "REFERENCES",
       title: "References",
       sectionOrder: 20,
       isOptional: false,
