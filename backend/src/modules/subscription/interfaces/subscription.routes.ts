@@ -27,6 +27,10 @@ export const createSubscriptionRouter = (
     asyncHandler((request, response) => controller.buyPlan(request, response)),
   );
 
-  // Admin Routes
+  router.get(
+    "/plans/active",
+    asyncHandler((req, res) => controller.getActivePlan(req, res)),
+  );
+
   return router;
 };
