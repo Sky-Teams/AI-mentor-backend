@@ -49,4 +49,8 @@ export class SubscriptionService {
   ): Promise<RequestedPlans> {
     return await this.subscriptionRepository.approveRequestedPlan(userId, id);
   }
+
+  public async getActivePlan(userId: string): Promise<SubscriptionPlan> {
+    return await this.subscriptionRepository.getActivePlan(userId);
+  }
 }
