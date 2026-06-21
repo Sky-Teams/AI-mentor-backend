@@ -23,4 +23,12 @@ export class SubscriptionController {
     );
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async getActivePlan(req: Request, res: Response): Promise<void> {
+    const activePlan = await this.subscriptionService.getActivePlan(
+      req.auth?.userId,
+    );
+
+    res.status(StatusCodes.OK).json(successResponse(activePlan));
+  }
 }
