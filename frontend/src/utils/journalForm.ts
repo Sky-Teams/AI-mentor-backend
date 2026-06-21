@@ -68,17 +68,6 @@ export const createEmptyJournalForm = (): JournalFormState => ({
   sections: [createSection()],
 });
 
-// Create section key from section title automatically
-const makeSectionKey = (title: string, index: number) => {
-  const key = title
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-
-  return key || `SECTION_${index + 1}`;
-};
-
 // backend payload builder
 export const buildJournalPayload = (
   form: JournalFormState,
@@ -90,7 +79,6 @@ export const buildJournalPayload = (
   guidelinePack: form.guidelinePack.trim(),
   specialtyId: form.specialtyId,
   sections: form.sections.map((section, sectionIndex) => ({
-    key: makeSectionKey(section.title, sectionIndex),
     title: section.title.trim(),
     description: section.description.trim() || undefined,
     sectionOrder: sectionIndex + 1,
@@ -103,7 +91,6 @@ export const buildJournalPayload = (
         .filter((item) => item.length > 0),
     })),
     subsections: section.subsections.map((sub, subIndex) => ({
-      key: makeSectionKey(sub.title, subIndex),
       title: sub.title.trim(),
       description: sub.description.trim() || undefined,
       sectionOrder: subIndex + 1,

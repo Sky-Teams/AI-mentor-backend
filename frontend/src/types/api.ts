@@ -296,7 +296,6 @@ export interface CreateJournalInput {
   guidelinePack: string;
   specialtyId: string;
   sections: Array<{
-    key: string;
     title: string;
     sectionOrder: number;
     isOptional?: boolean;
@@ -307,7 +306,6 @@ export interface CreateJournalInput {
       items: string[];
     }>;
     subsections?: Array<{
-      key: string;
       title: string;
       sectionOrder: number;
       isOptional?: boolean;
