@@ -139,7 +139,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     if (!existing)
       throw new AppError(
-        "Request does not exists",
+        "Subscription request not found",
         StatusCodes.NOT_FOUND,
         "SUBSCRIPTION_REQUEST_NOT_FOUND",
       );
@@ -215,7 +215,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     if (!existing)
       throw new AppError(
-        "Request does not exists",
+        "Subscription request not found",
         StatusCodes.NOT_FOUND,
         "SUBSCRIPTION_REQUEST_NOT_FOUND",
       );
