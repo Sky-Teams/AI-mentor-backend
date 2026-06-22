@@ -125,6 +125,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         userId: userId,
         subscriptionPlanId: subscriptionPlanId,
         status: "PENDING",
+        type: "PURCHASE",
       },
     });
   }
@@ -215,5 +216,43 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     });
 
     return mapRequestedPlan(result);
+  }
+
+  public async upgradePlan(
+    subscriptionPlanId: string,
+    userId: string,
+  ): Promise<SubscriptionRequest> {
+    const activeSubscription = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+    });
+
+    if (!activeSubscription)
+      throw new AppError(
+        "You don't have an active subscription to upgrade.",
+        StatusCodes.BAD_REQUEST,
+        `ACTIVE_PLAN_NOT_EXIST`,
+      );
+
+    const pendingSubscription = await this.prisma.subscriptionRequest.findFirst(
+      {
+        where: { userId: userId, status: "PENDING" },
+      },
+    );
+
+    if (pendingSubscription)
+      throw new AppError(
+        "Already have a pending request",
+        StatusCodes.BAD_REQUEST,
+        `ALREADY_HAVE_PENDING_REQUEST`,
+      );
+
+    return await this.prisma.subscriptionRequest.create({
+      data: {
+        userId: userId,
+        subscriptionPlanId: subscriptionPlanId,
+        status: "PENDING",
+        type: "UPGRADE",
+      },
+    });
   }
 }
