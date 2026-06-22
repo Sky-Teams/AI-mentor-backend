@@ -95,6 +95,18 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     subscriptionPlanId: string,
     userId: string,
   ): Promise<SubscriptionRequest> {
+    const activeSubscription = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+    });
+
+    /** Check user active plan */
+    if (activeSubscription)
+      throw new AppError(
+        "You already have an active subscription.Please upgrade instead",
+        StatusCodes.BAD_REQUEST,
+        `ALREADY_HAVE_ACTIVE_PLAN`,
+      );
+
     const pendingSubscription = await this.prisma.subscriptionRequest.findFirst(
       {
         where: { userId: userId, status: "PENDING" },
