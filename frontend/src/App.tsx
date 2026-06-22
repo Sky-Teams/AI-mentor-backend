@@ -11,6 +11,7 @@ import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SectionEditorPage } from "./pages/SectionEditorPage";
 import { AdminPage } from "./pages/AdminPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { ReferencePage } from "./pages/ReferencePage";
 import { SubscriptionPage } from "./pages/SubscriptionPage";
 // import { ParaphraseDetails } from "./pages/ParaphraseDetails";
@@ -21,6 +22,7 @@ export const App = () => (
       <Route element={<Navigate replace to="/dashboard" />} path="/" />
       <Route element={<LoginPage />} path="/login" />
       <Route element={<RegisterPage />} path="/register" />
+      <Route element={<VerifyEmailPage />} path="/verify-email/:token" />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>

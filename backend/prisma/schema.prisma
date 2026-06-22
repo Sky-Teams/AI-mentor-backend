@@ -235,27 +235,30 @@ model ArticleType {
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  email                String                @unique
-  passwordHash         String
-  fullName             String
-  role                 Role                  @default(USER)
-  isActive             Boolean               @default(true)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  deletedAt            DateTime?
-  projects             Project[]
-  refreshTokens        RefreshToken[]
-  sectionVersions      SectionVersion[]
-  initiatedReviews     ReviewRun[]           @relation("ReviewInitiator")
-  resolvedIssues       ReviewIssue[]         @relation("IssueResolver")
-  subscriptions        UserSubscription[]
-  creditWallet         CreditWallet?
-  creditTransactions   CreditTransaction[]
-  aiUsageLogs          AiUsageLog[]
-  auditLogs            AuditLog[]            @relation("AuditActor")
-  paraphraseRuns       ParaphraseRun[]       @relation("ParaphraseInitiator")
-  subscriptionRequests SubscriptionRequest[]
+  id                       String                @id @default(cuid())
+  email                    String                @unique
+  passwordHash             String
+  fullName                 String
+  role                     Role                  @default(USER)
+  isActive                 Boolean               @default(true)
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  deletedAt                DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  isVerified               Boolean               @default(false)
+  projects                 Project[]
+  refreshTokens            RefreshToken[]
+  sectionVersions          SectionVersion[]
+  initiatedReviews         ReviewRun[]           @relation("ReviewInitiator")
+  resolvedIssues           ReviewIssue[]         @relation("IssueResolver")
+  subscriptions            UserSubscription[]
+  creditWallet             CreditWallet?
+  creditTransactions       CreditTransaction[]
+  aiUsageLogs              AiUsageLog[]
+  auditLogs                AuditLog[]            @relation("AuditActor")
+  paraphraseRuns           ParaphraseRun[]       @relation("ParaphraseInitiator")
+  subscriptionRequests     SubscriptionRequest[]
 
   @@index([role, isActive])
 }
