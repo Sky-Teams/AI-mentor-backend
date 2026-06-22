@@ -407,7 +407,7 @@ async function main() {
     const createdSection = await prisma.journalSectionTemplate.create({
       data: {
         journalId: journal.id,
-        key: section.key,
+        key: section.title + Math.floor(Math.random() * 900 + 1000),
         title: section.title,
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
@@ -432,7 +432,7 @@ async function main() {
           data: {
             journalId: journal.id,
             parentSectionId: createdSection.id,
-            key: sub.key,
+            key: sub.title + Math.floor(Math.random() * 900 + 1000),
             title: sub.title,
             sectionOrder: sub.sectionOrder,
             isOptional: sub.isOptional,
