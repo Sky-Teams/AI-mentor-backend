@@ -31,7 +31,6 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
   publisher: "Elsevier",
   description:
     "Elsevier surgical case report template aligned with the approved SCARE Guideline Checklists 2025.",
-  manuscriptType: "CASE_REPORT",
   specialtyId: SPECIALTIES[0]!,
   sections: [
     {
