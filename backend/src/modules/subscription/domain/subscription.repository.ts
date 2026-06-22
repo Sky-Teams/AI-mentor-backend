@@ -13,4 +13,8 @@ export interface SubscriptionRepository {
   ): Promise<SubscriptionRequest>;
   getRequestedPlans(): Promise<RequestedPlans[]>;
   approveRequestedPlan(userId: string, id: string): Promise<RequestedPlans>;
+  upgradePlan(
+    subscriptionPlanId: string,
+    userId: string,
+  ): Promise<SubscriptionRequest>;
 }
