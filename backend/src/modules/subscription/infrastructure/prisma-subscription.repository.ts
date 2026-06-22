@@ -164,6 +164,27 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         include: { subscriptionPlan: true, user: true },
       });
 
+      const activeSubscription = await transaction.userSubscription.findFirst({
+        where: { userId, status: "ACTIVE" },
+      });
+
+      /** Inactive active user subscription */
+      if (existing.type === "UPGRADE") {
+        if (!activeSubscription)
+          throw new AppError(
+            "Active subscription not found.",
+            StatusCodes.NOT_FOUND,
+            "ACTIVE_SUBSCRIPTION_NOT_FOUND",
+          );
+
+        await transaction.userSubscription.update({
+          where: { id: activeSubscription.id },
+          data: {
+            status: "INACTIVE",
+          },
+        });
+      }
+
       const billingModel = updateRequestedPlan.subscriptionPlan.billingModel;
 
       const startDate = new Date();
@@ -175,6 +196,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         endDate.setMonth(endDate.getMonth() + 1);
       }
 
+      /** Create new user subscription */
       await transaction.userSubscription.create({
         data: {
           userId: userId,
@@ -186,16 +208,17 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         },
       });
 
-      const credit = updateRequestedPlan.subscriptionPlan.includedCredits;
+      const creditsToGrant =
+        updateRequestedPlan.subscriptionPlan.includedCredits;
 
       const wallet = await transaction.creditWallet.update({
         where: { userId },
         data: {
           balance: {
-            increment: credit,
+            increment: creditsToGrant,
           },
           lifetimeCreditsGranted: {
-            increment: credit,
+            increment: creditsToGrant,
           },
         },
       });
@@ -206,7 +229,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
           userId: userId,
           type: "PURCHASE",
           source: "SUBSCRIPTION",
-          amount: credit,
+          amount: creditsToGrant,
           balanceAfter: wallet.balance,
           description: "Subscription approved and credits added",
         },
@@ -229,8 +252,8 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     if (!activeSubscription)
       throw new AppError(
         "You don't have an active subscription to upgrade.",
-        StatusCodes.BAD_REQUEST,
-        `ACTIVE_PLAN_NOT_EXIST`,
+        StatusCodes.NOT_FOUND,
+        `ACTIVE_SUBSCRIPTION_NOT_FOUND`,
       );
 
     const pendingSubscription = await this.prisma.subscriptionRequest.findFirst(
