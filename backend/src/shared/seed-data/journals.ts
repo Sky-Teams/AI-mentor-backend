@@ -549,7 +549,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
       sectionOrder: 20,
       isOptional: false,
       maxChars: 1000,
-      description:
+      sectionPrompt:
         "Provide a complete list of all references cited in the case report, formatted according to the appropriate citation style. Ensure accuracy, completeness, and proper formatting.",
       checklists: [
         {

@@ -445,7 +445,6 @@ export class PrismaReviewRepository implements ReviewRepository {
       maxChars: section.maxChars,
       isOptional: section.isOptional,
       status: section.status,
-      maxChars: section.maxChars,
       lastEditedAt: section.lastEditedAt,
       updatedAt: section.updatedAt,
       sectionPrompt,
