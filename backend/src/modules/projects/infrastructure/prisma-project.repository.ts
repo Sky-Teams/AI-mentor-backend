@@ -1,8 +1,9 @@
-import { PrismaClient, type Prisma } from "@prisma/client";
+import { ArticleType, PrismaClient, type Prisma } from "@prisma/client";
 import type {
   Project,
   ProjectSection,
   SectionVersion,
+  Specialty,
 } from "../domain/project";
 import type {
   CreateProjectInput,
@@ -42,7 +43,6 @@ const mapSection = (section: {
 const mapProject = (project: {
   id: string;
   ownerId: string;
-  manuscriptType: "CASE_REPORT";
   title: string;
   status: Project["status"];
   targetJournal: string | null;
@@ -52,7 +52,8 @@ const mapProject = (project: {
       rules: Prisma.JsonValue | null;
     } | null;
   } | null;
-  metadata: unknown;
+  specialtyId: string | null;
+  articleTypeId: string | null;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
@@ -73,6 +74,15 @@ const mapProject = (project: {
 }): Project => ({
   id: project.id,
   ownerId: project.ownerId,
+  title: project.title,
+  status: project.status,
+  targetJournal: project.targetJournal,
+  specialtyId: project.specialtyId ?? "",
+  articleTypeId: project.articleTypeId ?? "",
+  readinessScore: project.readinessScore,
+  lastReviewedAt: project.lastReviewedAt,
+  createdAt: project.createdAt,
+  updatedAt: project.updatedAt,
   journal: project.journal
     ? {
         guidelinePack: project.journal.guidelinePack
@@ -86,15 +96,6 @@ const mapProject = (project: {
           : null,
       }
     : null,
-  manuscriptType: project.manuscriptType,
-  title: project.title,
-  status: project.status,
-  targetJournal: project.targetJournal,
-  metadata: (project.metadata as Project["metadata"]) ?? null,
-  readinessScore: project.readinessScore,
-  lastReviewedAt: project.lastReviewedAt,
-  createdAt: project.createdAt,
-  updatedAt: project.updatedAt,
   sections: project.sections?.map(mapSection),
 });
 
@@ -102,6 +103,31 @@ export class PrismaProjectRepository implements ProjectRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async createProject(input: CreateProjectInput): Promise<Project> {
+    // 1) Find article type
+    const articleType = await this.prisma.articleType.findUnique({
+      where: { id: input.articleTypeId },
+    });
+
+    if (!articleType)
+      throw new AppError(
+        `ArticleType not found.`,
+        StatusCodes.NOT_FOUND,
+        "ARTICLE_TYPE_NOT_FOUND",
+      );
+
+    // 2) Find specialty
+    const specialty = await this.prisma.journalSpecialty.findUnique({
+      where: { id: input.specialtyId },
+    });
+
+    if (!specialty)
+      throw new AppError(
+        `Specialty not found.`,
+        StatusCodes.NOT_FOUND,
+        "SPECIALTY_NOT_FOUND",
+      );
+
+    // 3) Find journal
     const journal = input.targetJournal
       ? await this.prisma.journal.findFirst({
           where: { id: input.targetJournal },
@@ -142,7 +168,8 @@ export class PrismaProjectRepository implements ProjectRepository {
             title: input.title,
             targetJournal: journal.name,
             journalId: journal.id,
-            metadata: input.metadata as Prisma.InputJsonValue | undefined,
+            specialtyId: specialty.id,
+            articleTypeId: articleType.id,
           },
         });
 
@@ -248,7 +275,6 @@ export class PrismaProjectRepository implements ProjectRepository {
         title: input.title,
         targetJournal: input.targetJournal,
         status: input.status,
-        metadata: input.metadata as Prisma.InputJsonValue | undefined,
       },
       include: {
         journal: {
@@ -562,5 +588,21 @@ export class PrismaProjectRepository implements ProjectRepository {
         });
 
     return { checked: result.checked };
+  }
+
+  public async getAllSpecialties(): Promise<Specialty[]> {
+    const specialties = await this.prisma.journalSpecialty.findMany({
+      include: { _count: { select: { journals: true } } },
+    });
+    return specialties.map((s) => ({
+      id: s.id,
+      name: s.name,
+      description: s.description,
+      journalCount: s._count.journals,
+    }));
+  }
+
+  public async getAllArticleTypes(): Promise<ArticleType[]> {
+    return await this.prisma.articleType.findMany();
   }
 }

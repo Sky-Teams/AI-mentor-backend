@@ -1,11 +1,16 @@
-import type { Project, ProjectSection, SectionVersion } from "./project";
+import type {
+  Project,
+  ProjectSection,
+  SectionVersion,
+  Specialty,
+} from "./project";
 
 export interface CreateProjectInput {
   ownerId: string;
+  articleTypeId: string;
+  specialtyId: string;
+  targetJournal: string;
   title: string;
-  targetJournal?: string;
-  journalCode?: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateProjectInput {
@@ -23,6 +28,13 @@ export interface UpdateSectionInput {
   sectionKey: ProjectSection["key"];
   content: string;
   changeSummary?: string;
+}
+
+export interface ArticleType {
+  id: string;
+  name: string;
+  description: string | null;
+  status: "ACTIVE" | "INACTIVE";
 }
 
 export interface ProjectRepository {
@@ -55,4 +67,6 @@ export interface ProjectRepository {
     checklistId: string,
     itemIndex: number,
   ): Promise<{ checked: boolean }>;
+  getAllSpecialties(): Promise<Specialty[]>;
+  getAllArticleTypes(): Promise<ArticleType[]>;
 }
