@@ -288,6 +288,15 @@ export interface Specialty {
   updatedAt: string;
 }
 
+export interface ArticleType {
+  id: string;
+  name: string;
+  description: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateJournalInput {
   name: string;
   publisher?: string;

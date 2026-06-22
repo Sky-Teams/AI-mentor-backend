@@ -20,6 +20,7 @@ interface AuthContextValue {
   }) => Promise<AuthResult>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  setAuthData:(user:User)=>void
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -69,6 +70,9 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         const freshUser = await authApi.me();
         setUser(freshUser);
       },
+      async setAuthData(userData){
+        setUser(userData)
+      }
     }),
     [user, isBootstrapping],
   );

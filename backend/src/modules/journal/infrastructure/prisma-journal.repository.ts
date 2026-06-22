@@ -3,7 +3,6 @@ import { StatusCodes } from "http-status-codes";
 import {
   CreatedJournal,
   JournalRepository,
-  Specialty,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
 import { CreateJournalInput } from "src/shared/seed-data/journals.js";
@@ -13,7 +12,6 @@ const mapJournal = (journal: any): CreatedJournal => ({
   name: journal.name,
   publisher: journal.publisher,
   description: journal.description,
-  manuscriptType: journal.manuscriptType,
   guidelinePack: {
     id: journal.guidelinePack.id,
     rules: journal.guidelinePack.rules,
@@ -68,8 +66,12 @@ const mapJournal = (journal: any): CreatedJournal => ({
 export class PrismaJournalRepository implements JournalRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
-  public async findAll(): Promise<Array<{ id: string; name: string }>> {
-    return this.prisma.journal.findMany();
+  public async findAll(
+    specialtyId?: string,
+  ): Promise<Array<{ id: string; name: string }>> {
+    return this.prisma.journal.findMany({
+      where: specialtyId ? { specialtyId: specialtyId } : {},
+    });
   }
 
   public async findById(
@@ -124,7 +126,6 @@ export class PrismaJournalRepository implements JournalRepository {
           publisher: input.publisher,
           description: input.description,
           guidelinePackId: guidelinePack.id,
-          manuscriptType: input.manuscriptType || "CASE_REPORT",
           specialtyId: specialty.id,
           sectionTemplates: {
             create: input.sections.map((section) => ({
@@ -213,9 +214,5 @@ export class PrismaJournalRepository implements JournalRepository {
     });
 
     return mapJournal(journal);
-  }
-
-  public async getAllSpecialties(): Promise<Specialty[]> {
-    return await this.prisma.journalSpecialty.findMany();
   }
 }

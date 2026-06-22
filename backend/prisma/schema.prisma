@@ -19,10 +19,6 @@ enum ProjectStatus {
   ARCHIVED
 }
 
-enum ManuscriptType {
-  CASE_REPORT
-}
-
 enum SectionStatus {
   NOT_STARTED
   DRAFT
@@ -138,22 +134,27 @@ enum paraphraseRunStatuses {
   CANCELLED
 }
 
-model Journal {
-  id              String           @id @default(cuid())
-  name            String           @unique
-  publisher       String?
-  description     String?
-  manuscriptType  ManuscriptType   @default(CASE_REPORT)
-  guidelinePackId String
-  guidelinePack   GuidelinePack    @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
-  isDefault       Boolean          @default(false)
-  specialtyId     String
-  specialty       JournalSpecialty @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+enum ArticleTypesStatus {
+  ACTIVE
+  INACTIVE
+}
 
+model Journal {
+  id               String                   @id @default(cuid())
+  name             String                   @unique
+  publisher        String?
+  description      String?
+  guidelinePackId  String
+  guidelinePack    GuidelinePack            @relation(fields: [guidelinePackId], references: [id], onDelete: SetNull)
+  isDefault        Boolean                  @default(false)
+  specialtyId      String?
+  specialty        JournalSpecialty?        @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
+  articleTypeId    String?
+  articleType      ArticleType?             @relation(fields: [articleTypeId], references: [id], onDelete: SetNull)
   sectionTemplates JournalSectionTemplate[]
   projects         Project[]
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
 
   @@index([isDefault])
   @@map("journals")
@@ -222,32 +223,45 @@ model JournalSpecialty {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   journals    Journal[]
+  projects    Project[]
+}
 
-  @@index([name])
+model ArticleType {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  description String?
+  status      ArticleTypesStatus @default(INACTIVE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  projects    Project[]
+  journals    Journal[]
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  email                String                @unique
-  passwordHash         String
-  fullName             String
-  role                 Role                  @default(USER)
-  isActive             Boolean               @default(true)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  deletedAt            DateTime?
-  projects             Project[]
-  refreshTokens        RefreshToken[]
-  sectionVersions      SectionVersion[]
-  initiatedReviews     ReviewRun[]           @relation("ReviewInitiator")
-  resolvedIssues       ReviewIssue[]         @relation("IssueResolver")
-  subscriptions        UserSubscription[]
-  creditWallet         CreditWallet?
-  creditTransactions   CreditTransaction[]
-  aiUsageLogs          AiUsageLog[]
-  auditLogs            AuditLog[]            @relation("AuditActor")
-  paraphraseRuns       ParaphraseRun[]       @relation("ParaphraseInitiator")
-  subscriptionRequests SubscriptionRequest[]
+  id                       String                @id @default(cuid())
+  email                    String                @unique
+  passwordHash             String
+  fullName                 String
+  role                     Role                  @default(USER)
+  isActive                 Boolean               @default(true)
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  deletedAt                DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  isVerified               Boolean               @default(false)
+  projects                 Project[]
+  refreshTokens            RefreshToken[]
+  sectionVersions          SectionVersion[]
+  initiatedReviews         ReviewRun[]           @relation("ReviewInitiator")
+  resolvedIssues           ReviewIssue[]         @relation("IssueResolver")
+  subscriptions            UserSubscription[]
+  creditWallet             CreditWallet?
+  creditTransactions       CreditTransaction[]
+  aiUsageLogs              AiUsageLog[]
+  auditLogs                AuditLog[]            @relation("AuditActor")
+  paraphraseRuns           ParaphraseRun[]       @relation("ParaphraseInitiator")
+  subscriptionRequests     SubscriptionRequest[]
 
   @@index([role, isActive])
 }
@@ -267,7 +281,6 @@ model RefreshToken {
 model Project {
   id                 String              @id @default(cuid())
   ownerId            String
-  manuscriptType     ManuscriptType      @default(CASE_REPORT)
   title              String
   status             ProjectStatus       @default(DRAFT)
   targetJournal      String?
@@ -286,6 +299,10 @@ model Project {
   journalId          String?
   journal            Journal?            @relation(fields: [journalId], references: [id], onDelete: SetNull)
   paraphraseRuns     ParaphraseRun[]
+  articleType        ArticleType?        @relation(fields: [articleTypeId], references: [id], onDelete: SetNull)
+  articleTypeId      String?
+  specialtyId        String?
+  specialty          JournalSpecialty?   @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
 
   @@index([ownerId, updatedAt])
   @@index([status])
@@ -448,7 +465,6 @@ model GuidelinePack {
   code           String?
   version        String
   description    String?
-  manuscriptType ManuscriptType      @default(CASE_REPORT)
   status         GuidelinePackStatus @default(DRAFT)
   rules          Json
   isDefault      Boolean             @default(false)

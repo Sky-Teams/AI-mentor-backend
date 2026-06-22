@@ -29,7 +29,6 @@ export class CreditEstimatorService {
     const systemPrompt = input.promptTemplate;
 
     const userPrompt = JSON.stringify({
-      manuscriptType: input.project.manuscriptType,
       projectTitle: input.project.title,
       section: input.section,
       guidelineRules: input.guidelineRules,

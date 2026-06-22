@@ -131,4 +131,12 @@ export class ProjectService {
       itemIndex,
     );
   }
+
+  public async getAllSpecialties() {
+    return await this.projectRepository.getAllSpecialties();
+  }
+
+  public async getAllArticleTypes() {
+    return await this.projectRepository.getAllArticleTypes();
+  }
 }
