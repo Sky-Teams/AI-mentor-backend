@@ -91,9 +91,4 @@ export class AdminController {
     const journal = await this.journalService.createJournal(req.body);
     res.status(StatusCodes.CREATED).json(successResponse(journal));
   }
-
-  public async getAllSpecialties(req: Request, res: Response) {
-    const specialties = await this.journalService.getAllSpecialties();
-    res.status(StatusCodes.OK).json(successResponse(specialties));
-  }
 }

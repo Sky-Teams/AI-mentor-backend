@@ -1,8 +1,10 @@
 import { apiClient, unwrap } from "./client";
 import type {
   ApiSuccessResponse,
+  ArticleType,
   Project,
   ProjectSection,
+  Specialty,
 } from "../../types/api";
 
 export const projectsApi = {
@@ -12,10 +14,25 @@ export const projectsApi = {
     return unwrap(response.data);
   },
 
+  async getArticleTypes(): Promise<ArticleType[]> {
+    const response = await apiClient.get<ApiSuccessResponse<ArticleType[]>>(
+      "/projects/articleTypes",
+    );
+    return unwrap(response.data);
+  },
+
+  async getSpecialties(): Promise<Specialty[]> {
+    const response = await apiClient.get<ApiSuccessResponse<Specialty[]>>(
+      "/projects/specialties",
+    );
+    return unwrap(response.data);
+  },
+
   async create(input: {
     title: string;
+    articleTypeId: string;
+    specialtyId: string;
     targetJournal?: string;
-    metadata?: Record<string, string>;
   }): Promise<Project> {
     const response = await apiClient.post<ApiSuccessResponse<Project>>(
       "/projects",

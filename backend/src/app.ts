@@ -128,7 +128,10 @@ export const createApp = (): express.Express => {
     journalService,
   );
   const paraphraseController = new ParaphraseController(paraphraseService);
-  const journalController = new JournalController(journalService);
+  const journalController = new JournalController(
+    journalService,
+    projectService,
+  );
   const referenceController = new ReferenceController(
     referenceService,
     referenceFormatterService,
