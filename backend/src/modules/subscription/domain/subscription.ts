@@ -4,6 +4,8 @@ export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export type SubscriptionPlanStatus = "ACTIVE" | "ARCHIVED";
 
+export type SubscriptionRequestType = "PURCHASE" | "UPGRADE";
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -17,6 +19,7 @@ export interface SubscriptionPlan {
 export interface SubscriptionRequest {
   id: string;
   userId: string;
+  type: SubscriptionRequestType;
   subscriptionPlanId: string;
   status: SubscriptionRequestStatus;
 }
