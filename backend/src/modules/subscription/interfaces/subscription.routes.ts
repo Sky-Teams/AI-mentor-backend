@@ -27,6 +27,13 @@ export const createSubscriptionRouter = (
     asyncHandler((request, response) => controller.buyPlan(request, response)),
   );
 
-  // Admin Routes
+  router.patch(
+    "/plans/upgrade/:subscriptionPlanId",
+    validate(subscriptionPlanIdSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.upgradePlan(request, response),
+    ),
+  );
+
   return router;
 };
