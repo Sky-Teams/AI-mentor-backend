@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Field } from "../components/Field";
 import { useAuth } from "../hooks/useAuth";
 
 export const RegisterPage = () => {
-  const navigate = useNavigate();
   const { register } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -22,7 +22,7 @@ export const RegisterPage = () => {
         email: String(formData.get("email")),
         password: String(formData.get("password")),
       });
-      navigate("/dashboard", { replace: true });
+      setIsRegistered(true);
     } catch {
       setError("Registration failed. The email may already exist.");
     } finally {
@@ -32,6 +32,12 @@ export const RegisterPage = () => {
 
   return (
     <div className="auth-shell">
+      {isRegistered && (
+        <div style={{ color: "green" , textAlign:'center'}}>
+          <h5>You registered successfully</h5>
+          <p>Please check your email and verify account.</p>
+        </div>
+      )}
       <form className="auth-card" onSubmit={handleSubmit}>
         <div>
           <p className="eyebrow">Internal Test UI</p>
@@ -42,20 +48,39 @@ export const RegisterPage = () => {
         </div>
 
         <Field label="Full name">
-          <input name="fullName" placeholder="Dr. Alex Researcher" required type="text" />
+          <input
+            name="fullName"
+            placeholder="Dr. Alex Researcher"
+            required
+            type="text"
+          />
         </Field>
 
         <Field label="Email">
-          <input name="email" placeholder="alex@example.com" required type="email" />
+          <input
+            name="email"
+            placeholder="alex@example.com"
+            required
+            type="email"
+          />
         </Field>
 
         <Field label="Password">
-          <input name="password" placeholder="Minimum 8 characters" required type="password" />
+          <input
+            name="password"
+            placeholder="Minimum 8 characters"
+            required
+            type="password"
+          />
         </Field>
 
         {error ? <p className="error-text">{error}</p> : null}
 
-        <button className="primary-button" disabled={isSubmitting} type="submit">
+        <button
+          className="primary-button"
+          disabled={isSubmitting}
+          type="submit"
+        >
           {isSubmitting ? "Creating account..." : "Create account"}
         </button>
 

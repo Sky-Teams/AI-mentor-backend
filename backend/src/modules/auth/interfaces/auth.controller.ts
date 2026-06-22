@@ -25,4 +25,14 @@ export class AuthController {
     const user = await this.authService.getMe(request.auth!.userId);
     response.status(StatusCodes.OK).json(successResponse(user));
   }
+
+  public async verifyEmail(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { token } = request.params as { token: string };
+    const result = await this.authService.verifyEmail(token);
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }

@@ -11,18 +11,10 @@ export const sectionParamsSchema = z.object({
 });
 
 export const createProjectSchema = z.object({
+  articleTypeId: z.string().cuid(),
+  specialtyId: z.string().cuid(),
+  targetJournal: z.string().cuid(),
   title: z.string().min(3).max(180),
-  targetJournal: z.string().max(100),
-  metadata: z
-    .object({
-      specialty: z.string().max(120).optional(),
-      patientAge: z.string().max(40).optional(),
-      patientSex: z.string().max(40).optional(),
-      country: z.string().max(80).optional(),
-      institution: z.string().max(180).optional(),
-      articleGoals: z.string().max(400).optional(),
-    })
-    .optional(),
 });
 
 export const updateProjectSchema = z.object({

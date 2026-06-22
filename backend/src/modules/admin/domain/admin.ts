@@ -1,5 +1,7 @@
-import type { ManuscriptType } from "../../projects/domain/project";
-import type { PlanBillingModel, SubscriptionPlan } from "../../billing/domain/billing";
+import type {
+  PlanBillingModel,
+  SubscriptionPlan,
+} from "../../billing/domain/billing";
 
 export interface GuidelinePack {
   id: string;
@@ -7,7 +9,6 @@ export interface GuidelinePack {
   code: string | null;
   version: string;
   description: string | null;
-  manuscriptType: ManuscriptType;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   rules: Record<string, unknown>;
   isDefault: boolean;
@@ -18,7 +19,11 @@ export interface PromptTemplate {
   name: string;
   code: string;
   description: string | null;
-  type: "SECTION_REVIEW" | "SYSTEM_GUARDRAIL" | "FOLLOW_UP" | "SECTION_PARAPHRASE";
+  type:
+    | "SECTION_REVIEW"
+    | "SYSTEM_GUARDRAIL"
+    | "FOLLOW_UP"
+    | "SECTION_PARAPHRASE";
   version: number;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   templateText: string;

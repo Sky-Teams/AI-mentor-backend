@@ -7,7 +7,6 @@ import type {
   GuidelinePack,
   Journal,
   PromptTemplate,
-  Specialty,
 } from "../../types/api";
 import { RequestedPlans } from "./subscription";
 
@@ -65,14 +64,6 @@ export const adminApi = {
       },
     );
 
-    return unwrap(response.data);
-  },
-
-  async getSpecialties(): Promise<Specialty[]> {
-    const response =
-      await apiClient.get<ApiSuccessResponse<Specialty[]>>(
-        "/admin/specialties",
-      );
     return unwrap(response.data);
   },
 

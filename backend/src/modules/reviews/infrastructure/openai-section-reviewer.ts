@@ -72,10 +72,8 @@ export class OpenAiSectionReviewer implements SectionReviewer {
 
     const userPrompt = JSON.stringify(
       {
-        manuscriptType: context.project.manuscriptType,
         projectTitle: context.project.title,
         targetJournal: context.project.targetJournal,
-        projectMetadata: context.project.metadata,
         section: context.section,
         sectionGuideline: context.section.sectionPrompt,
         allSectionStates: (context.project.sections ?? []).map((section) => ({

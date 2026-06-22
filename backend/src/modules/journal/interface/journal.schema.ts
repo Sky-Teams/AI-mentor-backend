@@ -8,7 +8,6 @@ export const createJournalSchema = z.object({
   name: z.string().min(1).max(180),
   publisher: z.string().min(1).max(180).optional(),
   description: z.string().min(1).max(1000).optional(),
-  manuscriptType: z.enum(["CASE_REPORT"]).optional(),
   guidelinePack: z.string().min(1),
   specialtyId: z.string().min(1),
   sections: z
@@ -29,4 +28,8 @@ export const createJournalSchema = z.object({
       }),
     )
     .min(1),
+});
+
+export const specialtyIdQuerySchema = z.object({
+  specialtyId: z.string().cuid().optional(),
 });

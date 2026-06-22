@@ -29,48 +29,62 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  public async register(input: RegisterUserInput): Promise<AuthResult> {
+  public async register(input: RegisterUserInput) {
     const existingUser = await this.authRepository.findUserByEmail(input.email);
     if (existingUser) {
-      throw new AppError("Email is already registered.", StatusCodes.CONFLICT, "EMAIL_TAKEN");
+      throw new AppError(
+        "Email is already registered.",
+        StatusCodes.CONFLICT,
+        "EMAIL_TAKEN",
+      );
     }
 
     const passwordHash = await this.passwordHasher.hash(input.password);
-    const user = await this.authRepository.createUser({
+    return await this.authRepository.createUser({
       email: input.email.toLowerCase(),
       fullName: input.fullName,
       passwordHash,
     });
-
-    const tokens = this.tokenService.issueTokens({
-      email: user.email,
-      role: user.role,
-      userId: user.id,
-    });
-
-    await this.authRepository.storeRefreshToken({
-      userId: user.id,
-      tokenHash: this.hashRefreshToken(tokens.refreshToken),
-      expiresAt: this.tokenService.getRefreshTokenExpiryDate(),
-    });
-
-    return { user, tokens };
   }
 
   public async login(input: LoginInput): Promise<AuthResult> {
-    const user = await this.authRepository.findUserByEmail(input.email.toLowerCase());
+    const user = await this.authRepository.findUserByEmail(
+      input.email.toLowerCase(),
+    );
     if (!user) {
-      throw new AppError("Invalid email or password.", StatusCodes.UNAUTHORIZED, "INVALID_CREDENTIALS");
+      throw new AppError(
+        "Invalid email or password.",
+        StatusCodes.UNAUTHORIZED,
+        "INVALID_CREDENTIALS",
+      );
     }
 
-    const passwordMatches = await this.passwordHasher.verify(input.password, user.passwordHash);
+    const passwordMatches = await this.passwordHasher.verify(
+      input.password,
+      user.passwordHash,
+    );
     if (!passwordMatches) {
-      throw new AppError("Invalid email or password.", StatusCodes.UNAUTHORIZED, "INVALID_CREDENTIALS");
+      throw new AppError(
+        "Invalid email or password.",
+        StatusCodes.UNAUTHORIZED,
+        "INVALID_CREDENTIALS",
+      );
     }
 
     if (!user.isActive) {
-      throw new AppError("Your account is inactive.", StatusCodes.FORBIDDEN, "ACCOUNT_INACTIVE");
+      throw new AppError(
+        "Your account is inactive.",
+        StatusCodes.FORBIDDEN,
+        "ACCOUNT_INACTIVE",
+      );
     }
+
+    if (!user.isVerified)
+      throw new AppError(
+        "Your email is not verified ",
+        StatusCodes.FORBIDDEN,
+        "EMAIL_NOT_VERIFIED",
+      );
 
     const tokens = this.tokenService.issueTokens({
       email: user.email,
@@ -91,10 +105,19 @@ export class AuthService {
   public async refresh(refreshToken: string): Promise<TokenPair> {
     const payload = this.tokenService.verifyRefreshToken(refreshToken);
     const hashedRefreshToken = this.hashRefreshToken(refreshToken);
-    const storedToken = await this.authRepository.findRefreshToken(hashedRefreshToken);
+    const storedToken =
+      await this.authRepository.findRefreshToken(hashedRefreshToken);
 
-    if (!storedToken || storedToken.userId !== payload.userId || storedToken.revokedAt) {
-      throw new AppError("Refresh token is invalid.", StatusCodes.UNAUTHORIZED, "INVALID_REFRESH_TOKEN");
+    if (
+      !storedToken ||
+      storedToken.userId !== payload.userId ||
+      storedToken.revokedAt
+    ) {
+      throw new AppError(
+        "Refresh token is invalid.",
+        StatusCodes.UNAUTHORIZED,
+        "INVALID_REFRESH_TOKEN",
+      );
     }
 
     const nextTokens = this.tokenService.issueTokens(payload);
@@ -111,7 +134,11 @@ export class AuthService {
   public async getMe(userId: string): Promise<User> {
     const user = await this.authRepository.findUserById(userId);
     if (!user) {
-      throw new AppError("User was not found.", StatusCodes.NOT_FOUND, "USER_NOT_FOUND");
+      throw new AppError(
+        "User was not found.",
+        StatusCodes.NOT_FOUND,
+        "USER_NOT_FOUND",
+      );
     }
 
     return user;
@@ -119,5 +146,23 @@ export class AuthService {
 
   private hashRefreshToken(token: string): string {
     return createHash("sha256").update(token).digest("hex");
+  }
+
+  public async verifyEmail(verifyToken: string): Promise<AuthResult> {
+    let user = await this.authRepository.verifyEmail(verifyToken);
+
+    const token = this.tokenService.issueTokens({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    await this.authRepository.storeRefreshToken({
+      userId: user.id,
+      tokenHash: this.hashRefreshToken(token.refreshToken),
+      expiresAt: this.tokenService.getRefreshTokenExpiryDate(),
+    });
+
+    return { user: user, tokens: token };
   }
 }

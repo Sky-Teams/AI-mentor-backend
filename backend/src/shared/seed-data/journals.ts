@@ -1,40 +1,4 @@
-export const SPECIALTIES = [
-  "General Medicine",
-  "Internal Medicine",
-  "Cardiology",
-  "Cardiac Surgery",
-  "Thoracic Surgery",
-  "Pulmonology / Respiratory Medicine",
-  "Gastroenterology & Hepatology",
-  "General Surgery",
-  "Pediatric Surgery",
-  "Neurosurgery",
-  "Neurology",
-  "Urology",
-  "Orthopedic Surgery",
-  "Plastic & Reconstructive Surgery",
-  "Vascular Surgery",
-  "Pediatric Medicine",
-  "Obstetrics & Gynecology",
-  "Oncology",
-  "Hematology",
-  "Nephrology",
-  "Endocrinology",
-  "Infectious Diseases",
-  "Rheumatology",
-  "Dermatology",
-  "Ophthalmology",
-  "Otolaryngology (ENT)",
-  "Pathology",
-  "Radiology",
-  "Emergency Medicine",
-  "Critical Care Medicine",
-  "Anesthesiology",
-  "Dentistry & Oral Surgery",
-  "Psychiatry",
-  "Family Medicine",
-  "Rehabilitation Medicine",
-];
+import { SPECIALTIES } from "src/shared/seed-data/constants.js";
 
 export interface SectionChecklistsGroup {
   title: string | null;
@@ -55,7 +19,6 @@ export interface CreateJournalInput {
   name: string;
   publisher: string;
   description?: string;
-  manuscriptType: "CASE_REPORT";
   isDefault?: boolean;
   sections: JournalSectionDefinition[];
   guidelinePack: string;
@@ -576,6 +539,25 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
             "Add captions",
             "Highlight key points",
             "Add video link if available",
+          ],
+        },
+      ],
+    },
+    {
+      key: "REFERENCES",
+      title: "References",
+      sectionOrder: 20,
+      isOptional: false,
+      maxChars: 1000,
+      description:
+        "Provide a complete list of all references cited in the case report, formatted according to the appropriate citation style. Ensure accuracy, completeness, and proper formatting.",
+      checklists: [
+        {
+          title: null,
+          items: [
+            "Include all cited studies",
+            "Use consistent citation style (Vancouver/MLA/APA)",
+            "Avoid uncited references",
           ],
         },
       ],
