@@ -35,5 +35,10 @@ export const createSubscriptionRouter = (
     ),
   );
 
+  router.get(
+    "/plans/active",
+    asyncHandler((req, res) => controller.getActivePlan(req, res)),
+  );
+
   return router;
 };
