@@ -14,7 +14,6 @@ const mapGuidelinePack = (guidelinePack: {
   code: string | null;
   version: string;
   description: string | null;
-  manuscriptType: "CASE_REPORT";
   status: GuidelinePack["status"];
   rules: unknown;
   isDefault: boolean;
@@ -24,7 +23,6 @@ const mapGuidelinePack = (guidelinePack: {
   code: guidelinePack.code,
   version: guidelinePack.version,
   description: guidelinePack.description,
-  manuscriptType: guidelinePack.manuscriptType,
   status: guidelinePack.status,
   rules: guidelinePack.rules as Record<string, unknown>,
   isDefault: guidelinePack.isDefault,

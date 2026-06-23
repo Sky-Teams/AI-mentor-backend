@@ -1,10 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
 import { env } from "../src/shared/config/env";
-import {
-  ELSEVIER_SCARE_JOURNAL,
-  SPECIALTIES,
-} from "../src/shared/seed-data/journals";
+import { ELSEVIER_SCARE_JOURNAL } from "../src/shared/seed-data/journals";
+import { ARTICLE_TYPES, SPECIALTIES } from "src/shared/seed-data/constants.js";
 
 const j = ELSEVIER_SCARE_JOURNAL;
 
@@ -28,6 +26,7 @@ async function upsertUser(input: {
       role: input.role,
       isActive: true,
       deletedAt: null,
+      isVerified: true,
     },
     create: {
       email: input.email,
@@ -35,6 +34,7 @@ async function upsertUser(input: {
       passwordHash,
       role: input.role,
       isActive: true,
+      isVerified: true,
     },
   });
 }
@@ -354,6 +354,20 @@ async function main() {
     where: { name: SPECIALTIES[0] },
   });
 
+  // Create Article Types
+  await prisma.articleType.deleteMany();
+  await prisma.articleType.createMany({
+    data: ARTICLE_TYPES.map((articleType) => ({
+      name: articleType.name,
+      description: articleType.description,
+      status: articleType.status,
+    })),
+  });
+
+  const activeArticleType = await prisma.articleType.findFirst({
+    where: { status: "ACTIVE" },
+  });
+
   //  create journal
   const journal = await prisma.journal.upsert({
     where: { name: j.name },
@@ -361,7 +375,6 @@ async function main() {
       name: j.name,
       publisher: j.publisher,
       description: j.description,
-      manuscriptType: j.manuscriptType,
       isDefault: j.isDefault,
       guidelinePack: {
         connect: { id: guidelinePack.id },
@@ -371,13 +384,15 @@ async function main() {
       name: j.name,
       publisher: j.publisher,
       description: j.description,
-      manuscriptType: j.manuscriptType,
       isDefault: j.isDefault,
       guidelinePack: {
         connect: { id: guidelinePack.id },
       },
       specialty: {
         connect: { id: specialty?.id },
+      },
+      articleType: {
+        connect: { id: activeArticleType?.id },
       },
     },
   });
@@ -392,7 +407,7 @@ async function main() {
     const createdSection = await prisma.journalSectionTemplate.create({
       data: {
         journalId: journal.id,
-        key: section.key,
+        key: section.title + Math.floor(Math.random() * 900 + 1000),
         title: section.title,
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
@@ -409,6 +424,33 @@ async function main() {
           items: group.items,
         })),
       });
+    }
+
+    if (section.subsections?.length) {
+      for (const sub of section.subsections) {
+        const createdSub = await prisma.journalSectionTemplate.create({
+          data: {
+            journalId: journal.id,
+            parentSectionId: createdSection.id,
+            key: sub.title + Math.floor(Math.random() * 900 + 1000),
+            title: sub.title,
+            sectionOrder: sub.sectionOrder,
+            isOptional: sub.isOptional,
+            description: sub.description,
+            maxChars: sub.maxChars,
+          },
+        });
+
+        if (sub.checklists?.length) {
+          await prisma.sectionChecklist.createMany({
+            data: sub.checklists.map((group) => ({
+              journalSectionTemplateId: createdSub.id,
+              title: group.title,
+              items: group.items,
+            })),
+          });
+        }
+      }
     }
   }
 
@@ -432,16 +474,9 @@ async function main() {
         title: "Seeded Case Report Demo",
         targetJournal: journal.name,
         journalId: journal.id,
+        articleTypeId: activeArticleType?.id as string,
+        specialtyId: specialty!.id,
         status: "IN_REVIEW",
-        metadata: {
-          specialty: "Neurology",
-          patientAge: "34 years",
-          patientSex: "Female",
-          country: "United States",
-          institution: "Regional Academic Hospital",
-          articleGoals:
-            "Demonstrate a rare presentation and diagnostic learning points.",
-        },
       },
     }));
 

@@ -54,4 +54,23 @@ export class SubscriptionService {
   public async getActivePlan(userId: string): Promise<UserSubscription | null> {
     return await this.subscriptionRepository.getActivePlan(userId);
   }
+  public async cancelRequestedPlan(
+    requestedId: string,
+    userId: string,
+  ): Promise<RequestedPlans> {
+    await this.userRepository.getUserById(userId);
+
+    return await this.subscriptionRepository.cancelRequestedPlan(
+      requestedId,
+      userId,
+    );
+  }
+
+  public async getUserRequestedPlan(
+    userId: string,
+  ): Promise<RequestedPlans | null> {
+    await this.userRepository.getUserById(userId);
+
+    return await this.subscriptionRepository.getUserRequestedPlan(userId);
+  }
 }

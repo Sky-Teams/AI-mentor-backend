@@ -1,6 +1,6 @@
 import { PlanBillingModel } from "src/modules/billing/domain/billing";
 
-export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED" | 'CANCELLED';
 
 export type SubscriptionPlanStatus = "ACTIVE" | "ARCHIVED";
 

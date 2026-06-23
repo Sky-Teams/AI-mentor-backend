@@ -39,23 +39,10 @@ export interface AuthResult {
 
 export type ProjectStatus = "DRAFT" | "IN_REVIEW" | "READY" | "ARCHIVED";
 export type SectionStatus = "NOT_STARTED" | "DRAFT" | "IN_REVIEW" | "READY";
-export type ProjectSectionKey =
-  | "TITLE"
-  | "ABSTRACT"
-  | "KEYWORDS"
-  | "INTRODUCTION"
-  | "CASE_PRESENTATION"
-  | "DISCUSSION"
-  | "CONCLUSION"
-  | "PATIENT_PERSPECTIVE"
-  | "INFORMED_CONSENT"
-  | "REFERENCES"
-  | "COVER_LETTER";
-
 export interface ProjectSection {
   id: string;
   projectId: string;
-  key: ProjectSectionKey;
+  key: string;
   title: string;
   content: string;
   sectionOrder: number;
@@ -64,6 +51,7 @@ export interface ProjectSection {
   status: SectionStatus;
   lastEditedAt: string | null;
   updatedAt: string;
+  parentSectionId: string | null;
   checklist?: Array<{
     id: string;
     title: string | null;
@@ -139,7 +127,7 @@ export interface ReviewRun {
   errorMessage: string | null;
   createdAt: string;
   completedAt: string | null;
-  sectionKey?: ProjectSectionKey;
+  sectionKey?: string;
   issues?: ReviewIssue[];
   suggestions?: ReviewSuggestion[];
   metrics?: ReviewMetric[];
@@ -300,6 +288,15 @@ export interface Specialty {
   updatedAt: string;
 }
 
+export interface ArticleType {
+  id: string;
+  name: string;
+  description: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CreateJournalInput {
   name: string;
   publisher?: string;
@@ -308,7 +305,6 @@ export interface CreateJournalInput {
   guidelinePack: string;
   specialtyId: string;
   sections: Array<{
-    key: string;
     title: string;
     sectionOrder: number;
     isOptional?: boolean;
@@ -317,6 +313,17 @@ export interface CreateJournalInput {
     checklists: Array<{
       title: string | null;
       items: string[];
+    }>;
+    subsections?: Array<{
+      title: string;
+      sectionOrder: number;
+      isOptional?: boolean;
+      maxChars: number;
+      description?: string;
+      checklists: Array<{
+        title: string | null;
+        items: string[];
+      }>;
     }>;
   }>;
 }

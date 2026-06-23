@@ -35,6 +35,7 @@ export const AppLayout = () => {
             <NavLink to="/journals/new">Journal</NavLink>
           ) : null}
           <NavLink to="/billing">Billing</NavLink>
+          <NavLink to="/references">Citation</NavLink>
           {user?.role === "ADMIN" ? <NavLink to="/admin">Admin</NavLink> : null}
           {user?.role === "ADMIN" ? (
             <NavLink to="/admin/subscriptions">Subscription</NavLink>

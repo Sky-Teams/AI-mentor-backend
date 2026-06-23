@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  RequestedPlans,
   subscriptionApi,
   SubscriptionPlan,
 } from "../services/api/subscription";
@@ -7,17 +8,26 @@ import {
 export function SubscriptionListPanel() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [buyingId, setBuyingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [requestedPlan, setRequestedPlan] = useState<RequestedPlans | null>(
+    null,
+  );
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await subscriptionApi.listPlans();
-        setPlans(Array.isArray(data) ? data : [data]);
-      } catch (error) {
-        console.log(error);
+        const [plans, requestedPlan] = await Promise.all([
+          await subscriptionApi.listPlans(),
+          await subscriptionApi.getUserRequestedPlan(),
+        ]);
+        setPlans(Array.isArray(plans) ? plans : [plans]);
+        setRequestedPlan(requestedPlan);
+      } catch (error: any) {
+        setErrorMessage(
+          error?.response?.data?.error?.message || "An error occurred",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -27,82 +37,172 @@ export function SubscriptionListPanel() {
 
   const handleBuyPlan = async (planId: string) => {
     try {
-      setBuyingId(planId);
+      setSelectedId(planId);
       setErrorMessage("");
 
       await subscriptionApi.buyPlan(planId);
+      const requestedPlan = await subscriptionApi.getUserRequestedPlan();
+      setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      if (error.response?.data?.error?.code === "PLAN_NOT_FOUND") {
-        setErrorMessage("Plan was not found");
-      } else if (
-        error.response?.data?.error?.code === "ALREADY_HAVE_PENDING_REQUEST"
-      ) {
-        setErrorMessage("Already have a pending request");
-      } else {
-        setErrorMessage("Please try again...");
-      }
-      console.log(error);
+      setErrorMessage(
+        error?.response?.data?.error?.message || "An error occurred",
+      );
     } finally {
-      setBuyingId(null);
+      setSelectedId(null);
+    }
+  };
+
+  const handleCancelRequestedPlan = async (requestedId: string) => {
+    try {
+      setSelectedId(requestedId);
+      setErrorMessage("");
+      await subscriptionApi.cancelRequestedPlan(requestedId);
+      setRequestedPlan(null);
+      alert("Your requested cancelled.");
+    } catch (error: any) {
+      setErrorMessage(
+        error?.response?.data?.error?.message || "An error occurred",
+      );
+    } finally {
+      setSelectedId(null);
     }
   };
 
   return (
-    <div className="content-layout">
-      {errorMessage && <div className="error-text">{errorMessage}</div>}
-      <div className="paraphrase-header">
-        <h2>Plans</h2>
-      </div>
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        plans.length > 0 &&
-        plans.map((plan, index) => {
-          return (
-            <div key={plan.id || index} className="paraphrase-item">
-              <div className="paraphrase-content">
-                <div className="paraphrase-row main-info">
-                  <div>
-                    <b>Payment model</b>
+    <div>
+      {/* List Plans */}
+      <div className="content-layout">
+        {errorMessage && (
+          <div className="error-text" style={{ padding: "20px" }}>
+            {errorMessage}
+          </div>
+        )}
+        <div className="paraphrase-header">
+          <h2>Plans</h2>
+        </div>
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : (
+          plans.length > 0 &&
+          plans.map((plan, index) => {
+            return (
+              <div key={plan.id || index}>
+                <div
+                  className="paraphrase-content"
+                  style={{
+                    gridTemplateRows: "repeat(1, 1fr)",
+                    padding: "20px",
+                  }}
+                >
+                  <div className="paraphrase-row main-info">
+                    <div>
+                      <b>Payment model</b>
+                    </div>
+                    <div>
+                      <b>{plan.name}</b>
+                    </div>
                   </div>
-                  <div>
-                    <b>{plan.name}</b>
-                  </div>
-                </div>
 
-                <div className="paraphrase-row main-info">
-                  <div>
-                    <b>Credit amount</b>
+                  <div className="paraphrase-row main-info">
+                    <div>
+                      <b>Credit amount</b>
+                    </div>
+                    <div>{plan.includedCredits} credits</div>
                   </div>
-                  <div>{plan.includedCredits} credits</div>
-                </div>
 
-                <div className="paraphrase-row main-info">
-                  <div>
-                    <b>Cost</b>
+                  <div className="paraphrase-row main-info">
+                    <div>
+                      <b>Cost</b>
+                    </div>
+                    <div>
+                      {plan.monthlyPriceCents
+                        ? `$${(plan.monthlyPriceCents / 100).toFixed(2)}`
+                        : "No monthly fee"}
+                    </div>
                   </div>
-                  <div>
-                    {plan.monthlyPriceCents
-                      ? `$${(plan.monthlyPriceCents / 100).toFixed(2)}`
-                      : "No monthly fee"}
-                  </div>
-                </div>
 
-                <div>
-                  <button
-                    className="outline-button"
-                    type="button"
-                    onClick={() => handleBuyPlan(plan.id)}
-                  >
-                    {buyingId === plan.id ? "Buying..." : "Buy Plan"}
-                  </button>
+                  <div>
+                    <button
+                      className="outline-button"
+                      type="button"
+                      onClick={() => handleBuyPlan(plan.id)}
+                    >
+                      {selectedId === plan.id ? "Buying..." : "Buy Plan"}
+                    </button>
+                  </div>
                 </div>
               </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Requested Plan */}
+      <div className="content-layout" style={{ marginTop: "20px" }}>
+        <div className="paraphrase-header">
+          <h3>Requested Plan</h3>
+        </div>
+        {requestedPlan ? (
+          <div
+            className="paraphrase-content"
+            style={{
+              gridTemplateRows: "repeat(1, 1fr)",
+              gridTemplateColumns: "repeat(5, 1fr)",
+              gridGap: "40px",
+              padding: "20px",
+            }}
+          >
+            <div className="paraphrase-row main-info">
+              <div>
+                <b>Payment model</b>
+              </div>
+              <div>
+                <b>{requestedPlan.subscriptionPlan.name}</b>
+              </div>
             </div>
-          );
-        })
-      )}
+
+            <div className="paraphrase-row main-info">
+              <div>
+                <b>Credit amount</b>
+              </div>
+              <div>
+                {requestedPlan.subscriptionPlan.includedCredits} credits
+              </div>
+            </div>
+
+            <div className="paraphrase-row main-info">
+              <div>
+                <b>Cost</b>
+              </div>
+              <div>
+                {requestedPlan.subscriptionPlan.monthlyPriceCents
+                  ? `$${(requestedPlan.subscriptionPlan.monthlyPriceCents / 100).toFixed(2)}`
+                  : "No monthly fee"}
+              </div>
+            </div>
+
+            <div className="paraphrase-row main-info">
+              <div>
+                <b>Status</b>
+              </div>
+              <div>{requestedPlan.status}</div>
+            </div>
+
+            <div>
+              <button
+                className="outline-button"
+                type="button"
+                onClick={() => handleCancelRequestedPlan(requestedPlan.id)}
+              >
+                {selectedId === requestedPlan.id ? "Cancelling..." : "Cancel"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ color: "gray", padding: "20px" }}>No Requested Yet</div>
+        )}
+      </div>
     </div>
   );
 }

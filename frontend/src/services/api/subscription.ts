@@ -9,7 +9,11 @@ export const planBillingModels = [
 ] as const;
 export type PlanBillingModel = (typeof planBillingModels)[number];
 
-export type SubscriptionRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type SubscriptionRequestStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "CANCELLED";
 
 export interface SubscriptionPlan {
   id: string;
@@ -57,6 +61,22 @@ export const subscriptionApi = {
   async getActivePlan() {
     const response = await apiClient.get<ApiSuccessResponse<any>>(
       `/subscriptions/plans/active`,
+    );
+
+    return unwrap(response.data);
+  },
+
+  async getUserRequestedPlan() {
+    const response = await apiClient.get<ApiSuccessResponse<RequestedPlans>>(
+      `/subscriptions/plans/requested-plan`,
+    );
+
+    return unwrap(response.data);
+  },
+
+  async cancelRequestedPlan(id: string) {
+    const response = await apiClient.patch<ApiSuccessResponse<RequestedPlans>>(
+      `/subscriptions/plans/requested-plan/${id}/cancel`,
     );
 
     return unwrap(response.data);

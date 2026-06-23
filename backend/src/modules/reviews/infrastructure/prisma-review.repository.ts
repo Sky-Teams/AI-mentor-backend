@@ -431,10 +431,12 @@ export class PrismaReviewRepository implements ReviewRepository {
       title: section.title,
       content: section.content,
       sectionOrder: section.sectionOrder,
+      maxChars: section.maxChars,
       isOptional: section.isOptional,
       status: section.status,
       lastEditedAt: section.lastEditedAt,
       updatedAt: section.updatedAt,
+      parentSectionId: section.parentSectionId,
     };
   }
 

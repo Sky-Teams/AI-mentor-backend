@@ -3,7 +3,6 @@ import { StatusCodes } from "http-status-codes";
 import {
   CreatedJournal,
   JournalRepository,
-  Specialty,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
 import { CreateJournalInput } from "src/shared/seed-data/journals.js";
@@ -13,7 +12,6 @@ const mapJournal = (journal: any): CreatedJournal => ({
   name: journal.name,
   publisher: journal.publisher,
   description: journal.description,
-  manuscriptType: journal.manuscriptType,
   guidelinePack: {
     id: journal.guidelinePack.id,
     rules: journal.guidelinePack.rules,
@@ -42,14 +40,38 @@ const mapJournal = (journal: any): CreatedJournal => ({
       createdAt: checklist.createdAt,
       updatedAt: checklist.updatedAt,
     })),
+    subsections:
+      section.subsections?.map((sub: any) => ({
+        id: sub.id,
+        key: sub.key,
+        title: sub.title,
+        sectionOrder: sub.sectionOrder,
+        isOptional: sub.isOptional,
+        maxChars: sub.maxChars,
+        description: sub.description,
+        createdAt: sub.createdAt,
+        updatedAt: sub.updatedAt,
+        checklists:
+          sub.checklists?.map((checklist: any) => ({
+            id: checklist.id,
+            title: checklist.title,
+            items: checklist.items,
+            createdAt: checklist.createdAt,
+            updatedAt: checklist.updatedAt,
+          })) ?? [],
+      })) ?? [],
   })),
 });
 
 export class PrismaJournalRepository implements JournalRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
-  public async findAll(): Promise<Array<{ id: string; name: string }>> {
-    return this.prisma.journal.findMany();
+  public async findAll(
+    specialtyId?: string,
+  ): Promise<Array<{ id: string; name: string }>> {
+    return this.prisma.journal.findMany({
+      where: specialtyId ? { specialtyId: specialtyId } : {},
+    });
   }
 
   public async findById(
@@ -70,7 +92,7 @@ export class PrismaJournalRepository implements JournalRepository {
     if (existing)
       throw new AppError(
         "Journal with this name already exists",
-        StatusCodes.NOT_FOUND,
+        StatusCodes.CONFLICT,
         "JOURNAL_ALREADY_EXISTS",
       );
 
@@ -86,7 +108,7 @@ export class PrismaJournalRepository implements JournalRepository {
       });
 
       // Find specialties
-      const specialty = await this.prisma.journalSpecialty.findUnique({
+      const specialty = await transaction.journalSpecialty.findUnique({
         where: { id: input.specialtyId },
       });
 
@@ -97,18 +119,17 @@ export class PrismaJournalRepository implements JournalRepository {
           "SPECIALTY_NOT_FOUND",
         );
 
-      // Create journal
-      return transaction.journal.create({
+      // Create journal with main sections
+      const journal = await transaction.journal.create({
         data: {
           name: input.name,
           publisher: input.publisher,
           description: input.description,
           guidelinePackId: guidelinePack.id,
-          manuscriptType: input.manuscriptType || "CASE_REPORT",
           specialtyId: specialty.id,
           sectionTemplates: {
             create: input.sections.map((section) => ({
-              key: section.key,
+              key: section.title + Math.floor(Math.random() * 900 + 100),
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
@@ -126,7 +147,66 @@ export class PrismaJournalRepository implements JournalRepository {
         include: {
           guidelinePack: true,
           sectionTemplates: {
-            include: { checklists: true },
+            where: { parentSectionId: null },
+            include: {
+              checklists: true,
+              subsections: {
+                include: { checklists: true },
+              },
+            },
+          },
+          specialty: true,
+        },
+      });
+
+      for (const section of input.sections) {
+        if (!section.subsections || section.subsections.length === 0) continue;
+
+        // find the created parent section
+        const parentSection = journal.sectionTemplates.find(
+          (sec) => sec.title === section.title,
+        );
+
+        if (!parentSection) continue;
+
+        for (const sub of section.subsections) {
+          const createdSub = await transaction.journalSectionTemplate.create({
+            data: {
+              journalId: journal.id,
+              parentSectionId: parentSection.id,
+              key: sub.title + Math.floor(Math.random() * 900 + 1000),
+              title: sub.title,
+              sectionOrder: sub.sectionOrder,
+              isOptional: sub.isOptional,
+              maxChars: sub.maxChars,
+              description: sub.description,
+            },
+          });
+
+          if (sub.checklists?.length) {
+            await transaction.sectionChecklist.createMany({
+              data: sub.checklists.map((checklist) => ({
+                journalSectionTemplateId: createdSub.id,
+                title: checklist.title,
+                items: checklist.items,
+              })),
+            });
+          }
+        }
+      }
+
+      return transaction.journal.findUniqueOrThrow({
+        where: { id: journal.id },
+        include: {
+          guidelinePack: true,
+          sectionTemplates: {
+            where: { parentSectionId: null },
+            include: {
+              checklists: true,
+              subsections: {
+                include: { checklists: true },
+              },
+            },
           },
           specialty: true,
         },
@@ -134,9 +214,5 @@ export class PrismaJournalRepository implements JournalRepository {
     });
 
     return mapJournal(journal);
-  }
-
-  public async getAllSpecialties(): Promise<Specialty[]> {
-    return await this.prisma.journalSpecialty.findMany();
   }
 }

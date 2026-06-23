@@ -53,6 +53,10 @@ import { PrismaSubscriptionRepository } from "./modules/subscription/infrastruct
 import { SubscriptionService } from "./modules/subscription/application/subscription.service";
 import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
 import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
+import { ReferenceFormatterService } from "./modules/references/application/reference.formatter.service";
+import { APAFormatter } from "./modules/references/infrastructure/formatters/APAFormatter";
+import { MLAFormatter } from "./modules/references/infrastructure/formatters/MLAFormatter";
+import { VancouverFormatter } from "./modules/references/infrastructure/formatters/VancouverFormatter";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -97,6 +101,14 @@ export const createApp = (): express.Express => {
     reviewRepository,
     userRepository,
   );
+  const apa = new APAFormatter();
+  const mla = new MLAFormatter();
+  const vancouver = new VancouverFormatter();
+  const referenceFormatterService = new ReferenceFormatterService(
+    apa,
+    mla,
+    vancouver,
+  );
   const referenceService = new ReferenceSearchService(journalReferenceService);
   const subscriptionService = new SubscriptionService(
     subscriptionRepository,
@@ -116,8 +128,14 @@ export const createApp = (): express.Express => {
     journalService,
   );
   const paraphraseController = new ParaphraseController(paraphraseService);
-  const journalController = new JournalController(journalService);
-  const referenceController = new ReferenceController(referenceService);
+  const journalController = new JournalController(
+    journalService,
+    projectService,
+  );
+  const referenceController = new ReferenceController(
+    referenceService,
+    referenceFormatterService,
+  );
   const subscriptionController = new SubscriptionController(
     subscriptionService,
   );

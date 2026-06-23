@@ -1,8 +1,9 @@
-import { PrismaClient, type Prisma } from "@prisma/client";
+import { ArticleType, PrismaClient, type Prisma } from "@prisma/client";
 import type {
   Project,
   ProjectSection,
   SectionVersion,
+  Specialty,
 } from "../domain/project";
 import type {
   CreateProjectInput,
@@ -16,18 +17,21 @@ import { StatusCodes } from "http-status-codes";
 const mapSection = (section: {
   id: string;
   projectId: string;
-  key: ProjectSection["key"];
+  key: string;
   title: string;
   content: string;
   sectionOrder: number;
   isOptional: boolean;
+  maxChars: number;
   status: ProjectSection["status"];
   lastEditedAt: Date | null;
   updatedAt: Date;
+  parentSectionId?: string | null;
 }): ProjectSection => ({
   id: section.id,
   projectId: section.projectId,
   key: section.key,
+  maxChars: section.maxChars,
   title: section.title,
   content: section.content,
   sectionOrder: section.sectionOrder,
@@ -35,12 +39,12 @@ const mapSection = (section: {
   status: section.status,
   lastEditedAt: section.lastEditedAt,
   updatedAt: section.updatedAt,
+  parentSectionId: section.parentSectionId ?? null,
 });
 
 const mapProject = (project: {
   id: string;
   ownerId: string;
-  manuscriptType: "CASE_REPORT";
   title: string;
   status: Project["status"];
   targetJournal: string | null;
@@ -50,7 +54,8 @@ const mapProject = (project: {
       rules: Prisma.JsonValue | null;
     } | null;
   } | null;
-  metadata: unknown;
+  specialtyId: string | null;
+  articleTypeId: string | null;
   readinessScore: number | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
@@ -63,13 +68,24 @@ const mapProject = (project: {
     content: string;
     sectionOrder: number;
     isOptional: boolean;
+    maxChars: number;
     status: ProjectSection["status"];
     lastEditedAt: Date | null;
     updatedAt: Date;
+    parentSectionId?: string | null;
   }>;
 }): Project => ({
   id: project.id,
   ownerId: project.ownerId,
+  title: project.title,
+  status: project.status,
+  targetJournal: project.targetJournal,
+  specialtyId: project.specialtyId ?? "",
+  articleTypeId: project.articleTypeId ?? "",
+  readinessScore: project.readinessScore,
+  lastReviewedAt: project.lastReviewedAt,
+  createdAt: project.createdAt,
+  updatedAt: project.updatedAt,
   journal: project.journal
     ? {
         guidelinePack: project.journal.guidelinePack
@@ -83,15 +99,6 @@ const mapProject = (project: {
           : null,
       }
     : null,
-  manuscriptType: project.manuscriptType,
-  title: project.title,
-  status: project.status,
-  targetJournal: project.targetJournal,
-  metadata: (project.metadata as Project["metadata"]) ?? null,
-  readinessScore: project.readinessScore,
-  lastReviewedAt: project.lastReviewedAt,
-  createdAt: project.createdAt,
-  updatedAt: project.updatedAt,
   sections: project.sections?.map(mapSection),
 });
 
@@ -99,6 +106,31 @@ export class PrismaProjectRepository implements ProjectRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async createProject(input: CreateProjectInput): Promise<Project> {
+    // 1) Find article type
+    const articleType = await this.prisma.articleType.findUnique({
+      where: { id: input.articleTypeId },
+    });
+
+    if (!articleType)
+      throw new AppError(
+        `ArticleType not found.`,
+        StatusCodes.NOT_FOUND,
+        "ARTICLE_TYPE_NOT_FOUND",
+      );
+
+    // 2) Find specialty
+    const specialty = await this.prisma.journalSpecialty.findUnique({
+      where: { id: input.specialtyId },
+    });
+
+    if (!specialty)
+      throw new AppError(
+        `Specialty not found.`,
+        StatusCodes.NOT_FOUND,
+        "SPECIALTY_NOT_FOUND",
+      );
+
+    // 3) Find journal
     const journal = input.targetJournal
       ? await this.prisma.journal.findFirst({
           where: { id: input.targetJournal },
@@ -116,14 +148,53 @@ export class PrismaProjectRepository implements ProjectRepository {
 
     const project = await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
-        const templates = await transaction.journalSectionTemplate.findMany({
-          where: {
+        const createdProject = await transaction.project.create({
+          data: {
+            ownerId: input.ownerId,
+            title: input.title,
+            targetJournal: journal.name,
             journalId: journal.id,
-          },
-          orderBy: {
-            sectionOrder: "asc",
+            specialtyId: specialty.id,
+            articleTypeId: articleType.id,
           },
         });
+
+        // fetch only root templates
+        const templates = await transaction.journalSectionTemplate.findMany({
+          where: { journalId: journal.id, parentSectionId: null },
+          orderBy: { sectionOrder: "asc" },
+          include: {
+            subsections: { orderBy: { sectionOrder: "asc" } },
+          },
+        });
+
+        // create root sections + their subsections
+        for (const template of templates) {
+          const createdSection = await transaction.projectSection.create({
+            data: {
+              projectId: createdProject.id,
+              key: template.key,
+              title: template.title,
+              sectionOrder: template.sectionOrder,
+              isOptional: template.isOptional,
+              maxChars: template.maxChars,
+            },
+          });
+
+          if (template.subsections.length > 0) {
+            await transaction.projectSection.createMany({
+              data: template.subsections.map((sub) => ({
+                projectId: createdProject.id,
+                parentSectionId: createdSection.id,
+                key: sub.key,
+                title: sub.title,
+                sectionOrder: sub.sectionOrder,
+                isOptional: sub.isOptional,
+                maxChars: sub.maxChars,
+              })),
+            });
+          }
+        }
 
         if (templates.length === 0) {
           throw new AppError(
@@ -132,27 +203,6 @@ export class PrismaProjectRepository implements ProjectRepository {
             "JOURNAL_HAS_NO_SECTIONS",
           );
         }
-
-        const createdProject = await transaction.project.create({
-          data: {
-            ownerId: input.ownerId,
-            title: input.title,
-            targetJournal: journal.name,
-            journalId: journal.id,
-            metadata: input.metadata as Prisma.InputJsonValue | undefined,
-          },
-        });
-
-        await transaction.projectSection.createMany({
-          data: templates.map((section) => ({
-            projectId: createdProject.id,
-            key: section.key,
-            title: section.title,
-            sectionOrder: section.sectionOrder,
-            isOptional: section.isOptional,
-            maxChars: section.maxChars,
-          })),
-        });
 
         return transaction.project.findUniqueOrThrow({
           where: {
@@ -245,7 +295,6 @@ export class PrismaProjectRepository implements ProjectRepository {
         title: input.title,
         targetJournal: input.targetJournal,
         status: input.status,
-        metadata: input.metadata as Prisma.InputJsonValue | undefined,
       },
       include: {
         journal: {
@@ -303,6 +352,15 @@ export class PrismaProjectRepository implements ProjectRepository {
         if (!section) {
           return null;
         }
+
+        const contentCharacters = input.content.trim().length;
+
+        if (section.maxChars < contentCharacters)
+          throw new AppError(
+            `Content exceeds maximum limit of ${section.maxChars} characters.`,
+            StatusCodes.BAD_REQUEST,
+            `CONTENT_EXCEEDS_LIMIT_CHARACTERS`,
+          );
 
         const latestVersion = await transaction.sectionVersion.findFirst({
           where: {
@@ -550,5 +608,21 @@ export class PrismaProjectRepository implements ProjectRepository {
         });
 
     return { checked: result.checked };
+  }
+
+  public async getAllSpecialties(): Promise<Specialty[]> {
+    const specialties = await this.prisma.journalSpecialty.findMany({
+      include: { _count: { select: { journals: true } } },
+    });
+    return specialties.map((s) => ({
+      id: s.id,
+      name: s.name,
+      description: s.description,
+      journalCount: s._count.journals,
+    }));
+  }
+
+  public async getAllArticleTypes(): Promise<ArticleType[]> {
+    return await this.prisma.articleType.findMany();
   }
 }
