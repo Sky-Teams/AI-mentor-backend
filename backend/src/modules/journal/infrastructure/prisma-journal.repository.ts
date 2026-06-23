@@ -218,7 +218,7 @@ export class PrismaJournalRepository implements JournalRepository {
   }
 
   public async updateJournal(journalId: string, input: UpdateJournalInput) {
-    // Validate journal
+    // 1) Validate journal
     const journal = await this.prisma.journal.findUnique({
       where: { id: journalId },
       include: {
@@ -241,6 +241,7 @@ export class PrismaJournalRepository implements JournalRepository {
       );
     }
 
+    // 2) Update JournalDetails
     const updateJournalDetails = await this.prisma.journal.update({
       where: { id: journalId },
       data: {
@@ -251,8 +252,28 @@ export class PrismaJournalRepository implements JournalRepository {
       },
     });
 
+    // 3) Update guideline pack
     if (input.guidelinePack) {
-      const guidelinePack = await this.prisma.guidelinePack.findUnique({});
+      const guidelinePack = await this.prisma.guidelinePack.findUnique({
+        where: { id: journal.guidelinePackId },
+      });
+
+      if (!guidelinePack) {
+        throw new AppError(
+          "guidelinePack not found",
+          StatusCodes.NOT_FOUND,
+          "GUIDELINE_PACK_NOT_FOUND",
+        );
+      }
+
+      await this.prisma.guidelinePack.update({
+        where: { id: guidelinePack.id },
+        data: {
+          rules: {
+            text: input.guidelinePack,
+          },
+        },
+      });
     }
   }
 }
