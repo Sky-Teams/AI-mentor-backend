@@ -174,7 +174,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         where: { userId, status: "ACTIVE" },
       });
 
-      /** Inactive active user subscription */
+      /** Deactivate the user's active subscription */
       if (existing.type === "UPGRADE") {
         if (!activeSubscription)
           throw new AppError(
@@ -202,7 +202,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         endDate.setMonth(endDate.getMonth() + 1);
       }
 
-      /** Create new user subscription */
+      /** Create a new user subscription */
       await transaction.userSubscription.create({
         data: {
           userId: userId,
