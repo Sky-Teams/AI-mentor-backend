@@ -4,7 +4,12 @@ import { IssuesList } from "../components/IssuesList";
 import { ReadinessCard } from "../components/ReadinessCard";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
-import type { Project, ReadinessSnapshot, ReviewIssue, ReviewRun } from "../types/api";
+import type {
+  Project,
+  ReadinessSnapshot,
+  ReviewIssue,
+  ReviewRun,
+} from "../types/api";
 
 export const ProjectDetailsPage = () => {
   const { projectId = "" } = useParams();
@@ -14,12 +19,13 @@ export const ProjectDetailsPage = () => {
   const [readiness, setReadiness] = useState<ReadinessSnapshot | null>(null);
 
   const load = async () => {
-    const [projectData, reviewsData, issuesData, readinessData] = await Promise.all([
-      projectsApi.get(projectId),
-      reviewsApi.listProjectReviews(projectId),
-      reviewsApi.listIssues(projectId),
-      reviewsApi.getReadiness(projectId),
-    ]);
+    const [projectData, reviewsData, issuesData, readinessData] =
+      await Promise.all([
+        projectsApi.get(projectId),
+        reviewsApi.listProjectReviews(projectId),
+        reviewsApi.listIssues(projectId),
+        reviewsApi.getReadiness(projectId),
+      ]);
 
     setProject(projectData);
     setReviews(reviewsData);
@@ -37,6 +43,9 @@ export const ProjectDetailsPage = () => {
     await load();
   };
 
+  const allSections = project?.sections ?? [];
+  const rootSections = allSections.filter((s) => !s.parentSectionId);
+
   return (
     <div className="page-shell">
       <div className="page-header">
@@ -44,7 +53,8 @@ export const ProjectDetailsPage = () => {
           <p className="eyebrow">Project</p>
           <h1>{project?.title ?? "Loading project..."}</h1>
           <p className="muted-text">
-            Status: {project?.status ?? "-"} · Target journal: {project?.targetJournal ?? "Not set"}
+            Status: {project?.status ?? "-"} · Target journal:{" "}
+            {project?.targetJournal ?? "Not set"}
           </p>
         </div>
       </div>
@@ -55,24 +65,54 @@ export const ProjectDetailsPage = () => {
         <div className="card">
           <div className="card-header">
             <h3>Sections</h3>
-            <span className="badge">{project?.sections?.length ?? 0}</span>
+            <span className="badge">{rootSections.length}</span>
           </div>
           <div className="stack">
-            {(project?.sections ?? []).map((section) => (
-              <Link
-                className="section-link"
-                key={section.id}
-                to={`/projects/${projectId}/sections/${section.key}`}
-              >
-                <div>
-                  <strong>{section.title}</strong>
-                  <p className="muted-text">
-                    {section.status} {section.isOptional ? "· Optional" : ""}
-                  </p>
+            {rootSections.map((section) => {
+              const subsections = allSections.filter(
+                (s) => s.parentSectionId === section.id,
+              );
+
+              return (
+                <div key={section.id}>
+                  {/* Root section */}
+                  <Link
+                    className="section-link"
+                    to={`/projects/${projectId}/sections/${section.key}`}
+                  >
+                    <div>
+                      <strong>{section.title}</strong>
+                      <p className="muted-text">
+                        {section.status}{" "}
+                        {section.isOptional ? "· Optional" : ""}
+                      </p>
+                    </div>
+                    <span>{section.content.trim().length} chars</span>
+                  </Link>
+
+                  {subsections.map((sub) => (
+                    <Link
+                      className="section-link"
+                      key={sub.id}
+                      to={`/projects/${projectId}/sections/${sub.key}`}
+                      style={{
+                        marginLeft: "1.5rem",
+                        borderLeft: "3px solid #e5e7eb",
+                        paddingLeft: "0.75rem",
+                      }}
+                    >
+                      <div>
+                        <strong>↳ {sub.title}</strong>
+                        <p className="muted-text">
+                          {sub.status} {sub.isOptional ? "· Optional" : ""}
+                        </p>
+                      </div>
+                      <span>{sub.content.trim().length} chars</span>
+                    </Link>
+                  ))}
                 </div>
-                <span>{section.content.trim().length} chars</span>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -89,8 +129,8 @@ export const ProjectDetailsPage = () => {
                 <div className="issue-item" key={review.id}>
                   <strong>{review.sectionKey ?? "Section review"}</strong>
                   <p className="muted-text">
-                    {review.status} · Score {review.overallScore ?? "-"} · Tokens{" "}
-                    {review.totalTokens ?? 0}
+                    {review.status} · Score {review.overallScore ?? "-"} ·
+                    Tokens {review.totalTokens ?? 0}
                   </p>
                   <p>{review.summary}</p>
                 </div>

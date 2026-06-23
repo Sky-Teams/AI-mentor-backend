@@ -19,6 +19,7 @@ export type SectionDraft = {
   isOptional: boolean;
   maxChars: string;
   checklists: ChecklistDraft[];
+  subsections: SectionDraft[]; // NEW
 };
 
 export type JournalFormState = {
@@ -55,6 +56,7 @@ export const createSection = (): SectionDraft => ({
   isOptional: false,
   maxChars: "",
   checklists: [createChecklist()],
+  subsections: [], // NEW
 });
 
 export const createEmptyJournalForm = (): JournalFormState => ({
@@ -65,17 +67,6 @@ export const createEmptyJournalForm = (): JournalFormState => ({
   specialtyId: "",
   sections: [createSection()],
 });
-
-// Create section key from section title automatically
-const makeSectionKey = (title: string, index: number) => {
-  const key = title
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-
-  return key || `SECTION_${index + 1}`;
-};
 
 // backend payload builder
 export const buildJournalPayload = (
@@ -88,7 +79,6 @@ export const buildJournalPayload = (
   guidelinePack: form.guidelinePack.trim(),
   specialtyId: form.specialtyId,
   sections: form.sections.map((section, sectionIndex) => ({
-    key: makeSectionKey(section.title, sectionIndex),
     title: section.title.trim(),
     sectionPrompt: section.sectionPrompt.trim(),
     sectionOrder: sectionIndex + 1,
@@ -99,6 +89,19 @@ export const buildJournalPayload = (
       items: checklist.items
         .map((item) => item.text.trim())
         .filter((item) => item.length > 0),
+    })),
+    subsections: section.subsections.map((sub, subIndex) => ({
+      title: sub.title.trim(),
+      description: sub.description.trim() || undefined,
+      sectionOrder: subIndex + 1,
+      isOptional: sub.isOptional,
+      maxChars: Number(sub.maxChars),
+      checklists: sub.checklists
+        .map((c) => ({
+          title: c.title.trim() || null,
+          items: c.items.map((i) => i.text.trim()).filter((i) => i.length > 0),
+        }))
+        .filter((c) => c.items.length > 0),
     })),
   })),
 });
