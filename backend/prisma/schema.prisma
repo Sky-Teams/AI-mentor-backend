@@ -92,6 +92,7 @@ enum SubscriptionPlanStatus {
 
 enum UserSubscriptionStatus {
   ACTIVE
+  INACTIVE
   PAST_DUE
   CANCELLED
   EXPIRED
@@ -532,9 +533,15 @@ model UserSubscription {
   @@index([userId, status, currentPeriodEnd])
 }
 
+enum SubscriptionRequestType {
+  PURCHASE
+  UPGRADE
+}
+
 model SubscriptionRequest {
   id                 String                    @id @default(cuid())
   userId             String
+  type               SubscriptionRequestType
   subscriptionPlanId String
   status             SubscriptionRequestStatus
   createdAt          DateTime                  @default(now())
