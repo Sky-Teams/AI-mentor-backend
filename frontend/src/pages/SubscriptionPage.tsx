@@ -45,12 +45,6 @@ export function SubscriptionPage() {
       ) : requestedPlans.length > 0 ? (
         requestedPlans.map((item, index) => (
           <div key={item.id || index} className="paraphrase-content">
-            <div>
-              <div>
-                <b>Username:</b>
-              </div>
-              <div>{item.user.fullName}</div>
-            </div>
 
             <div>
               <div>
@@ -92,6 +86,13 @@ export function SubscriptionPage() {
                 <b>Status:</b>
               </div>
               <div>{item.status}</div>
+            </div>
+
+            <div>
+              <div>
+                <b>Type:</b>
+              </div>
+              <div>{item.type}</div>
             </div>
 
             <div>
