@@ -4,7 +4,9 @@ import {
   CreatedJournal,
   CreateJournalInput,
   JournalRepository,
+  JournalSectionDefinition,
   UpdateJournalInput,
+  UpdateJournalSectionDefinition,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
 
@@ -274,6 +276,38 @@ export class PrismaJournalRepository implements JournalRepository {
           },
         },
       });
+    }
+
+    // Update sections
+    if (input.sections) {
+      const updatedSections: any[] = [];
+      const newSections: any[] = [];
+      // const journalSectionIds = new Map()
+
+      input.sections.map((section) => {
+        if (section.id) updatedSections.push(section);
+        else newSections.push(section);
+      });
+
+      const allJournalSections =
+        await this.prisma.journalSectionTemplate.findMany({
+          where: {
+            journalId: journal.id,
+          },
+          include: {
+            checklists: true,
+          },
+        });
+
+      const deletedOnes = allJournalSections.filter(
+        (section) => !updatedSections.includes(section.id),
+      );
+
+      for (const section of deletedOnes) {
+        await this.prisma.journalSectionTemplate.delete({
+          where: { id: section.id },
+        });
+      }
     }
   }
 }
