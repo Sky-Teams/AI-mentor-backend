@@ -24,7 +24,10 @@ export interface SubscriptionRequest {
   status: SubscriptionRequestStatus;
 }
 
-export type RequestedPlans = Pick<SubscriptionRequest, "id" | "status"> & {
+export type RequestedPlans = Pick<
+  SubscriptionRequest,
+  "id" | "status" | "type"
+> & {
   user: {
     id: string;
     fullName: string;
