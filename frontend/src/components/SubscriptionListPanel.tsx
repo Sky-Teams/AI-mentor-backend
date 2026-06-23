@@ -9,15 +9,23 @@ export function SubscriptionListPanel() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [buyingId, setBuyingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isActivePlan, setIsActivePlan] = useState<boolean>(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await subscriptionApi.listPlans();
-        setPlans(Array.isArray(data) ? data : [data]);
-      } catch (error) {
-        console.log(error);
+        const [plans, activePlan] = await Promise.all([
+          await subscriptionApi.listPlans(),
+          await subscriptionApi.getActivePlan(),
+        ]);
+
+        setPlans(plans);
+        if (activePlan) setIsActivePlan(true);
+      } catch (error: any) {
+        setErrorMessage(
+          error.response?.data?.error?.message || "An error occurred",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -33,21 +41,28 @@ export function SubscriptionListPanel() {
       await subscriptionApi.buyPlan(planId);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      if (error.response?.data?.error?.code === "PLAN_NOT_FOUND") {
-        setErrorMessage("Plan was not found");
-      } else if (
-        error.response?.data?.error?.code === "ALREADY_HAVE_PENDING_REQUEST"
-      ) {
-        setErrorMessage("Already have a pending request");
-      } else {
-        setErrorMessage("Please try again...");
-      }
-      console.log(error);
+      setErrorMessage(
+        error.response?.data?.error?.message || "An error occurred",
+      );
     } finally {
       setBuyingId(null);
     }
   };
 
+  const handleUpgradePlan = async (planId: string) => {
+    try {
+      setBuyingId(planId);
+      setErrorMessage("");
+      await subscriptionApi.upgradePlan(planId);
+      alert("The plan was successfully registered.");
+    } catch (error: any) {
+      setErrorMessage(
+        error.response?.data?.error?.message || "An error occurred",
+      );
+    } finally {
+      setBuyingId(null);
+    }
+  };
   return (
     <div className="content-layout">
       {errorMessage && <div className="error-text">{errorMessage}</div>}
@@ -93,9 +108,19 @@ export function SubscriptionListPanel() {
                   <button
                     className="outline-button"
                     type="button"
-                    onClick={() => handleBuyPlan(plan.id)}
+                    onClick={() =>
+                      isActivePlan
+                        ? handleUpgradePlan(plan.id)
+                        : handleBuyPlan(plan.id)
+                    }
                   >
-                    {buyingId === plan.id ? "Buying..." : "Buy Plan"}
+                    {isActivePlan
+                      ? buyingId === plan.id
+                        ? "Upgrading..."
+                        : "Upgrade"
+                      : buyingId === plan.id
+                        ? "Buying..."
+                        : "Buy"}
                   </button>
                 </div>
               </div>
