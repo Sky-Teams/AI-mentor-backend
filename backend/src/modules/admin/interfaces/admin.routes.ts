@@ -11,7 +11,7 @@ import {
   promptTemplateSchema,
 } from "./admin.schemas";
 import {
-  requestedPlanIdSchema,
+  subscriptionRequestIdSchema,
   userIdSchema,
 } from "src/modules/subscription/interfaces/subscription.schema";
 import { createJournalSchema } from "src/modules/journal/interface/journal.schema.js";
@@ -86,7 +86,7 @@ export const createAdminRouter = (
 
   router.patch(
     "/subscriptions/requested-plans/:id",
-    validate(requestedPlanIdSchema, "params"),
+    validate(subscriptionRequestIdSchema, "params"),
     validate(userIdSchema, "body"),
     asyncHandler((req, res) => controller.approveRequestedPlan(req, res)),
   );

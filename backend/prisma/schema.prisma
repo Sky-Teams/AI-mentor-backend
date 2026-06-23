@@ -557,6 +557,7 @@ enum SubscriptionRequestStatus {
   PENDING
   APPROVED
   REJECTED
+  CANCELLED
 }
 
 model CreditWallet {
