@@ -2,10 +2,11 @@ import { PrismaClient } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
 import {
   CreatedJournal,
+  CreateJournalInput,
   JournalRepository,
+  UpdateJournalInput,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
-import { CreateJournalInput } from "src/shared/seed-data/journals.js";
 
 const mapJournal = (journal: any): CreatedJournal => ({
   id: journal.id,
@@ -214,5 +215,44 @@ export class PrismaJournalRepository implements JournalRepository {
     });
 
     return mapJournal(journal);
+  }
+
+  public async updateJournal(journalId: string, input: UpdateJournalInput) {
+    // Validate journal
+    const journal = await this.prisma.journal.findUnique({
+      where: { id: journalId },
+      include: {
+        guidelinePack: true,
+        specialty: true,
+        sectionTemplates: {
+          include: {
+            checklists: true,
+            subsections: true,
+          },
+        },
+      },
+    });
+
+    if (!journal) {
+      throw new AppError(
+        "Journal not found",
+        StatusCodes.NOT_FOUND,
+        "JOURNAL_NOT_FOUND",
+      );
+    }
+
+    const updateJournalDetails = await this.prisma.journal.update({
+      where: { id: journalId },
+      data: {
+        name: input.name,
+        publisher: input.publisher,
+        description: input.description,
+        specialtyId: input.specialtyId,
+      },
+    });
+
+    if (input.guidelinePack) {
+      const guidelinePack = await this.prisma.guidelinePack.findUnique({});
+    }
   }
 }
