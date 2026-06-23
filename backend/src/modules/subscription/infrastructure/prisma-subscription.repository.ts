@@ -5,11 +5,15 @@ import {
   SubscriptionPlanStatus,
   SubscriptionRequest,
   SubscriptionRequestStatus,
+  SubscriptionRequestType,
 } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
-import { PlanBillingModel } from "src/modules/billing/domain/billing";
+import {
+  PlanBillingModel,
+  UserSubscription,
+} from "src/modules/billing/domain/billing";
 
 const mapPlan = (plan: {
   id: string;
@@ -32,6 +36,7 @@ const mapPlan = (plan: {
 const mapRequestedPlan = (item: {
   id: string;
   status: SubscriptionRequestStatus;
+  type: SubscriptionRequestType;
   user: {
     id: string;
     fullName: string;
@@ -50,6 +55,7 @@ const mapRequestedPlan = (item: {
 }): RequestedPlans => ({
   id: item.id,
   status: item.status,
+  type: item.type,
   user: {
     id: item.user.id,
     fullName: item.user.fullName,
@@ -277,5 +283,16 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         type: "UPGRADE",
       },
     });
+  }
+
+  public async getActivePlan(userId: string): Promise<UserSubscription | null> {
+    const activePlan = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+      include: {
+        subscriptionPlan: true,
+      },
+    });
+
+    return activePlan || null;
   }
 }
