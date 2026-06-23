@@ -17,7 +17,7 @@ import { StatusCodes } from "http-status-codes";
 const mapSection = (section: {
   id: string;
   projectId: string;
-  key: ProjectSection["key"];
+  key: string;
   title: string;
   content: string;
   sectionOrder: number;
@@ -26,6 +26,7 @@ const mapSection = (section: {
   status: ProjectSection["status"];
   lastEditedAt: Date | null;
   updatedAt: Date;
+  parentSectionId?: string | null;
 }): ProjectSection => ({
   id: section.id,
   projectId: section.projectId,
@@ -38,6 +39,7 @@ const mapSection = (section: {
   status: section.status,
   lastEditedAt: section.lastEditedAt,
   updatedAt: section.updatedAt,
+  parentSectionId: section.parentSectionId ?? null,
 });
 
 const mapProject = (project: {
@@ -70,6 +72,7 @@ const mapProject = (project: {
     status: ProjectSection["status"];
     lastEditedAt: Date | null;
     updatedAt: Date;
+    parentSectionId?: string | null;
   }>;
 }): Project => ({
   id: project.id,
@@ -145,23 +148,6 @@ export class PrismaProjectRepository implements ProjectRepository {
 
     const project = await this.prisma.$transaction(
       async (transaction: Prisma.TransactionClient) => {
-        const templates = await transaction.journalSectionTemplate.findMany({
-          where: {
-            journalId: journal.id,
-          },
-          orderBy: {
-            sectionOrder: "asc",
-          },
-        });
-
-        if (templates.length === 0) {
-          throw new AppError(
-            `Journal '${journal.name}' has no section templates.`,
-            StatusCodes.NOT_FOUND,
-            "JOURNAL_HAS_NO_SECTIONS",
-          );
-        }
-
         const createdProject = await transaction.project.create({
           data: {
             ownerId: input.ownerId,
@@ -173,16 +159,50 @@ export class PrismaProjectRepository implements ProjectRepository {
           },
         });
 
-        await transaction.projectSection.createMany({
-          data: templates.map((section) => ({
-            projectId: createdProject.id,
-            key: section.key,
-            title: section.title,
-            sectionOrder: section.sectionOrder,
-            isOptional: section.isOptional,
-            maxChars: section.maxChars,
-          })),
+        // fetch only root templates
+        const templates = await transaction.journalSectionTemplate.findMany({
+          where: { journalId: journal.id, parentSectionId: null },
+          orderBy: { sectionOrder: "asc" },
+          include: {
+            subsections: { orderBy: { sectionOrder: "asc" } },
+          },
         });
+
+        // create root sections + their subsections
+        for (const template of templates) {
+          const createdSection = await transaction.projectSection.create({
+            data: {
+              projectId: createdProject.id,
+              key: template.key,
+              title: template.title,
+              sectionOrder: template.sectionOrder,
+              isOptional: template.isOptional,
+              maxChars: template.maxChars,
+            },
+          });
+
+          if (template.subsections.length > 0) {
+            await transaction.projectSection.createMany({
+              data: template.subsections.map((sub) => ({
+                projectId: createdProject.id,
+                parentSectionId: createdSection.id,
+                key: sub.key,
+                title: sub.title,
+                sectionOrder: sub.sectionOrder,
+                isOptional: sub.isOptional,
+                maxChars: sub.maxChars,
+              })),
+            });
+          }
+        }
+
+        if (templates.length === 0) {
+          throw new AppError(
+            `Journal '${journal.name}' has no section templates.`,
+            StatusCodes.NOT_FOUND,
+            "JOURNAL_HAS_NO_SECTIONS",
+          );
+        }
 
         return transaction.project.findUniqueOrThrow({
           where: {

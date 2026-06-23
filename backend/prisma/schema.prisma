@@ -161,17 +161,20 @@ model Journal {
 }
 
 model JournalSectionTemplate {
-  id           String             @id @default(cuid())
-  journalId    String
-  key          String
-  title        String
-  sectionOrder Int
-  isOptional   Boolean            @default(false)
-  maxChars     Int
-  description  String?
-  checklists   SectionChecklist[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id              String                   @id @default(cuid())
+  journalId       String
+  key             String
+  title           String
+  sectionOrder    Int
+  isOptional      Boolean                  @default(false)
+  maxChars        Int
+  description     String?
+  checklists      SectionChecklist[]
+  parentSectionId String?
+  parentSection   JournalSectionTemplate?  @relation("sectionToSubsection", fields: [parentSectionId], references: [id], onDelete: SetNull)
+  subsections     JournalSectionTemplate[] @relation("sectionToSubsection")
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
 
   journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
 
@@ -325,6 +328,9 @@ model ProjectSection {
   issues                     ReviewIssue[]
   paraphraseRuns             ParaphraseRun[]
   sectionChecklistItemChecks SectionChecklistItemCheck[]
+  parentSectionId            String?
+  parentSection              ProjectSection?             @relation("ProjectSectionsubsections", fields: [parentSectionId], references: [id], onDelete: SetNull)
+  subsections                ProjectSection[]            @relation("ProjectSectionsubsections")
 
   @@unique([projectId, key])
   @@index([projectId, sectionOrder])
