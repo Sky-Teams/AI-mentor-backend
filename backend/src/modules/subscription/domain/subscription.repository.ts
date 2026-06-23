@@ -1,3 +1,4 @@
+import { UserSubscription } from "src/modules/billing/domain/billing";
 import {
   RequestedPlans,
   SubscriptionPlan,
@@ -17,4 +18,5 @@ export interface SubscriptionRepository {
     subscriptionPlanId: string,
     userId: string,
   ): Promise<SubscriptionRequest>;
+  getActivePlan(userId: string): Promise<UserSubscription | null>;
 }
