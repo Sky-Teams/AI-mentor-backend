@@ -31,13 +31,14 @@ export interface UpdateSectionChecklistsGroup {
 }
 
 export interface UpdateJournalSectionDefinition {
+  id?: string;
   title?: string;
   sectionOrder?: number;
   isOptional?: boolean;
   description?: string;
   maxChars?: number;
   checklists?: UpdateSectionChecklistsGroup[];
-  subsections?: JournalSectionDefinition[];
+  subsections?: UpdateJournalSectionDefinition[];
 }
 
 export interface UpdateJournalInput {
@@ -45,7 +46,7 @@ export interface UpdateJournalInput {
   publisher?: string;
   description?: string;
   isDefault?: boolean;
-  sections?: JournalSectionDefinition[];
+  sections?: UpdateJournalSectionDefinition[];
   guidelinePack?: string;
   specialtyId?: string;
 }
