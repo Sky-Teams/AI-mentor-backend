@@ -98,6 +98,12 @@ textarea {
   flex-direction: column;
   justify-content: space-between;
   gap: 2rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .brand {
@@ -144,6 +150,8 @@ textarea {
 
 .main-panel {
   padding: 2rem;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .page-shell {
@@ -713,6 +721,10 @@ ul.reference-list {
   }
 
   .sidebar {
+    /* restore normal flow on small screens */
+    position: static;
+    height: auto;
+    overflow: visible;
     padding-bottom: 1rem;
   }
 

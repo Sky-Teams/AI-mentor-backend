@@ -158,7 +158,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     if (!existing)
       throw new AppError(
-        "Request does not exists",
+        "Subscription request not found",
         StatusCodes.NOT_FOUND,
         "SUBSCRIPTION_REQUEST_NOT_FOUND",
       );
@@ -294,5 +294,43 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     });
 
     return activePlan || null;
+  }
+
+  public async cancelRequestedPlan(
+    id: string,
+    userId: string,
+  ): Promise<RequestedPlans> {
+    const existing = await this.prisma.subscriptionRequest.findFirst({
+      where: { id, userId, status: "PENDING" },
+    });
+
+    if (!existing)
+      throw new AppError(
+        "Subscription request not found",
+        StatusCodes.NOT_FOUND,
+        "SUBSCRIPTION_REQUEST_NOT_FOUND",
+      );
+
+    const result = await this.prisma.subscriptionRequest.update({
+      where: { id: existing.id },
+      data: {
+        status: "CANCELLED",
+      },
+      include: { subscriptionPlan: true, user: true },
+    });
+
+    return mapRequestedPlan(result);
+  }
+
+  public async getUserRequestedPlan(
+    userId: string,
+  ): Promise<RequestedPlans | null> {
+    const result = await this.prisma.subscriptionRequest.findFirst({
+      where: { userId, status: "PENDING" },
+      include: { subscriptionPlan: true, user: true },
+    });
+
+    if (!result) return null;
+    return mapRequestedPlan(result);
   }
 }

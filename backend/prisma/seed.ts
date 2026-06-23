@@ -407,7 +407,7 @@ async function main() {
     const createdSection = await prisma.journalSectionTemplate.create({
       data: {
         journalId: journal.id,
-        key: section.key,
+        key: section.title + Math.floor(Math.random() * 900 + 1000),
         title: section.title,
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
@@ -424,6 +424,33 @@ async function main() {
           items: group.items,
         })),
       });
+    }
+
+    if (section.subsections?.length) {
+      for (const sub of section.subsections) {
+        const createdSub = await prisma.journalSectionTemplate.create({
+          data: {
+            journalId: journal.id,
+            parentSectionId: createdSection.id,
+            key: sub.title + Math.floor(Math.random() * 900 + 1000),
+            title: sub.title,
+            sectionOrder: sub.sectionOrder,
+            isOptional: sub.isOptional,
+            description: sub.description,
+            maxChars: sub.maxChars,
+          },
+        });
+
+        if (sub.checklists?.length) {
+          await prisma.sectionChecklist.createMany({
+            data: sub.checklists.map((group) => ({
+              journalSectionTemplateId: createdSub.id,
+              title: group.title,
+              items: group.items,
+            })),
+          });
+        }
+      }
     }
   }
 

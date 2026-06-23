@@ -4,7 +4,10 @@ import { authenticate } from "../../../shared/middleware/authenticate";
 import type { TokenService } from "../../auth/domain/token-service";
 import { SubscriptionController } from "./subscription.controller";
 import { validate } from "src/shared/http/validation";
-import { subscriptionPlanIdSchema } from "./subscription.schema";
+import {
+  subscriptionPlanIdSchema,
+  subscriptionRequestIdSchema,
+} from "./subscription.schema";
 
 export const createSubscriptionRouter = (
   controller: SubscriptionController,
@@ -35,9 +38,24 @@ export const createSubscriptionRouter = (
     ),
   );
 
+  router.patch(
+    "/plans/requested-plan/:id/cancel",
+    validate(subscriptionRequestIdSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.cancelRequestedPlan(request, response),
+    ),
+  );
+
   router.get(
     "/plans/active",
     asyncHandler((req, res) => controller.getActivePlan(req, res)),
+  );
+
+  router.get(
+    "/plans/requested-plan",
+    asyncHandler((request, response) =>
+      controller.getUserRequestedPlan(request, response),
+    ),
   );
 
   return router;
