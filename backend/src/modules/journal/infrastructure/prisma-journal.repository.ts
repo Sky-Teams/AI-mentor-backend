@@ -179,7 +179,7 @@ export class PrismaJournalRepository implements JournalRepository {
               sectionOrder: sub.sectionOrder,
               isOptional: sub.isOptional,
               maxChars: sub.maxChars,
-              description: sub.description,
+              sectionPrompt: sub.sectionPrompt,
             },
           });
 

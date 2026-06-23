@@ -441,7 +441,7 @@ async function main() {
             title: sub.title,
             sectionOrder: sub.sectionOrder,
             isOptional: sub.isOptional,
-            description: sub.description,
+            sectionPrompt: sub.sectionPrompt,
             maxChars: sub.maxChars,
           },
         });

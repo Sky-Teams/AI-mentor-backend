@@ -136,7 +136,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
           sectionOrder: 1,
           isOptional: false,
           maxChars: 500,
-          description: "Introduction part of abstract",
+          sectionPrompt: "Introduction part of abstract",
           checklists: [],
         },
         {
@@ -144,7 +144,7 @@ export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
           sectionOrder: 2,
           isOptional: false,
           maxChars: 500,
-          description: "Conclusion part of abstract",
+          sectionPrompt: "Conclusion part of abstract",
           checklists: [],
         },
       ],
