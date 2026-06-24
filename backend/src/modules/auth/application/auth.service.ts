@@ -169,4 +169,13 @@ export class AuthService {
   public async forgotPassword(email: string): Promise<{ message: string }> {
     return await this.authRepository.forgotPassword(email);
   }
+
+  public async resetPassword(
+    resetToken: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const passwordHash = await this.passwordHasher.hash(newPassword);
+
+    return await this.authRepository.resetPassword(resetToken, passwordHash);
+  }
 }
