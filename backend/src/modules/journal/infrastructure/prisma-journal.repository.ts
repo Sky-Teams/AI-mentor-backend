@@ -280,6 +280,7 @@ export class PrismaJournalRepository implements JournalRepository {
 
     // Update sections
     if (input.sections) {
+      // Split new sections
       const updatedSections: any[] = [];
       const newSections: any[] = [];
       // const journalSectionIds = new Map()
@@ -289,6 +290,7 @@ export class PrismaJournalRepository implements JournalRepository {
         else newSections.push(section);
       });
 
+      // Find all journal section from DB
       const allJournalSections =
         await this.prisma.journalSectionTemplate.findMany({
           where: {
@@ -299,6 +301,7 @@ export class PrismaJournalRepository implements JournalRepository {
           },
         });
 
+      // Split deleted sections, and remove them
       const deletedOnes = allJournalSections.filter(
         (section) => !updatedSections.includes(section.id),
       );
@@ -307,6 +310,35 @@ export class PrismaJournalRepository implements JournalRepository {
         await this.prisma.journalSectionTemplate.delete({
           where: { id: section.id },
         });
+      }
+
+      // Update sections
+      for (const section of updatedSections) {
+        await this.prisma.journalSectionTemplate.update({
+          where: { id: section.id },
+          data: {
+            title: section.title,
+            sectionOrder: section.sectionOrder,
+            isOptional: section.isOptional,
+            description: section.description,
+            maxChars: section.maxChars,
+          },
+        });
+
+        // update checklists
+        if (section.checklist && section.checklist.length > 0) {
+          for (const checklist of section.checklist) {
+            await this.prisma.sectionChecklist.update({
+              where: { id: checklist.id },
+              data: {
+                title: checklist.title,
+                items: checklist.items,
+              },
+            });
+          }
+        }
+
+        // update subsections
       }
     }
   }
