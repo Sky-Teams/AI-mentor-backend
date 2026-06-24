@@ -146,12 +146,13 @@ export const SectionForm = ({
         </div>
 
         <label className="field">
-          <span>Section sectionPrompt</span>
+          <span>Section AI Review Prompt</span>
           <textarea
+            required
             onChange={(event) =>
               onUpdate({ ...section, sectionPrompt: event.target.value })
             }
-            placeholder="What this section is for."
+            placeholder="Guidelines for AI when reviewing this section"
             rows={2}
             value={section.sectionPrompt}
           />
@@ -190,7 +191,7 @@ export const SectionForm = ({
               borderLeft: "3px solid #e5e7eb",
             }}
           >
-            <h5 style={{ marginBottom: "0.5rem" }}>subsections</h5>
+            <h5 style={{ marginBottom: "0.5rem" }}>Subsections</h5>
             {section.subsections.map((sub, subIndex) => (
               <div
                 key={sub.id}
@@ -269,7 +270,6 @@ export const SectionForm = ({
                   />
                 </label>
 
-                {/* Subsection checklists */}
                 <div className="journal-checklist-list">
                   {sub.checklists.map((checklist, checklistIndex) => (
                     <ChecklistForm
@@ -308,81 +308,6 @@ export const SectionForm = ({
           + Add Subsection
         </button>
       </div>
-
-      <div className="form-grid">
-        <label className="field">
-          <span>Section Title</span>
-          <input
-            onChange={(event) =>
-              onUpdate({ ...section, title: event.target.value })
-            }
-            placeholder="Morning Reflection"
-            value={section.title}
-          />
-        </label>
-
-        <label className="journal-check-field">
-          <input
-            checked={section.isOptional}
-            onChange={(event) =>
-              onUpdate({ ...section, isOptional: event.target.checked })
-            }
-            type="checkbox"
-          />
-          Optional section
-        </label>
-
-        <label className="field">
-          <span>Max Characters</span>
-          <input
-            min={1}
-            onChange={(event) =>
-              onUpdate({ ...section, maxChars: event.target.value })
-            }
-            placeholder="1000"
-            required
-            type="number"
-            value={section.maxChars}
-          />
-        </label>
-      </div>
-
-      <label className="field">
-        <span>Section AI Review Prompt</span>
-        <textarea
-          required
-          onChange={(event) =>
-            onUpdate({ ...section, sectionPrompt: event.target.value })
-          }
-          placeholder="Guidelines for AI when reviewing this section"
-          rows={2}
-          value={section.sectionPrompt}
-        />
-      </label>
-
-      <div className="journal-checklist-list">
-        {section.checklists.map((checklist, checklistIndex) => (
-          <ChecklistForm
-            checklist={checklist}
-            checklistCount={section.checklists.length}
-            checklistIndex={checklistIndex}
-            key={checklist.id}
-            onAddItem={() => onAddItem(checklist)}
-            onRemove={() => onRemoveChecklist(checklist.id)}
-            onUpdate={(nextChecklist) =>
-              onUpdateChecklist(checklist.id, nextChecklist)
-            }
-          />
-        ))}
-      </div>
-
-      <button
-        className="secondary-button"
-        onClick={onAddChecklist}
-        type="button"
-      >
-        + Add Checklist
-      </button>
     </div>
   );
 };

@@ -92,7 +92,7 @@ export const buildJournalPayload = (
     })),
     subsections: section.subsections.map((sub, subIndex) => ({
       title: sub.title.trim(),
-      description: sub.description.trim() || undefined,
+      description: sub.sectionPrompt.trim() || undefined,
       sectionOrder: subIndex + 1,
       isOptional: sub.isOptional,
       maxChars: Number(sub.maxChars),
