@@ -198,4 +198,51 @@ export class PrismaAuthRepository implements AuthRepository {
       updatedAt: user.updatedAt,
     };
   }
+
+  public async forgotPassword(email: string): Promise<{ message: string }> {
+    const frontendURL = process.env.FRONTEND_URL;
+
+    if (!frontendURL)
+      throw new AppError(
+        "Missing environment variable: FRONTEND_URL",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "FRONTEND_URL_NOT_FOUND",
+      );
+
+    const existing = await this.findUserByEmail(email);
+
+    if (!existing)
+      throw new AppError(
+        "User was not found",
+        StatusCodes.NOT_FOUND,
+        "USER_NOT_FOUND",
+      );
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 Min
+
+    await this.prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        passwordResetToken: hashToken(resetToken),
+        passwordResetExpires: expires,
+      },
+    });
+
+    const resetUrl = `${frontendURL}/reset-password/${resetToken}`;
+    try {
+      await sendEmail(
+        existing.email,
+        existing.fullName,
+        "Reset your password",
+        resetUrl,
+      );
+    } catch (error) {
+      console.log("Failed to send email", existing.email);
+    }
+
+    return {
+      message: "Please check your email to reset your password.",
+    };
+  }
 }
