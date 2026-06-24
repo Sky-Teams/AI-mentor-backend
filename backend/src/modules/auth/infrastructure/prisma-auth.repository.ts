@@ -245,4 +245,36 @@ export class PrismaAuthRepository implements AuthRepository {
       message: "Please check your email to reset your password.",
     };
   }
+
+  public async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    let user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashToken(token),
+        passwordResetExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user)
+      throw new AppError(
+        "Invalid or expired token",
+        StatusCodes.BAD_REQUEST,
+        "INVALID_RESET_TOKEN",
+      );
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        passwordHash: newPassword,
+      },
+    });
+
+    return {
+      message: "Password updated successfully",
+    };
+  }
 }
