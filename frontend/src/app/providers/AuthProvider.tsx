@@ -17,10 +17,10 @@ interface AuthContextValue {
     email: string;
     fullName: string;
     password: string;
-  }) => Promise<AuthResult>;
+  }) => Promise<{ message: string }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
-  setAuthData:(user:User)=>void
+  setAuthData: (user: User) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       },
       async register(input) {
         const result = await authApi.register(input);
-        setUser(result.user);
+        // setUser(result.user);
         return result;
       },
       logout() {
@@ -70,9 +70,9 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         const freshUser = await authApi.me();
         setUser(freshUser);
       },
-      async setAuthData(userData){
-        setUser(userData)
-      }
+      async setAuthData(userData) {
+        setUser(userData);
+      },
     }),
     [user, isBootstrapping],
   );
