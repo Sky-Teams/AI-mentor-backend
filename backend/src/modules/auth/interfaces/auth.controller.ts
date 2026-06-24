@@ -46,4 +46,16 @@ export class AuthController {
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async resetPassword(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { token } = request.params as { token: string };
+    const { newPassword } = request.body as { newPassword: string };
+
+    const result = await this.authService.resetPassword(token, newPassword);
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }

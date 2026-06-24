@@ -9,6 +9,7 @@ import {
   loginSchema,
   refreshSchema,
   registerSchema,
+  resetPasswordSchema,
   verifiedTokenSchema,
 } from "./auth.schemas";
 
@@ -51,6 +52,15 @@ export const createAuthRouter = (
     validate(forgotPasswordSchema, "body"),
     asyncHandler((request, response) =>
       controller.forgotPassword(request, response),
+    ),
+  );
+
+  router.post(
+    "/reset-password/:token",
+    validate(verifiedTokenSchema, "params"),
+    validate(resetPasswordSchema, "body"),
+    asyncHandler((request, response) =>
+      controller.resetPassword(request, response),
     ),
   );
   return router;
