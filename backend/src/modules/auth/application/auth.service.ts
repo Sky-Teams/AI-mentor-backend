@@ -171,11 +171,11 @@ export class AuthService {
   }
 
   public async resetPassword(
-    resetToken: string,
+    token: string,
     newPassword: string,
   ): Promise<{ message: string }> {
     const passwordHash = await this.passwordHasher.hash(newPassword);
 
-    return await this.authRepository.resetPassword(resetToken, passwordHash);
+    return await this.authRepository.resetPassword(token, passwordHash);
   }
 }
