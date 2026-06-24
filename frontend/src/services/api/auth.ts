@@ -107,4 +107,17 @@ export const authApi = {
 
     return unwrap(response.data);
   },
+
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const response = await apiClient.post<
+      ApiSuccessResponse<{ message: string }>
+    >(`/auth/reset-password/${token}`, {
+      newPassword,
+    });
+
+    return unwrap(response.data);
+  },
 };

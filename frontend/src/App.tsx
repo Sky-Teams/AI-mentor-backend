@@ -15,6 +15,7 @@ import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { ReferencePage } from "./pages/ReferencePage";
 import { SubscriptionPage } from "./pages/SubscriptionPage";
 import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 // import { ParaphraseDetails } from "./pages/ParaphraseDetails";
 
 export const App = () => (
@@ -25,6 +26,7 @@ export const App = () => (
       <Route element={<RegisterPage />} path="/register" />
       <Route element={<VerifyEmailPage />} path="/verify-email/:token" />
       <Route element={<ForgotPassword />} path="/forgot-password" />
+      <Route element={<ResetPassword />} path="/reset-password/:token" />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
