@@ -22,3 +22,7 @@ export const verifiedTokenSchema = z.object({
 export const forgotPasswordSchema = z.object({
   email: z.string().email(),
 });
+
+export const resetPasswordSchema = z.object({
+  newPassword: z.string().min(8),
+});
