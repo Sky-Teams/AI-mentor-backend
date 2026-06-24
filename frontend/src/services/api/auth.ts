@@ -99,4 +99,12 @@ export const authApi = {
 
     return persistAuth(unwrap(response.data));
   },
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<
+      ApiSuccessResponse<{ message: string }>
+    >("/auth/forgot-password", { email });
+
+    return unwrap(response.data);
+  },
 };
