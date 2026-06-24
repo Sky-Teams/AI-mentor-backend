@@ -35,4 +35,15 @@ export class AuthController {
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async forgotPassword(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { email } = request.body as { email: string };
+
+    const result = await this.authService.forgotPassword(email);
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }
