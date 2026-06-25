@@ -26,6 +26,7 @@ export interface CreateJournalInput {
 
 // Update journal interface
 export interface UpdateSectionChecklistsGroup {
+  id?: string;
   title?: string;
   items?: string[];
 }
