@@ -283,7 +283,7 @@ export class PrismaJournalRepository implements JournalRepository {
       // Split new sections
       const updatedSections: any[] = [];
       const newSections: any[] = [];
-      // const journalSectionIds = new Map()
+      let updatedSectionIds = [];
 
       input.sections.map((section) => {
         if (section.id) updatedSections.push(section);
@@ -302,8 +302,10 @@ export class PrismaJournalRepository implements JournalRepository {
         });
 
       // Split deleted sections, and remove them
+      updatedSectionIds = updatedSections.map((section) => section.id);
+
       const deletedOnes = allJournalSections.filter(
-        (section) => !updatedSections.includes(section.id),
+        (section) => !updatedSectionIds.includes(section.id),
       );
 
       for (const section of deletedOnes) {
@@ -326,8 +328,19 @@ export class PrismaJournalRepository implements JournalRepository {
         });
 
         // update checklists
+
         if (section.checklist && section.checklist.length > 0) {
-          for (const checklist of section.checklist) {
+          // Split checklists
+          const updatedChecklists: any[] = [];
+          const newChecklists: any[] = [];
+
+          section.checklist.map((checklist: any) => {
+            if (checklist.id) updatedChecklists.push(checklist);
+            else newChecklists.push(checklist);
+          });
+
+          // Update old checklists
+          for (const checklist of updatedChecklists) {
             await this.prisma.sectionChecklist.update({
               where: { id: checklist.id },
               data: {
@@ -336,9 +349,40 @@ export class PrismaJournalRepository implements JournalRepository {
               },
             });
           }
-        }
 
-        // update subsections
+          // Create new checklists
+          for (const checklist of newChecklists) {
+            await this.prisma.sectionChecklist.createMany({
+              data: {
+                journalSectionTemplateId: section.id,
+                title: checklist.title,
+                items: checklist.items,
+              },
+            });
+          }
+
+          // Find all checklists
+          const allChecklists = await this.prisma.sectionChecklist.findMany({
+            where: { journalSectionTemplateId: section.id },
+          });
+
+          // Remove deleted checklists
+          const updatedChecklistIds = updatedChecklists.map(
+            (checklist) => checklist.id,
+          );
+
+          const deletedOnes = allChecklists.filter((checklist) => {
+            !updatedChecklistIds.includes(checklist.id);
+          });
+
+          for (const checklist of deletedOnes) {
+            await this.prisma.sectionChecklist.delete({
+              where: { id: checklist.id },
+            });
+          }
+
+          // Update subsections
+        }
       }
     }
   }
