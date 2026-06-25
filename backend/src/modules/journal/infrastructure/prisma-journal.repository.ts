@@ -30,7 +30,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
     sectionOrder: section.sectionOrder,
     isOptional: section.isOptional,
     maxChars: section.maxChars,
-    description: section.description,
+    sectionPrompt: section.sectionPrompt,
     createdAt: section.createdAt,
     updatedAt: section.updatedAt,
     checklists: section.checklists.map((checklist: any) => ({
@@ -134,7 +134,7 @@ export class PrismaJournalRepository implements JournalRepository {
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
               maxChars: section.maxChars,
-              description: section.description,
+              sectionPrompt: section.sectionPrompt,
               checklists: {
                 create: section.checklists.map((checklist) => ({
                   title: checklist.title,
@@ -179,7 +179,7 @@ export class PrismaJournalRepository implements JournalRepository {
               sectionOrder: sub.sectionOrder,
               isOptional: sub.isOptional,
               maxChars: sub.maxChars,
-              description: sub.description,
+              sectionPrompt: sub.sectionPrompt,
             },
           });
 

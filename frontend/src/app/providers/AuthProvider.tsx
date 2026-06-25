@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       },
       async register(input) {
         const result = await authApi.register(input);
-        // setUser(result.user);
+        // setUser(result.user); comment this: as we changed the backend to just show the message after registration
         return result;
       },
       logout() {
