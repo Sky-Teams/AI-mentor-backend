@@ -26,6 +26,7 @@ export interface ProjectSection {
   lastEditedAt: Date | null;
   maxChars: number;
   updatedAt: Date;
+  sectionPrompt?: string;
   checklist?: Array<{
     id: string;
     title: string | null;

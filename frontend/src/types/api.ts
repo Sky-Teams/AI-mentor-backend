@@ -309,7 +309,7 @@ export interface CreateJournalInput {
     sectionOrder: number;
     isOptional?: boolean;
     maxChars: number;
-    description?: string;
+    sectionPrompt: string;
     checklists: Array<{
       title: string | null;
       items: string[];
