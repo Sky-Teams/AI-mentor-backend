@@ -64,6 +64,13 @@ export const subscriptionApi = {
 
     return unwrap(response.data);
   },
+  async getActivePlan() {
+    const response = await apiClient.get<ApiSuccessResponse<any>>(
+      `/subscriptions/plans/active`,
+    );
+
+    return unwrap(response.data);
+  },
 
   async upgradePlan(subscriptionPlanId: string) {
     const response = await apiClient.patch<

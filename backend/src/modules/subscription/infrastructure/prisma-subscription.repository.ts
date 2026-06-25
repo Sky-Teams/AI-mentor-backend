@@ -287,7 +287,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
   public async getActivePlan(userId: string): Promise<UserSubscription | null> {
     const activePlan = await this.prisma.userSubscription.findFirst({
-      where: { userId, status: "ACTIVE" },
+      where: { userId },
       include: {
         subscriptionPlan: true,
       },

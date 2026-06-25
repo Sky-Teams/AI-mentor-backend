@@ -1,4 +1,4 @@
-import { UserSubscription } from "src/modules/billing/domain/billing";
+import { UserSubscription } from "src/modules/billing/domain/billing.js";
 import {
   RequestedPlans,
   SubscriptionPlan,

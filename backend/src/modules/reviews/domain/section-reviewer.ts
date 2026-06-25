@@ -7,6 +7,7 @@ export interface ReviewContext {
     key: string;
     title: string;
     content: string;
+    sectionPrompt: string;
   };
   promptTemplate: string;
   guidelineRules: Record<string, unknown>;

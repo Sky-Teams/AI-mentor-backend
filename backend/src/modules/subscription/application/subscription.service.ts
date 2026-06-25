@@ -3,11 +3,11 @@ import {
   SubscriptionPlan,
   SubscriptionRequest,
 } from "../domain/subscription";
+import { UserSubscription } from "src/modules/billing/domain/billing";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
-import { UserSubscription } from "src/modules/billing/domain/billing";
 
 export class SubscriptionService {
   public constructor(

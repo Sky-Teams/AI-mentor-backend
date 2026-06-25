@@ -30,6 +30,11 @@ export const createSubscriptionRouter = (
     asyncHandler((request, response) => controller.buyPlan(request, response)),
   );
 
+  router.get(
+    "/plans/active",
+    asyncHandler((req, res) => controller.getActivePlan(req, res)),
+  );
+
   router.patch(
     "/plans/upgrade/:subscriptionPlanId",
     validate(subscriptionPlanIdSchema, "params"),
