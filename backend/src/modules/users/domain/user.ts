@@ -17,5 +17,9 @@ export interface UserWithPassword extends User {
 }
 
 export interface UserRepository {
-  getUserById(userId: string): Promise<User>;
+  getUserById(userId: string): Promise<UserWithPassword>;
+  changePassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<{ message: string }>;
 }
