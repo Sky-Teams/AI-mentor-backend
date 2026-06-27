@@ -1,12 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-import { User, UserRepository } from "../domain/user";
+import { UserRepository, UserWithPassword } from "../domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
 
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  public async getUserById(userId: string): Promise<User> {
+  public async getUserById(userId: string): Promise<UserWithPassword> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -20,5 +20,21 @@ export class PrismaUserRepository implements UserRepository {
     }
 
     return user;
+  }
+
+  public async changePassword(
+    userId: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash: newPassword,
+      },
+    });
+
+    return {
+      message: "Password changed successfully",
+    };
   }
 }
