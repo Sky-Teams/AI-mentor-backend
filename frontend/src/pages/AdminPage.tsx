@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi } from "../services/api/admin";
+import { journalsApi } from "../services/api/journal";
+import { Link } from "react-router-dom";
 import type {
   AdminUsageUserSummary,
   BillingOverview,
@@ -14,19 +16,28 @@ export const AdminPage = () => {
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [users, setUsers] = useState<AdminUsageUserSummary[]>([]);
+  const [journals, setJournals] = useState<any[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      const [guidelineData, templateData, planData, userData] = await Promise.all([
-        adminApi.getGuidelines(),
-        adminApi.getPromptTemplates(),
-        adminApi.getPlans(),
-        adminApi.getUsersUsage(),
-      ]);
+      const [guidelineData, templateData, planData, userData] =
+        await Promise.all([
+          adminApi.getGuidelines(),
+          adminApi.getPromptTemplates(),
+          adminApi.getPlans(),
+          adminApi.getUsersUsage(),
+        ]);
       setGuidelines(guidelineData);
       setTemplates(templateData);
       setPlans(planData);
       setUsers(userData);
+
+      try {
+        const list = await journalsApi.list();
+        setJournals(list);
+      } catch (e) {
+        // ignore if API not available
+      }
     };
 
     void load();
@@ -74,6 +85,27 @@ export const AdminPage = () => {
 
       <div className="two-column-grid">
         <div className="card">
+          <h3>Journals</h3>
+          <div className="stack">
+            {journals.length === 0 ? (
+              <p className="muted-text">No journals found.</p>
+            ) : (
+              journals.map((j) => (
+                <div className="issue-item" key={j.id}>
+                  <strong>{j.name}</strong>
+                  <p className="muted-text">{j.publisher}</p>
+                  <Link to={`/journals/${j.id}/edit`} className="muted-text">
+                    Edit
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="two-column-grid">
+        <div className="card">
           <h3>Plans</h3>
           <div className="stack">
             {plans.map((plan) => (
@@ -81,7 +113,9 @@ export const AdminPage = () => {
                 <strong>{plan.name}</strong>
                 <p className="muted-text">
                   {plan.billingModel} · {plan.includedCredits} credits ·{" "}
-                  {plan.monthlyPriceCents ? `$${(plan.monthlyPriceCents / 100).toFixed(2)}` : "No monthly fee"}
+                  {plan.monthlyPriceCents
+                    ? `$${(plan.monthlyPriceCents / 100).toFixed(2)}`
+                    : "No monthly fee"}
                 </p>
               </div>
             ))}
@@ -98,8 +132,8 @@ export const AdminPage = () => {
                   {user.email} · {user.role}
                 </p>
                 <p className="muted-text">
-                  Wallet {user.walletBalance} · Credits billed {user.totalBilledCredits} · Tokens{" "}
-                  {user.totalTechnicalTokens}
+                  Wallet {user.walletBalance} · Credits billed{" "}
+                  {user.totalBilledCredits} · Tokens {user.totalTechnicalTokens}
                 </p>
               </div>
             ))}
