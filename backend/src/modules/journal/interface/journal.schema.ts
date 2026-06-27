@@ -62,6 +62,7 @@ export const updateJournalSchema = z.object({
   sections: z
     .array(
       z.object({
+        id: z.string().optional(),
         title: z.string().min(1).max(180).optional(),
         sectionOrder: z.number().int().min(1).optional(),
         isOptional: z.boolean().optional().optional(),
@@ -70,6 +71,7 @@ export const updateJournalSchema = z.object({
         checklists: z
           .array(
             z.object({
+              id: z.string().optional(),
               title: z.string().min(1).max(180).nullable().optional(),
               items: z.array(z.string().min(1).max(500)).min(1).optional(),
             }),
@@ -78,6 +80,7 @@ export const updateJournalSchema = z.object({
         subsections: z
           .array(
             z.object({
+              id: z.string().optional(),
               title: z.string().min(1).max(180).optional(),
               sectionOrder: z.number().int().min(1).optional(),
               isOptional: z.boolean().optional(),
@@ -86,6 +89,7 @@ export const updateJournalSchema = z.object({
               checklists: z
                 .array(
                   z.object({
+                    id: z.string().optional(),
                     title: z.string().min(1).max(180).nullable().optional(),
                     items: z
                       .array(z.string().min(1).max(500))
