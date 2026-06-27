@@ -1,11 +1,14 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { subscriptionApi } from "../services/api/subscription";
 
 export const AppLayout = () => {
   const { user, logout } = useAuth();
   const [activePlanName, setActivePlanName] = useState<string | null>(null);
+  
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -14,6 +17,16 @@ export const AppLayout = () => {
         setActivePlanName(active?.subscriptionPlan?.name ?? null);
       } catch (error) {}
     })();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -43,10 +56,32 @@ export const AppLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="user-pill">
-            <span>{user?.fullName}</span>
-            <small>{user?.role}</small>
-            {activePlanName ? <small>Plan: {activePlanName}</small> : null}
+          <div className="user-pill" ref={dropdownRef} style={{ position: "relative" }}>
+            <div className="user-pill-info">
+              <span>{user?.fullName}</span>
+              <small>{user?.role}</small>
+              {activePlanName ? <small>Plan: {activePlanName}</small> : null}
+            </div>
+
+            <button 
+              className="three-dots-toggle" 
+              type="button"
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              ⋮
+            </button>
+
+            {showDropdown && (
+              <div className="user-dropdown-menu">
+                <Link 
+                  to="/change-password" 
+                  className="dropdown-link"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  Change Password
+                </Link>
+              </div>
+            )}
           </div>
           <button className="secondary-button" onClick={logout} type="button">
             Sign out
