@@ -78,12 +78,25 @@ export class PrismaJournalRepository implements JournalRepository {
     });
   }
 
-  public async findById(
-    id: string,
-  ): Promise<{ id: string; name: string } | null> {
-    return this.prisma.journal.findFirst({
+  public async findById(id: string): Promise<CreatedJournal | null> {
+    const journal = await this.prisma.journal.findUnique({
       where: { id },
+      include: {
+        guidelinePack: true,
+        specialty: true,
+        sectionTemplates: {
+          where: { parentSectionId: null },
+          include: {
+            checklists: true,
+            subsections: {
+              include: { checklists: true },
+            },
+          },
+        },
+      },
     });
+
+    return journal ? mapJournal(journal) : null;
   }
 
   public async createJournal(

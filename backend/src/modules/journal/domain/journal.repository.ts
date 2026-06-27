@@ -104,7 +104,7 @@ export type CreatedJournal = Omit<
 
 export interface JournalRepository {
   findAll(specialtyId: string): Promise<Array<{ id: string; name: string }>>;
-  findById(id: string): Promise<{ id: string; name: string } | null>;
+  findById(id: string): Promise<CreatedJournal | null>;
   createJournal(input: CreateJournalInput): Promise<CreatedJournal>;
   updateJournal(id: string, input: UpdateJournalInput): Promise<CreatedJournal>;
 }
