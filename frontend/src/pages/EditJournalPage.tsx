@@ -6,7 +6,7 @@ import { useJournalForm } from "../hooks/useJournalForm";
 import { journalsApi } from "../services/api/journal";
 import { adminApi } from "../services/api/admin";
 import {
-  mapServerJournalToFormState,
+  mapJournalToFormState,
   buildUpdateJournalPayload,
   type JournalFormState,
 } from "../utils/journalForm";
@@ -25,8 +25,8 @@ export const EditJournalPage = () => {
       try {
         const j = await journalsApi.getById(id);
 
-        // map server journal into JournalFormState
-        const formState = mapServerJournalToFormState(j);
+        // map journal into JournalFormState
+        const formState = mapJournalToFormState(j);
         journalForm.updateSections(formState.sections);
         journalForm.updateBasicInfo("name", formState.name);
         journalForm.updateBasicInfo("publisher", formState.publisher);
