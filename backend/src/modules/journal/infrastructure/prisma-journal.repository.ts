@@ -233,240 +233,6 @@ export class PrismaJournalRepository implements JournalRepository {
     return mapJournal(journal);
   }
 
-  private async syncSectionChecklists(
-    transaction: Prisma.TransactionClient,
-    sectionId: string,
-    checklists?: UpdateSectionChecklistsGroup[],
-  ) {
-    if (checklists === undefined) return;
-
-    const updatedChecklists = checklists.filter((checklist) => checklist.id);
-    const newChecklists = checklists.filter((checklist) => !checklist.id);
-
-    for (const checklist of updatedChecklists) {
-      await transaction.sectionChecklist.update({
-        where: { id: checklist.id! },
-        data: {
-          ...(checklist.title !== undefined && { title: checklist.title }),
-          ...(checklist.items !== undefined && { items: checklist.items }),
-        },
-      });
-    }
-
-    if (newChecklists.length > 0) {
-      await transaction.sectionChecklist.createMany({
-        data: newChecklists.map((checklist) => ({
-          journalSectionTemplateId: sectionId,
-          title: checklist.title,
-          items: checklist.items ?? [],
-        })),
-      });
-    }
-
-    const updatedChecklistIds = updatedChecklists
-      .filter(
-        (
-          checklist,
-        ): checklist is UpdateSectionChecklistsGroup & { id: string } =>
-          Boolean(checklist.id),
-      )
-      .map((checklist) => checklist.id);
-
-    await transaction.sectionChecklist.deleteMany({
-      where: {
-        journalSectionTemplateId: sectionId,
-        id: {
-          notIn:
-            updatedChecklistIds.length > 0 ? updatedChecklistIds : undefined,
-        },
-      },
-    });
-  }
-
-  private async syncSubsections(
-    transaction: Prisma.TransactionClient,
-    journalId: string,
-    parentSectionId: string,
-    subsections?: UpdateJournalSectionDefinition[],
-  ) {
-    if (subsections === undefined) return;
-
-    const existingSubsections =
-      await transaction.journalSectionTemplate.findMany({
-        where: { parentSectionId },
-      });
-
-    const updatedSubsections = subsections.filter((sub) => sub.id);
-    const newSubsections = subsections.filter((sub) => !sub.id);
-    const updatedSubsectionIds = updatedSubsections.map((sub) => sub.id!);
-
-    if (updatedSubsectionIds.length > 0) {
-      await transaction.journalSectionTemplate.deleteMany({
-        where: {
-          parentSectionId,
-          id: { notIn: updatedSubsectionIds },
-        },
-      });
-    } else if (existingSubsections.length > 0) {
-      await transaction.journalSectionTemplate.deleteMany({
-        where: { parentSectionId },
-      });
-    }
-
-    for (const subsection of updatedSubsections) {
-      const sectionData: any = {};
-      if (subsection.title !== undefined) sectionData.title = subsection.title;
-      if (subsection.sectionOrder !== undefined)
-        sectionData.sectionOrder = subsection.sectionOrder;
-      if (subsection.isOptional !== undefined)
-        sectionData.isOptional = subsection.isOptional;
-      if (subsection.description !== undefined)
-        sectionData.description = subsection.description;
-      if (subsection.maxChars !== undefined)
-        sectionData.maxChars = subsection.maxChars;
-
-      if (Object.keys(sectionData).length > 0) {
-        await transaction.journalSectionTemplate.update({
-          where: { id: subsection.id! },
-          data: sectionData,
-        });
-      }
-
-      await this.syncSectionChecklists(
-        transaction,
-        subsection.id!,
-        subsection.checklists,
-      );
-    }
-
-    for (const subsection of newSubsections) {
-      const createdSubsection = await transaction.journalSectionTemplate.create(
-        {
-          data: {
-            journalId,
-            parentSectionId,
-            key:
-              (subsection.title ?? "subsection") +
-              Math.floor(Math.random() * 900 + 1000),
-            title: subsection.title ?? "",
-            sectionOrder: subsection.sectionOrder ?? 0,
-            isOptional: subsection.isOptional ?? false,
-            maxChars: subsection.maxChars ?? 0,
-            description: subsection.description,
-            checklists: subsection.checklists
-              ? {
-                  create: subsection.checklists.map((checklist) => ({
-                    title: checklist.title,
-                    items: checklist.items ?? [],
-                  })),
-                }
-              : undefined,
-          },
-        },
-      );
-
-      if (subsection.subsections) {
-        await this.syncSubsections(
-          transaction,
-          journalId,
-          createdSubsection.id,
-          subsection.subsections,
-        );
-      }
-    }
-  }
-
-  private async syncSections(
-    transaction: Prisma.TransactionClient,
-    journalId: string,
-    sections: UpdateJournalSectionDefinition[],
-  ) {
-    const existingSections = await transaction.journalSectionTemplate.findMany({
-      where: { journalId, parentSectionId: null },
-    });
-
-    const updatedSections = sections.filter((section) => section.id);
-    const newSections = sections.filter((section) => !section.id);
-    const updatedSectionIds = updatedSections.map((section) => section.id!);
-
-    if (updatedSectionIds.length > 0) {
-      await transaction.journalSectionTemplate.deleteMany({
-        where: {
-          journalId,
-          parentSectionId: null,
-          id: { notIn: updatedSectionIds },
-        },
-      });
-    } else if (existingSections.length > 0) {
-      await transaction.journalSectionTemplate.deleteMany({
-        where: { journalId, parentSectionId: null },
-      });
-    }
-
-    for (const section of updatedSections) {
-      const sectionData: any = {};
-      if (section.title !== undefined) sectionData.title = section.title;
-      if (section.sectionOrder !== undefined)
-        sectionData.sectionOrder = section.sectionOrder;
-      if (section.isOptional !== undefined)
-        sectionData.isOptional = section.isOptional;
-      if (section.description !== undefined)
-        sectionData.description = section.description;
-      if (section.maxChars !== undefined)
-        sectionData.maxChars = section.maxChars;
-
-      if (Object.keys(sectionData).length > 0) {
-        await transaction.journalSectionTemplate.update({
-          where: { id: section.id! },
-          data: sectionData,
-        });
-      }
-
-      await this.syncSectionChecklists(
-        transaction,
-        section.id!,
-        section.checklists,
-      );
-      await this.syncSubsections(
-        transaction,
-        journalId,
-        section.id!,
-        section.subsections,
-      );
-    }
-
-    for (const section of newSections) {
-      const createdSection = await transaction.journalSectionTemplate.create({
-        data: {
-          journalId,
-          key:
-            (section.title ?? "section") +
-            Math.floor(Math.random() * 900 + 100),
-          title: section.title ?? "",
-          sectionOrder: section.sectionOrder ?? 0,
-          isOptional: section.isOptional ?? false,
-          maxChars: section.maxChars ?? 0,
-          description: section.description,
-          checklists: section.checklists
-            ? {
-                create: section.checklists.map((checklist) => ({
-                  title: checklist.title,
-                  items: checklist.items ?? [],
-                })),
-              }
-            : undefined,
-        },
-      });
-
-      await this.syncSubsections(
-        transaction,
-        journalId,
-        createdSection.id,
-        section.subsections,
-      );
-    }
-  }
-
   public async updateJournal(journalId: string, input: UpdateJournalInput) {
     const journal = await this.prisma.journal.findUnique({
       where: { id: journalId },
@@ -551,9 +317,223 @@ export class PrismaJournalRepository implements JournalRepository {
       return mapJournal(updatedJournal);
     });
   }
+
+  private async syncSections(
+    transaction: Prisma.TransactionClient,
+    journalId: string,
+    sections: UpdateJournalSectionDefinition[],
+  ) {
+    const updatedSections = sections.filter((section) => section.id);
+    const newSections = sections.filter((section) => !section.id);
+    const updatedSectionIds = updatedSections.map((section) => section.id!);
+
+    if (updatedSectionIds.length > 0) {
+      await transaction.journalSectionTemplate.deleteMany({
+        where: {
+          journalId,
+          parentSectionId: null,
+          id: { notIn: updatedSectionIds },
+        },
+      });
+    }
+
+    for (const section of updatedSections) {
+      const sectionData: any = {};
+      if (section.title !== undefined) sectionData.title = section.title;
+      if (section.sectionOrder !== undefined)
+        sectionData.sectionOrder = section.sectionOrder;
+      if (section.isOptional !== undefined)
+        sectionData.isOptional = section.isOptional;
+      if (section.description !== undefined)
+        sectionData.description = section.description;
+      if (section.maxChars !== undefined)
+        sectionData.maxChars = section.maxChars;
+
+      if (Object.keys(sectionData).length > 0) {
+        await transaction.journalSectionTemplate.update({
+          where: { id: section.id! },
+          data: sectionData,
+        });
+      }
+
+      await this.syncSectionChecklists(
+        transaction,
+        section.id!,
+        section.checklists,
+      );
+      await this.syncSubsections(
+        transaction,
+        journalId,
+        section.id!,
+        section.subsections,
+      );
+    }
+
+    for (const section of newSections) {
+      const createdSection = await transaction.journalSectionTemplate.create({
+        data: {
+          journalId,
+          key:
+            (section.title ?? "section") +
+            Math.floor(Math.random() * 900 + 100),
+          title: section.title ?? "",
+          sectionOrder: section.sectionOrder ?? 0,
+          isOptional: section.isOptional ?? false,
+          maxChars: section.maxChars ?? 0,
+          description: section.description,
+          checklists: section.checklists
+            ? {
+                create: section.checklists.map((checklist) => ({
+                  title: checklist.title,
+                  items: checklist.items ?? [],
+                })),
+              }
+            : undefined,
+        },
+      });
+
+      await this.syncSubsections(
+        transaction,
+        journalId,
+        createdSection.id,
+        section.subsections,
+      );
+    }
+  }
+
+  private async syncSectionChecklists(
+    transaction: Prisma.TransactionClient,
+    sectionId: string,
+    checklists?: UpdateSectionChecklistsGroup[],
+  ) {
+    if (checklists === undefined) return;
+
+    const updatedChecklists = checklists.filter((checklist) => checklist.id);
+    const newChecklists = checklists.filter((checklist) => !checklist.id);
+
+    for (const checklist of updatedChecklists) {
+      await transaction.sectionChecklist.update({
+        where: { id: checklist.id! },
+        data: {
+          ...(checklist.title !== undefined && { title: checklist.title }),
+          ...(checklist.items !== undefined && { items: checklist.items }),
+        },
+      });
+    }
+
+    if (newChecklists.length > 0) {
+      await transaction.sectionChecklist.createMany({
+        data: newChecklists.map((checklist) => ({
+          journalSectionTemplateId: sectionId,
+          title: checklist.title,
+          items: checklist.items ?? [],
+        })),
+      });
+    }
+
+    const updatedChecklistIds = updatedChecklists
+      .filter(
+        (
+          checklist,
+        ): checklist is UpdateSectionChecklistsGroup & { id: string } =>
+          Boolean(checklist.id),
+      )
+      .map((checklist) => checklist.id);
+
+    await transaction.sectionChecklist.deleteMany({
+      where: {
+        journalSectionTemplateId: sectionId,
+        id: { notIn: updatedChecklistIds },
+      },
+    });
+  }
+
+  private async syncSubsections(
+    transaction: Prisma.TransactionClient,
+    journalId: string,
+    parentSectionId: string,
+    subsections?: UpdateJournalSectionDefinition[],
+  ) {
+    if (subsections === undefined) return;
+
+    const updatedSubsections = subsections.filter((sub) => sub.id);
+    const newSubsections = subsections.filter((sub) => !sub.id);
+    const updatedSubsectionIds = updatedSubsections.map((sub) => sub.id!);
+
+    if (updatedSubsectionIds.length > 0) {
+      await transaction.journalSectionTemplate.deleteMany({
+        where: {
+          parentSectionId,
+          id: { notIn: updatedSubsectionIds },
+        },
+      });
+    }
+
+    for (const subsection of updatedSubsections) {
+      const sectionData: any = {};
+      if (subsection.title !== undefined) sectionData.title = subsection.title;
+      if (subsection.sectionOrder !== undefined)
+        sectionData.sectionOrder = subsection.sectionOrder;
+      if (subsection.isOptional !== undefined)
+        sectionData.isOptional = subsection.isOptional;
+      if (subsection.description !== undefined)
+        sectionData.description = subsection.description;
+      if (subsection.maxChars !== undefined)
+        sectionData.maxChars = subsection.maxChars;
+
+      if (Object.keys(sectionData).length > 0) {
+        await transaction.journalSectionTemplate.update({
+          where: { id: subsection.id! },
+          data: sectionData,
+        });
+      }
+
+      await this.syncSectionChecklists(
+        transaction,
+        subsection.id!,
+        subsection.checklists,
+      );
+    }
+
+    for (const subsection of newSubsections) {
+      const createdSubsection = await transaction.journalSectionTemplate.create(
+        {
+          data: {
+            journalId,
+            parentSectionId,
+            key:
+              (subsection.title ?? "subsection") +
+              Math.floor(Math.random() * 900 + 1000),
+            title: subsection.title ?? "",
+            sectionOrder: subsection.sectionOrder ?? 0,
+            isOptional: subsection.isOptional ?? false,
+            maxChars: subsection.maxChars ?? 0,
+            description: subsection.description,
+            checklists: subsection.checklists
+              ? {
+                  create: subsection.checklists.map((checklist) => ({
+                    title: checklist.title,
+                    items: checklist.items ?? [],
+                  })),
+                }
+              : undefined,
+          },
+        },
+      );
+
+      if (subsection.subsections) {
+        await this.syncSubsections(
+          transaction,
+          journalId,
+          createdSubsection.id,
+          subsection.subsections,
+        );
+      }
+    }
+  }
 }
 
-// The pattern used everywhere:
-// has ID  →  update
-// no ID   →  create (new)
-// missing →  delete
+// Used this pattern for update
+// has id → update
+// no id → create
+// in DB but not in input → delete
