@@ -168,7 +168,7 @@ model JournalSectionTemplate {
   sectionOrder    Int
   isOptional      Boolean                  @default(false)
   maxChars        Int
-  description     String?
+  sectionPrompt   String                   @default("")
   checklists      SectionChecklist[]
   parentSectionId String?
   parentSection   JournalSectionTemplate?  @relation("sectionToSubsection", fields: [parentSectionId], references: [id], onDelete: SetNull)
@@ -557,6 +557,7 @@ enum SubscriptionRequestStatus {
   PENDING
   APPROVED
   REJECTED
+  CANCELLED
 }
 
 model CreditWallet {

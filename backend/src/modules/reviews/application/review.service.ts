@@ -127,6 +127,7 @@ export class ReviewService {
           key: section.key,
           title: section.title,
           content: section.content,
+          sectionPrompt: section.sectionPrompt ?? "",
         },
         promptTemplate,
         guidelineRules,

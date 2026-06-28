@@ -23,4 +23,36 @@ export class SubscriptionController {
     );
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async getActivePlan(req: Request, res: Response): Promise<void> {
+    const userId = req.auth!.userId;
+
+    const activePlan = await this.subscriptionService.getActivePlan(userId);
+
+    res.status(StatusCodes.OK).json(successResponse(activePlan));
+  }
+  public async cancelRequestedPlan(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { id } = request.params as { id: string };
+
+    const result = await this.subscriptionService.cancelRequestedPlan(
+      id,
+      request.auth!.userId,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
+  public async getUserRequestedPlan(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const result = await this.subscriptionService.getUserRequestedPlan(
+      request.auth!.userId,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }

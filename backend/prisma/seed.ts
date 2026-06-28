@@ -186,7 +186,7 @@ async function main() {
   });
 
   const guidelinePack = await prisma.guidelinePack.upsert({
-    where: { name: j.name },
+    where: { name: "CARE-like Case Report Guidance" },
     update: {
       type: "REVIEW",
       name: "CARE-like Case Report Guidance",
@@ -208,7 +208,7 @@ async function main() {
   });
 
   await prisma.guidelinePack.upsert({
-    where: { name: "section-paraphrase-v1" },
+    where: { name: "Paraphrasing Guidance" },
     update: {
       type: "PARAPHRASE",
       name: "Paraphrasing Guidance",
@@ -345,10 +345,15 @@ async function main() {
   });
 
   // Create journal specialties
-  await prisma.journalSpecialty.deleteMany();
-  await prisma.journalSpecialty.createMany({
-    data: SPECIALTIES.map((name) => ({ name: name! })),
-  });
+  await Promise.all(
+    SPECIALTIES.map((name) =>
+      prisma.journalSpecialty.upsert({
+        where: { name: name! },
+        update: {},
+        create: { name: name! },
+      }),
+    ),
+  );
 
   const specialty = await prisma.journalSpecialty.findUnique({
     where: { name: SPECIALTIES[0] },
@@ -411,7 +416,7 @@ async function main() {
         title: section.title,
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
-        description: section.description,
+        sectionPrompt: section.sectionPrompt,
         maxChars: section.maxChars,
       },
     });
@@ -436,7 +441,7 @@ async function main() {
             title: sub.title,
             sectionOrder: sub.sectionOrder,
             isOptional: sub.isOptional,
-            description: sub.description,
+            sectionPrompt: sub.sectionPrompt,
             maxChars: sub.maxChars,
           },
         });
