@@ -52,11 +52,6 @@ export const createSubscriptionRouter = (
   );
 
   router.get(
-    "/plans/active",
-    asyncHandler((req, res) => controller.getActivePlan(req, res)),
-  );
-
-  router.get(
     "/plans/requested-plan",
     asyncHandler((request, response) =>
       controller.getUserRequestedPlan(request, response),

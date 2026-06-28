@@ -45,6 +45,7 @@ export class SubscriptionController {
 
     res.status(StatusCodes.OK).json(successResponse(activePlan));
   }
+  
   public async cancelRequestedPlan(
     request: Request,
     response: Response,
