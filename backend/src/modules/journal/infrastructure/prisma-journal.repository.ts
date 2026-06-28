@@ -344,8 +344,8 @@ export class PrismaJournalRepository implements JournalRepository {
         sectionData.sectionOrder = section.sectionOrder;
       if (section.isOptional !== undefined)
         sectionData.isOptional = section.isOptional;
-      if (section.description !== undefined)
-        sectionData.description = section.description;
+      if (section.sectionPrompt !== undefined)
+        sectionData.sectionPrompt = section.sectionPrompt;
       if (section.maxChars !== undefined)
         sectionData.maxChars = section.maxChars;
 
@@ -380,7 +380,7 @@ export class PrismaJournalRepository implements JournalRepository {
           sectionOrder: section.sectionOrder ?? 0,
           isOptional: section.isOptional ?? false,
           maxChars: section.maxChars ?? 0,
-          description: section.description,
+          sectionPrompt: section.sectionPrompt,
           checklists: section.checklists
             ? {
                 create: section.checklists.map((checklist) => ({
@@ -476,8 +476,8 @@ export class PrismaJournalRepository implements JournalRepository {
         sectionData.sectionOrder = subsection.sectionOrder;
       if (subsection.isOptional !== undefined)
         sectionData.isOptional = subsection.isOptional;
-      if (subsection.description !== undefined)
-        sectionData.description = subsection.description;
+      if (subsection.sectionPrompt !== undefined)
+        sectionData.sectionPrompt = subsection.sectionPrompt;
       if (subsection.maxChars !== undefined)
         sectionData.maxChars = subsection.maxChars;
 
@@ -508,7 +508,7 @@ export class PrismaJournalRepository implements JournalRepository {
             sectionOrder: subsection.sectionOrder ?? 0,
             isOptional: subsection.isOptional ?? false,
             maxChars: subsection.maxChars ?? 0,
-            description: subsection.description,
+            sectionPrompt: subsection.sectionPrompt,
             checklists: subsection.checklists
               ? {
                   create: subsection.checklists.map((checklist) => ({

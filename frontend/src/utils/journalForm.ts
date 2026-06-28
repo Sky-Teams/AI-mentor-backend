@@ -123,7 +123,7 @@ export const buildUpdateJournalPayload = (
   sections: form.sections.map((section, sectionIndex) => ({
     id: getPayloadId(section.id),
     title: section.title.trim(),
-    description: section.description.trim() || undefined,
+    sectionPrompt: section.sectionPrompt.trim() || undefined,
     sectionOrder: sectionIndex + 1,
     isOptional: section.isOptional,
     maxChars: Number(section.maxChars),
@@ -137,7 +137,7 @@ export const buildUpdateJournalPayload = (
     subsections: section.subsections.map((sub, subIndex) => ({
       id: getPayloadId(sub.id),
       title: sub.title.trim(),
-      description: sub.description.trim() || undefined,
+      sectionPrompt: sub.sectionPrompt.trim() || undefined,
       sectionOrder: subIndex + 1,
       isOptional: sub.isOptional,
       maxChars: Number(sub.maxChars),

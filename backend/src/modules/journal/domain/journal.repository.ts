@@ -8,7 +8,7 @@ export interface JournalSectionDefinition {
   title: string;
   sectionOrder: number;
   isOptional: boolean;
-  description?: string;
+  sectionPrompt?: string;
   maxChars: number;
   checklists: SectionChecklistsGroup[];
   subsections?: JournalSectionDefinition[];
@@ -36,7 +36,7 @@ export interface UpdateJournalSectionDefinition {
   title?: string;
   sectionOrder?: number;
   isOptional?: boolean;
-  description?: string;
+  sectionPrompt?: string;
   maxChars?: number;
   checklists?: UpdateSectionChecklistsGroup[];
   subsections?: UpdateJournalSectionDefinition[];
