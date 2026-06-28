@@ -8,6 +8,7 @@ import {
   loginSchema,
   refreshSchema,
   registerSchema,
+  resendVerifyEmailSchema,
   verifiedTokenSchema,
 } from "./auth.schemas";
 
@@ -42,6 +43,13 @@ export const createAuthRouter = (
     validate(verifiedTokenSchema, "params"),
     asyncHandler((request, response) =>
       controller.verifyEmail(request, response),
+    ),
+  );
+  router.post(
+    "/resend-verify-email",
+    validate(resendVerifyEmailSchema),
+    asyncHandler((request, response) =>
+      controller.resendVerifyEmail(request, response),
     ),
   );
   return router;

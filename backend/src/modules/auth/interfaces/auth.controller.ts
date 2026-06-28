@@ -35,4 +35,14 @@ export class AuthController {
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async resendVerifyEmail(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { email } = request.body;
+    const result = await this.authService.resendVerifyEmail(email);
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }
