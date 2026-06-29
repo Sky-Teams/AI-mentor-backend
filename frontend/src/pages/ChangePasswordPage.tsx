@@ -11,7 +11,13 @@ export function ChangePasswordPage() {
     event.preventDefault();
     setErrorMessage("");
     const formData = new FormData(event.currentTarget);
+    const newPassword = formData.get("newPassword");
+    const confPassword = formData.get("confPassword");
 
+    if (newPassword !== confPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
     try {
       setIsSubmitting(true);
       await userApi.changePassword(
@@ -50,6 +56,15 @@ export function ChangePasswordPage() {
           <input
             name="newPassword"
             placeholder="Minimum 8 characters"
+            required
+            type="password"
+          />
+        </Field>
+
+        <Field label="Confirm Password">
+          <input
+            name="confPassword"
+            placeholder="Confirm your password"
             required
             type="password"
           />
