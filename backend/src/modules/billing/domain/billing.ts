@@ -19,6 +19,7 @@ export const OPERATION_CONFIG = {
 
 export const subscriptionStatuses = [
   "ACTIVE",
+  "INACTIVE",
   "PAST_DUE",
   "CANCELLED",
   "EXPIRED",
