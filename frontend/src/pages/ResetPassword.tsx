@@ -18,6 +18,13 @@ export function ResetPassword() {
     setErrorMessage(null);
 
     const formData = new FormData(event.currentTarget);
+    const newPassword = formData.get("password");
+    const confPassword = formData.get("confPassword");
+
+    if (newPassword !== confPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
     try {
       setIsSubmitting(true);
       await authApi.resetPassword(
@@ -45,6 +52,15 @@ export function ResetPassword() {
           <input
             name="password"
             placeholder="Minimum 8 characters"
+            required
+            type="password"
+          />
+        </Field>
+
+        <Field label="Confirm Password">
+          <input
+            name="confPassword"
+            placeholder="Confirm your password"
             required
             type="password"
           />
