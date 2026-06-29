@@ -4,7 +4,6 @@ import {
   CreatedJournal,
   CreateJournalInput,
   JournalRepository,
-  JournalSectionDefinition,
   UpdateJournalInput,
   UpdateJournalSectionDefinition,
   UpdateSectionChecklistsGroup,
