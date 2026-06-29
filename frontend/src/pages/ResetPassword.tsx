@@ -1,12 +1,12 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Field } from "../components/Field";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { authApi } from "../services/api/auth";
 
 export function ResetPassword() {
+  const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const { token } = useParams<{ token: string }>();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -24,9 +24,8 @@ export function ResetPassword() {
         token as string,
         String(formData.get("password")),
       );
-      setIsSubmitted(true);
+      navigate("/login", { replace: true });
     } catch (error: any) {
-      setIsSubmitted(false);
       setErrorMessage(
         error?.response?.data?.error?.message || "An error occurred",
       );
@@ -53,9 +52,6 @@ export function ResetPassword() {
 
         {errorMessage ? <p className="error-text">{errorMessage}</p> : null}
 
-        {isSubmitted && (
-          <p className="success-text">Your password updated successfully.</p>
-        )}
         <button
           className="primary-button"
           type="submit"
