@@ -18,3 +18,11 @@ export const refreshSchema = z.object({
 export const verifiedTokenSchema = z.object({
   token: z.string().min(1),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  newPassword: z.string().min(8),
+});

@@ -78,6 +78,10 @@ export const LoginPage = () => {
         <p className="muted-text">
           Need a fresh account? <Link to="/register">Register</Link>
         </p>
+
+        <p className="muted-text">
+          <Link to="/forgot-password">Forgot password</Link>
+        </p>
       </form>
     </div>
   );
