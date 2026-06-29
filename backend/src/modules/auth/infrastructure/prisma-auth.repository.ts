@@ -264,14 +264,23 @@ export class PrismaAuthRepository implements AuthRepository {
         "INVALID_RESET_TOKEN",
       );
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordResetToken: null,
-        passwordResetExpires: null,
-        passwordHash: newPassword,
+    await this.prisma.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await transaction.user.update({
+          where: { id: user.id },
+          data: {
+            passwordResetToken: null,
+            passwordResetExpires: null,
+            passwordHash: newPassword,
+          },
+        });
+
+        await transaction.refreshToken.updateMany({
+          where: { userId: user.id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
       },
-    });
+    );
 
     return {
       message: "Password updated successfully",
