@@ -190,7 +190,7 @@ export const mapJournalToFormState = (journal: any): JournalFormState => ({
       section.subsections?.map((sub: any) => ({
         id: sub.id,
         title: sub.title || "",
-        description: sub.description || "",
+        sectionPrompt: sub.sectionPrompt || "",
         isOptional: sub.isOptional ?? false,
         maxChars: String(sub.maxChars ?? ""),
         checklists: (sub.checklists || []).map((checklist: any) => ({
