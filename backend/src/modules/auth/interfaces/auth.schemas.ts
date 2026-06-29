@@ -18,3 +18,7 @@ export const refreshSchema = z.object({
 export const verifiedTokenSchema = z.object({
   token: z.string().min(1),
 });
+
+export const resendVerifyEmailSchema = z.object({
+  email: z.string().email().toLowerCase(),
+});

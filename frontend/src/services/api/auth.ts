@@ -99,4 +99,14 @@ export const authApi = {
 
     return persistAuth(unwrap(response.data));
   },
+
+  async resendVerifyEmail(email: string): Promise<{ message: string }> {
+    const response = await apiClient.post<
+      ApiSuccessResponse<{ message: string }>
+    >(`/auth/resend-verify-email`, {
+      email,
+    });
+
+    return unwrap(response.data);
+  },
 };

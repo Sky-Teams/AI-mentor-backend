@@ -165,4 +165,8 @@ export class AuthService {
 
     return { user: user, tokens: token };
   }
+
+  public async resendVerifyEmail(email: string): Promise<{ message: string }> {
+    return this.authRepository.resendVerifyEmail(email);
+  }
 }
