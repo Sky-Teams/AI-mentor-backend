@@ -15,6 +15,8 @@ export type SubscriptionRequestStatus =
   | "REJECTED"
   | "CANCELLED";
 
+export type SubscriptionRequestType = "PURCHASE" | "UPGRADE";
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -30,9 +32,13 @@ export interface SubscriptionRequest {
   userId: string;
   subscriptionPlanId: string;
   status: SubscriptionRequestStatus;
+  type: SubscriptionRequestType;
 }
 
-export type RequestedPlans = Pick<SubscriptionRequest, "status" | "id"> & {
+export type RequestedPlans = Pick<
+  SubscriptionRequest,
+  "status" | "id" | "type"
+> & {
   user: {
     id: string;
     email: string;
@@ -58,10 +64,19 @@ export const subscriptionApi = {
 
     return unwrap(response.data);
   },
+  
   async getActivePlan() {
     const response = await apiClient.get<ApiSuccessResponse<any>>(
       `/subscriptions/plans/active`,
     );
+
+    return unwrap(response.data);
+  },
+
+  async upgradePlan(subscriptionPlanId: string) {
+    const response = await apiClient.patch<
+      ApiSuccessResponse<SubscriptionRequest>
+    >(`/subscriptions/plans/upgrade/${subscriptionPlanId}`);
 
     return unwrap(response.data);
   },
