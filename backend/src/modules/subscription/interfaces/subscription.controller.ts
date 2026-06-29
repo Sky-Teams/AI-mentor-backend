@@ -24,6 +24,13 @@ export class SubscriptionController {
     response.status(StatusCodes.OK).json(successResponse(result));
   }
 
+  public async getActivePlan(req: Request, res: Response): Promise<void> {
+    const userId = req.auth!.userId;
+
+    const activePlan = await this.subscriptionService.getActivePlan(userId);
+
+    res.status(StatusCodes.OK).json(successResponse(activePlan));
+  }
   public async cancelRequestedPlan(
     request: Request,
     response: Response,

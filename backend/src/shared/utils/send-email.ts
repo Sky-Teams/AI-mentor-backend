@@ -264,36 +264,77 @@ const resetPasswordTemplate = (fullName: string, resetUrl: string) => {
   return html;
 };
 
+// export const sendEmail = async (
+//   to: string,
+//   fullName: string,
+//   subject: string,
+//   verifyUrl: string,
+// ) => {
+//   const mailConfig: SMTPTransport.Options = {
+//     host: process.env.EMAIL_HOST,
+//     port: process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT) : 587,
+//     secure: process.env.EMAIL_SECURE === "true",
+//     auth: {
+//       user: process.env.SMTP_USER,
+//       pass: process.env.SMTP_PASS,
+//     },
+//   };
+//   const transporter = nodemailer.createTransport(mailConfig);
+
+//   const html = emailTemplate(fullName, verifyUrl);
+
+//   const emailOptions = {
+//     to,
+//     from: process.env.EMAIL_FROM,
+//     subject,
+//     html,
+//   };
+
+//   await transporter.sendMail(emailOptions);
+// };
+
 export const sendEmail = async (
   to: string,
   fullName: string,
   subject: string,
   url: string,
 ) => {
-  const mailConfig: SMTPTransport.Options = {
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT) : 587,
-    secure: process.env.EMAIL_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  };
-  const transporter = nodemailer.createTransport(mailConfig);
-
   const html =
     subject === "Verify your email"
       ? emailTemplate(fullName, url)
       : resetPasswordTemplate(fullName, url);
 
-  const emailOptions = {
-    to,
-    from: process.env.EMAIL_FROM,
-    subject,
-    html,
+  const brevoURL = process.env.BREVO_URL || "";
+  const apiKey = process.env.BREVO_API_KEY || "";
+
+  const emailData = {
+    sender: {
+      name: process.env.BRAND_NAME,
+      email: process.env.EMAIL_FROM,
+    },
+    to: [{ email: to }],
+    subject: subject,
+    htmlContent: html,
   };
 
-  await transporter.sendMail(emailOptions);
+  try {
+    const response = await fetch(brevoURL, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify(emailData),
+    });
+
+    if (response.status !== 201) {
+      const error = await response.json();
+      console.log("Failed to send email", error);
+    }
+  } catch (error) {
+    console.error("Failed to send email", error);
+  }
 };
 
 export const hashToken = (token: string) => {
