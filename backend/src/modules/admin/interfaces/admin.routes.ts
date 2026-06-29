@@ -16,6 +16,7 @@ import {
 } from "src/modules/subscription/interfaces/subscription.schema";
 import {
   createJournalSchema,
+  journalIdParamsSchema,
   updateJournalSchema,
 } from "src/modules/journal/interface/journal.schema.js";
 
@@ -82,6 +83,7 @@ export const createAdminRouter = (
   router.put(
     "/journals/:id",
     validate(updateJournalSchema, "body"),
+    validate(journalIdParamsSchema, "params"),
     asyncHandler((req, res) => controller.updateJournal(req, res)),
   );
 
