@@ -49,6 +49,18 @@ export const EditJournalPage = () => {
   const buildUpdatePayload = (form: JournalFormState) =>
     buildUpdateJournalPayload(form);
 
+  const handleAddSection = () => {
+    journalForm.addSection();
+    setTimeout(() => {
+      const sections =
+        document.querySelectorAll<HTMLElement>(".journal-section");
+      sections[sections.length - 1]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  };
+
   const handleUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaveError(null);
@@ -106,7 +118,7 @@ export const EditJournalPage = () => {
           </div>
           <button
             className="secondary-button"
-            onClick={journalForm.addSection}
+            onClick={handleAddSection}
             type="button"
           >
             + Add Section
