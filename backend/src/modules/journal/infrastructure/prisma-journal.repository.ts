@@ -51,7 +51,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
         sectionOrder: sub.sectionOrder,
         isOptional: sub.isOptional,
         maxChars: sub.maxChars,
-        description: sub.description,
+        sectionPrompt: sub.sectionPrompt,
         createdAt: sub.createdAt,
         updatedAt: sub.updatedAt,
         checklists:

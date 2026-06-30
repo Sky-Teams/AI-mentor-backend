@@ -98,7 +98,7 @@ export const buildJournalPayload = (
     })),
     subsections: section.subsections.map((sub, subIndex) => ({
       title: sub.title.trim(),
-      description: sub.sectionPrompt.trim() || undefined,
+      sectionPrompt: sub.sectionPrompt.trim() || undefined,
       sectionOrder: subIndex + 1,
       isOptional: sub.isOptional,
       maxChars: Number(sub.maxChars),
@@ -175,7 +175,7 @@ export const mapJournalToFormState = (journal: any): JournalFormState => ({
   sections: journal.sections?.map((section: any) => ({
     id: section.id,
     title: section.title || "",
-    description: section.description || "",
+    sectionPrompt: section.sectionPrompt || "",
     isOptional: section.isOptional ?? false,
     maxChars: String(section.maxChars ?? ""),
     checklists: (section.checklists || []).map((checklist: any) => ({

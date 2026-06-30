@@ -31,7 +31,7 @@ export const createJournalSchema = z.object({
               sectionOrder: z.number().int().min(1),
               isOptional: z.boolean().optional(),
               maxChars: z.number().min(1),
-              description: z.string().min(1).max(1000).optional(),
+              sectionPrompt: z.string().min(1).max(1000).optional(),
               checklists: z
                 .array(
                   z.object({
@@ -67,7 +67,7 @@ export const updateJournalSchema = z.object({
         sectionOrder: z.number().int().min(1).optional(),
         isOptional: z.boolean().optional().optional(),
         maxChars: z.number().min(1).optional(),
-        description: z.string().min(1).max(1000).optional(),
+        sectionPrompt: z.string().min(1).max(1000).optional(),
         checklists: z
           .array(
             z.object({
@@ -85,7 +85,7 @@ export const updateJournalSchema = z.object({
               sectionOrder: z.number().int().min(1).optional(),
               isOptional: z.boolean().optional(),
               maxChars: z.number().min(1).optional(),
-              description: z.string().min(1).max(1000).optional(),
+              sectionPrompt: z.string().min(1).max(1000).optional(),
               checklists: z
                 .array(
                   z.object({
