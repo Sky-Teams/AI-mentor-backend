@@ -4,7 +4,10 @@ import type { Specialty } from "../../types/api";
 type BasicInfoFormProps = {
   form: JournalFormState;
   isLoadingSpecialties: boolean;
-  onChange: (field: keyof Omit<JournalFormState, "sections">, value: string) => void;
+  onChange: (
+    field: keyof Omit<JournalFormState, "sections">,
+    value: string,
+  ) => void;
   specialties: Specialty[];
 };
 
@@ -28,6 +31,7 @@ export const BasicInfoForm = ({
         <input
           onChange={(event) => onChange("name", event.target.value)}
           placeholder="Daily Reflection Journal"
+          required
           value={form.name}
         />
       </label>
@@ -46,10 +50,13 @@ export const BasicInfoForm = ({
         <select
           disabled={isLoadingSpecialties || specialties.length === 0}
           onChange={(event) => onChange("specialtyId", event.target.value)}
+          required
           value={form.specialtyId}
         >
           <option value="">
-            {isLoadingSpecialties ? "Loading specialties..." : "Choose specialty"}
+            {isLoadingSpecialties
+              ? "Loading specialties..."
+              : "Choose specialty"}
           </option>
           {specialties.map((specialty) => (
             <option key={specialty.id} value={specialty.id}>
@@ -75,6 +82,7 @@ export const BasicInfoForm = ({
       <textarea
         onChange={(event) => onChange("guidelinePack", event.target.value)}
         placeholder="Write the main rules or guidance this journal should use."
+        required
         rows={4}
         value={form.guidelinePack}
       />

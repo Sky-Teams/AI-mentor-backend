@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BasicInfoForm } from "../components/journal/BasicInfoForm";
 import { SectionForm } from "../components/journal/SectionForm";
@@ -49,9 +49,15 @@ export const EditJournalPage = () => {
   const buildUpdatePayload = (form: JournalFormState) =>
     buildUpdateJournalPayload(form);
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setSaveError(null);
     setSaveSuccess(null);
+
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      return;
+    }
 
     try {
       const payload = buildUpdatePayload(journalForm.form);
@@ -65,22 +71,14 @@ export const EditJournalPage = () => {
   };
 
   return (
-    <form
-      className="page-shell journal-page"
-      onSubmit={(e) => e.preventDefault()}
-    >
+    <form className="page-shell journal-page" onSubmit={handleUpdate}>
       <div className="page-header">
         <div>
           <p className="eyebrow">Journal</p>
           <h1>Edit Journal</h1>
           <p className="muted-text">Update an existing journal template.</p>
         </div>
-        <button
-          className="primary-button"
-          onClick={handleUpdate}
-          disabled={loading}
-          type="button"
-        >
+        <button className="primary-button" disabled={loading} type="submit">
           Update Journal
         </button>
       </div>
