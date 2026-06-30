@@ -89,8 +89,10 @@ export class PrismaJournalRepository implements JournalRepository {
             checklists: true,
             subsections: {
               include: { checklists: true },
+              orderBy: { sectionOrder: "asc" },
             },
           },
+          orderBy: { sectionOrder: "asc" },
         },
       },
     });

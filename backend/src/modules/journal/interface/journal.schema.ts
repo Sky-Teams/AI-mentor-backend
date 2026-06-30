@@ -21,7 +21,7 @@ export const createJournalSchema = z.object({
         checklists: z.array(
           z.object({
             title: z.string().min(1).max(180).nullable(),
-            items: z.array(z.string().min(1).max(500)).min(1),
+            items: z.array(z.string().min(1).max(500)).optional().default([]),
           }),
         ),
         subsections: z
@@ -36,7 +36,7 @@ export const createJournalSchema = z.object({
                 .array(
                   z.object({
                     title: z.string().min(1).max(180).nullable(),
-                    items: z.array(z.string().min(1).max(500)).min(1),
+                    items: z.array(z.string().min(1).max(500)).optional().default([]),
                   }),
                 )
                 .optional()
@@ -73,7 +73,7 @@ export const updateJournalSchema = z.object({
             z.object({
               id: z.string().optional(),
               title: z.string().min(1).max(180).nullable().optional(),
-              items: z.array(z.string().min(1).max(500)).min(1).optional(),
+              items: z.array(z.string().min(1).max(500)).optional().default([]),
             }),
           )
           .optional(),
@@ -93,8 +93,8 @@ export const updateJournalSchema = z.object({
                     title: z.string().min(1).max(180).nullable().optional(),
                     items: z
                       .array(z.string().min(1).max(500))
-                      .min(1)
-                      .optional(),
+                      .optional()
+                      .default([]),
                   }),
                 )
                 .optional()
