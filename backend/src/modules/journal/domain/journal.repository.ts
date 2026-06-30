@@ -1,4 +1,56 @@
-import { CreateJournalInput } from "src/shared/seed-data/journals.js";
+// Create journal interface
+export interface SectionChecklistsGroup {
+  title: string | null;
+  items: string[];
+}
+
+export interface JournalSectionDefinition {
+  title: string;
+  sectionOrder: number;
+  isOptional: boolean;
+  sectionPrompt?: string;
+  maxChars: number;
+  checklists: SectionChecklistsGroup[];
+  subsections?: JournalSectionDefinition[];
+}
+
+export interface CreateJournalInput {
+  name: string;
+  publisher: string;
+  description?: string;
+  isDefault?: boolean;
+  sections: JournalSectionDefinition[];
+  guidelinePack: string;
+  specialtyId: string;
+}
+
+// Update journal interface
+export interface UpdateSectionChecklistsGroup {
+  id?: string;
+  title?: string;
+  items?: string[];
+}
+
+export interface UpdateJournalSectionDefinition {
+  id?: string;
+  title?: string;
+  sectionOrder?: number;
+  isOptional?: boolean;
+  sectionPrompt?: string;
+  maxChars?: number;
+  checklists?: UpdateSectionChecklistsGroup[];
+  subsections?: UpdateJournalSectionDefinition[];
+}
+
+export interface UpdateJournalInput {
+  name?: string;
+  publisher?: string;
+  description?: string;
+  isDefault?: boolean;
+  sections?: UpdateJournalSectionDefinition[];
+  guidelinePack?: string;
+  specialtyId?: string;
+}
 
 // This CreateJournal type also includes CreateJournalInput type, and Omit means to dont use that guidelinePack from CreateJournalInput
 export type CreatedJournal = Omit<
@@ -52,6 +104,7 @@ export type CreatedJournal = Omit<
 
 export interface JournalRepository {
   findAll(specialtyId: string): Promise<Array<{ id: string; name: string }>>;
-  findById(id: string): Promise<{ id: string; name: string } | null>;
+  findById(id: string): Promise<CreatedJournal | null>;
   createJournal(input: CreateJournalInput): Promise<CreatedJournal>;
+  updateJournal(id: string, input: UpdateJournalInput): Promise<CreatedJournal>;
 }
