@@ -715,6 +715,7 @@ ul.reference-list {
   border-radius: 10px;
   background: var(--surface);
 }
+
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
