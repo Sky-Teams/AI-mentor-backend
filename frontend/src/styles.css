@@ -716,60 +716,6 @@ ul.reference-list {
   background: var(--surface);
 }
 
-.user-pill {
-  display: flex !important;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.three-dots-toggle {
-  background: none;
-  border: none;
-  color: #a0aec0;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  line-height: 1;
-  transition: background 0.2s, color 0.2s;
-}
-
-.three-dots-toggle:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-}
-
-.user-dropdown-menu {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  margin-bottom: 8px;
-  background-color: #1a1d21; 
-  border: 1px solid #3f444e;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  z-index: 50;
-  min-width: 130px;
-  overflow: hidden;
-}
-
-.dropdown-link {
-  display: block;
-  padding: 10px 14px;
-  color: #e2e8f0;
-  text-decoration: none;
-  font-size: 13px;
-  text-align: right;
-  direction: rtl;
-  transition: background 0.2s;
-}
-
-.dropdown-link:hover {
-  background-color: #3182ce; 
-  color: #ffffff;
-}
-
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
