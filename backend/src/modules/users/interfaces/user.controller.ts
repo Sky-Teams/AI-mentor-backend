@@ -23,4 +23,17 @@ export class UserController {
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async updateProfile(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { fullName } = request.body;
+    const result = await this.userService.updateProfile(
+      request.auth!.userId,
+      fullName,
+    );
+
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
 }
