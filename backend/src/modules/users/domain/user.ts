@@ -22,4 +22,5 @@ export interface UserRepository {
     userId: string,
     newPassword: string,
   ): Promise<{ message: string }>;
+  updateProfile(userId: string, fullName: string): Promise<User>;
 }
