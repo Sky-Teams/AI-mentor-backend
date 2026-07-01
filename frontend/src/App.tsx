@@ -14,7 +14,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { ReferencePage } from "./pages/ReferencePage";
 import { SubscriptionPage } from "./pages/SubscriptionPage";
-import { ChangePasswordPage } from "./pages/ChangePasswordPage";
+import { ProfilePage } from "./pages/ProfilePage";
 // import { ParaphraseDetails } from "./pages/ParaphraseDetails";
 
 export const App = () => (
@@ -39,7 +39,7 @@ export const App = () => (
           <Route element={<AdminPage />} path="/admin" />
           <Route element={<ReferencePage />} path="/references" />
           <Route element={<SubscriptionPage />} path="/admin/subscriptions" />
-          <Route element={<ChangePasswordPage />} path="/change-password" />
+          <Route element={<ProfilePage />} path="/me"/>
           {/* <Route
             element={<ParaphraseDetails />}
             path="/projects/paraphrase/:paraphraseRunId"
