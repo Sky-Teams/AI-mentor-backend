@@ -1,5 +1,5 @@
 import { PasswordHasher } from "src/modules/auth/domain/password-hasher";
-import { UserRepository } from "../domain/user";
+import { User, UserRepository } from "../domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
 
@@ -43,5 +43,11 @@ export class UserService {
     const hashPassword = await this.passwordHasher.hash(newPassword);
 
     return await this.userRepository.changePassword(userId, hashPassword);
+  }
+
+  public async updateProfile(userId: string, fullName: string): Promise<User> {
+    await this.userRepository.getUserById(userId);
+
+    return await this.userRepository.updateProfile(userId, fullName);
   }
 }
