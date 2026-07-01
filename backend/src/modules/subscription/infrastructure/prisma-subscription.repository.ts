@@ -5,6 +5,7 @@ import {
   SubscriptionPlanStatus,
   SubscriptionRequest,
   SubscriptionRequestStatus,
+  SubscriptionRequestType,
 } from "../domain/subscription";
 import { SubscriptionRepository } from "../domain/subscription.repository";
 import { AppError } from "src/shared/errors/app-error";
@@ -35,6 +36,7 @@ const mapPlan = (plan: {
 const mapRequestedPlan = (item: {
   id: string;
   status: SubscriptionRequestStatus;
+  type: SubscriptionRequestType;
   user: {
     id: string;
     fullName: string;
@@ -53,6 +55,7 @@ const mapRequestedPlan = (item: {
 }): RequestedPlans => ({
   id: item.id,
   status: item.status,
+  type: item.type,
   user: {
     id: item.user.id,
     fullName: item.user.fullName,
@@ -98,6 +101,18 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     subscriptionPlanId: string,
     userId: string,
   ): Promise<SubscriptionRequest> {
+    const activeSubscription = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+    });
+
+    /** Check user active plan */
+    if (activeSubscription)
+      throw new AppError(
+        "You already have an active subscription.Please upgrade instead",
+        StatusCodes.BAD_REQUEST,
+        `ALREADY_HAVE_ACTIVE_PLAN`,
+      );
+
     const pendingSubscription = await this.prisma.subscriptionRequest.findFirst(
       {
         where: { userId: userId, status: "PENDING" },
@@ -116,6 +131,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         userId: userId,
         subscriptionPlanId: subscriptionPlanId,
         status: "PENDING",
+        type: "PURCHASE",
       },
     });
   }
@@ -154,6 +170,27 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         include: { subscriptionPlan: true, user: true },
       });
 
+      const activeSubscription = await transaction.userSubscription.findFirst({
+        where: { userId, status: "ACTIVE" },
+      });
+
+      /** Deactivate the user's active subscription */
+      if (existing.type === "UPGRADE") {
+        if (!activeSubscription)
+          throw new AppError(
+            "Active subscription not found.",
+            StatusCodes.NOT_FOUND,
+            "ACTIVE_SUBSCRIPTION_NOT_FOUND",
+          );
+
+        await transaction.userSubscription.update({
+          where: { id: activeSubscription.id },
+          data: {
+            status: "INACTIVE",
+          },
+        });
+      }
+
       const billingModel = updateRequestedPlan.subscriptionPlan.billingModel;
 
       const startDate = new Date();
@@ -165,6 +202,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         endDate.setMonth(endDate.getMonth() + 1);
       }
 
+      /** Create a new user subscription */
       await transaction.userSubscription.create({
         data: {
           userId: userId,
@@ -176,16 +214,17 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         },
       });
 
-      const credit = updateRequestedPlan.subscriptionPlan.includedCredits;
+      const creditsToGrant =
+        updateRequestedPlan.subscriptionPlan.includedCredits;
 
       const wallet = await transaction.creditWallet.update({
         where: { userId },
         data: {
           balance: {
-            increment: credit,
+            increment: creditsToGrant,
           },
           lifetimeCreditsGranted: {
-            increment: credit,
+            increment: creditsToGrant,
           },
         },
       });
@@ -196,7 +235,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
           userId: userId,
           type: "PURCHASE",
           source: "SUBSCRIPTION",
-          amount: credit,
+          amount: creditsToGrant,
           balanceAfter: wallet.balance,
           description: "Subscription approved and credits added",
         },
@@ -206,6 +245,44 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     });
 
     return mapRequestedPlan(result);
+  }
+
+  public async upgradePlan(
+    subscriptionPlanId: string,
+    userId: string,
+  ): Promise<SubscriptionRequest> {
+    const activeSubscription = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+    });
+
+    if (!activeSubscription)
+      throw new AppError(
+        "You don't have an active subscription to upgrade.",
+        StatusCodes.NOT_FOUND,
+        `ACTIVE_SUBSCRIPTION_NOT_FOUND`,
+      );
+
+    const pendingSubscription = await this.prisma.subscriptionRequest.findFirst(
+      {
+        where: { userId: userId, status: "PENDING" },
+      },
+    );
+
+    if (pendingSubscription)
+      throw new AppError(
+        "Already have a pending request",
+        StatusCodes.BAD_REQUEST,
+        `ALREADY_HAVE_PENDING_REQUEST`,
+      );
+
+    return await this.prisma.subscriptionRequest.create({
+      data: {
+        userId: userId,
+        subscriptionPlanId: subscriptionPlanId,
+        status: "PENDING",
+        type: "UPGRADE",
+      },
+    });
   }
 
   public async getActivePlan(userId: string): Promise<UserSubscription | null> {
@@ -218,6 +295,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     return activePlan || null;
   }
+
   public async cancelRequestedPlan(
     id: string,
     userId: string,
