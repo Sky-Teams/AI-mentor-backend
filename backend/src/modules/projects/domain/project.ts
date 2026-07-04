@@ -24,7 +24,7 @@ export interface ProjectSection {
   isOptional: boolean;
   status: SectionStatus;
   lastEditedAt: Date | null;
-  maxChars: number;
+  maxWords: number;
   updatedAt: Date;
   sectionPrompt?: string;
   checklist?: Array<{
