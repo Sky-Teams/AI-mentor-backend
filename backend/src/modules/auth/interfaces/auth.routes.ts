@@ -5,10 +5,12 @@ import { authenticate } from "../../../shared/middleware/authenticate";
 import type { TokenService } from "../domain/token-service";
 import type { AuthController } from "./auth.controller";
 import {
+  forgotPasswordSchema,
   loginSchema,
   refreshSchema,
   registerSchema,
   resendVerifyEmailSchema,
+  resetPasswordSchema,
   verifiedTokenSchema,
 } from "./auth.schemas";
 
@@ -45,11 +47,29 @@ export const createAuthRouter = (
       controller.verifyEmail(request, response),
     ),
   );
+<<<<<<< HEAD
   router.post(
     "/resend-verify-email",
     validate(resendVerifyEmailSchema),
     asyncHandler((request, response) =>
       controller.resendVerifyEmail(request, response),
+=======
+
+  router.post(
+    "/forgot-password",
+    validate(forgotPasswordSchema, "body"),
+    asyncHandler((request, response) =>
+      controller.forgotPassword(request, response),
+    ),
+  );
+
+  router.post(
+    "/reset-password/:token",
+    validate(verifiedTokenSchema, "params"),
+    validate(resetPasswordSchema, "body"),
+    asyncHandler((request, response) =>
+      controller.resetPassword(request, response),
+>>>>>>> 19ba3fa3f7b233c9df13214bfd337ecf58cdfb3d
     ),
   );
   return router;

@@ -22,3 +22,11 @@ export const verifiedTokenSchema = z.object({
 export const resendVerifyEmailSchema = z.object({
   email: z.string().email().toLowerCase(),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  newPassword: z.string().min(8),
+});

@@ -25,4 +25,9 @@ export interface AuthRepository {
   revokeRefreshToken(tokenHash: string): Promise<void>;
   verifyEmail(token: string): Promise<User>;
   resendVerifyEmail(email: string): Promise<{ message: string }>;
+  forgotPassword(email: string): Promise<{ message: string }>;
+  resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }>;
 }
