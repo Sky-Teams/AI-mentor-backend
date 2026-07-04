@@ -5,9 +5,11 @@ import { authenticate } from "../../../shared/middleware/authenticate";
 import type { TokenService } from "../domain/token-service";
 import type { AuthController } from "./auth.controller";
 import {
+  forgotPasswordSchema,
   loginSchema,
   refreshSchema,
   registerSchema,
+  resetPasswordSchema,
   verifiedTokenSchema,
 } from "./auth.schemas";
 
@@ -42,6 +44,23 @@ export const createAuthRouter = (
     validate(verifiedTokenSchema, "params"),
     asyncHandler((request, response) =>
       controller.verifyEmail(request, response),
+    ),
+  );
+
+  router.post(
+    "/forgot-password",
+    validate(forgotPasswordSchema, "body"),
+    asyncHandler((request, response) =>
+      controller.forgotPassword(request, response),
+    ),
+  );
+
+  router.post(
+    "/reset-password/:token",
+    validate(verifiedTokenSchema, "params"),
+    validate(resetPasswordSchema, "body"),
+    asyncHandler((request, response) =>
+      controller.resetPassword(request, response),
     ),
   );
   return router;

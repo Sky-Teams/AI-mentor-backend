@@ -251,6 +251,8 @@ model User {
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
   isVerified               Boolean               @default(false)
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
   projects                 Project[]
   refreshTokens            RefreshToken[]
   sectionVersions          SectionVersion[]
