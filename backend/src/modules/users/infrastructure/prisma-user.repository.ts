@@ -1,18 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { Role, User, UserRepository, UserWithPassword } from "../domain/user";
+import { User, UserRepository, UserWithPassword } from "../domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
 
-const mapUser = (user: {
-  id: string;
-  email: string;
-  fullName: string;
-  role: Role;
-  isActive: boolean;
-  isVerified: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}): User => ({
+const mapUser = (user: User): User => ({
   id: user.id,
   email: user.email,
   fullName: user.fullName,
