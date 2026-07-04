@@ -140,6 +140,10 @@ export const SectionEditorPage = () => {
     [reviews, sectionKey],
   );
 
+  const countWords = (text: string) => {
+    return text.trim().split(/\s+/).length;
+  };
+
   return (
     <div className="page-shell">
       <div className="page-header">
@@ -185,7 +189,7 @@ export const SectionEditorPage = () => {
               </div>
               <textarea
                 style={
-                  (section?.maxWords as number) < content.trim().length
+                  (section?.maxWords as number) < countWords(content)
                     ? { border: "1px solid red", outline: "none" }
                     : { outline: "none" }
                 }
@@ -202,10 +206,10 @@ export const SectionEditorPage = () => {
                 }}
                 className="badge"
               >
-                Max chars {section?.maxWords}
+                Max words {section?.maxWords}
               </span>
               <span className="badge" style={{ float: "right" }}>
-                {content.trim().length} chars
+                {countWords(content)} Words
               </span>
             </div>
 
@@ -248,7 +252,7 @@ export const SectionEditorPage = () => {
                     {sub.status} {sub.isOptional ? "· Optional" : ""}
                   </p>
                 </div>
-                <span>{sub.content.trim().length} chars</span>
+                <span>{sub.content.trim().length} Words</span>
               </Link>
             ))}
           </div>
