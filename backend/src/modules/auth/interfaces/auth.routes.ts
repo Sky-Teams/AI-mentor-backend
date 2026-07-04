@@ -47,13 +47,14 @@ export const createAuthRouter = (
       controller.verifyEmail(request, response),
     ),
   );
-<<<<<<< HEAD
+  
   router.post(
     "/resend-verify-email",
     validate(resendVerifyEmailSchema),
     asyncHandler((request, response) =>
       controller.resendVerifyEmail(request, response),
-=======
+    ),
+  );
 
   router.post(
     "/forgot-password",
@@ -69,7 +70,6 @@ export const createAuthRouter = (
     validate(resetPasswordSchema, "body"),
     asyncHandler((request, response) =>
       controller.resetPassword(request, response),
->>>>>>> 19ba3fa3f7b233c9df13214bfd337ecf58cdfb3d
     ),
   );
   return router;
