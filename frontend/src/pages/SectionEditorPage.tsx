@@ -185,7 +185,7 @@ export const SectionEditorPage = () => {
               </div>
               <textarea
                 style={
-                  (section?.maxChars as number) < content.trim().length
+                  (section?.maxWords as number) < content.trim().length
                     ? { border: "1px solid red", outline: "none" }
                     : { outline: "none" }
                 }
@@ -202,7 +202,7 @@ export const SectionEditorPage = () => {
                 }}
                 className="badge"
               >
-                Max chars {section?.maxChars}
+                Max chars {section?.maxWords}
               </span>
               <span className="badge" style={{ float: "right" }}>
                 {content.trim().length} chars

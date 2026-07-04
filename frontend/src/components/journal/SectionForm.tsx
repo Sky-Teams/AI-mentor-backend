@@ -135,12 +135,12 @@ export const SectionForm = ({
             <input
               min={1}
               onChange={(event) =>
-                onUpdate({ ...section, maxChars: event.target.value })
+                onUpdate({ ...section, maxWords: event.target.value })
               }
               placeholder="1000"
               required
               type="number"
-              value={section.maxChars}
+              value={section.maxWords}
             />
           </label>
         </div>
@@ -245,12 +245,12 @@ export const SectionForm = ({
                       onChange={(e) =>
                         updateSubsection(sub.id, {
                           ...sub,
-                          maxChars: e.target.value,
+                          maxWords: e.target.value,
                         })
                       }
                       placeholder="500"
                       type="number"
-                      value={sub.maxChars}
+                      value={sub.maxWords}
                     />
                   </label>
                 </div>
