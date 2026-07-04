@@ -353,13 +353,13 @@ export class PrismaProjectRepository implements ProjectRepository {
           return null;
         }
 
-        const contentCharacters = input.content.trim().length;
+        let contentWords = section.content.trim().split(/\s+/).length;
 
-        if (section.maxWords < contentCharacters)
+        if (section.maxWords < contentWords)
           throw new AppError(
-            `Content exceeds maximum limit of ${section.maxWords} characters.`,
+            `Content exceeds maximum limit of ${section.maxWords} Words.`,
             StatusCodes.BAD_REQUEST,
-            `CONTENT_EXCEEDS_LIMIT_CHARACTERS`,
+            `CONTENT_EXCEEDS_LIMIT_Words`,
           );
 
         const latestVersion = await transaction.sectionVersion.findFirst({
