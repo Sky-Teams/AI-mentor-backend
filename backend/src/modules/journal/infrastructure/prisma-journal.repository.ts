@@ -461,14 +461,14 @@ export class PrismaJournalRepository implements JournalRepository {
     const newSubsections = subsections.filter((sub) => !sub.id);
     const updatedSubsectionIds = updatedSubsections.map((sub) => sub.id!);
 
-    if (updatedSubsectionIds.length > 0) {
-      await transaction.journalSectionTemplate.deleteMany({
-        where: {
-          parentSectionId,
+    await transaction.journalSectionTemplate.deleteMany({
+      where: {
+        parentSectionId,
+        ...(updatedSubsectionIds.length > 0 && {
           id: { notIn: updatedSubsectionIds },
-        },
-      });
-    }
+        }),
+      },
+    });
 
     for (const subsection of updatedSubsections) {
       const sectionData: any = {};
