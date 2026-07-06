@@ -46,30 +46,6 @@ export class APAFormatter {
     return `${authorPart}${yearPart}${titlePart}${publicationPart}${doiPart}`.trim();
   }
 
-  // These functions will be needed in the future.
-
-  // private async formatBook(c: BookCitation) {
-  //   const authors = await this.formatAuthors(c.authors);
-  //   const year = this.getYear(c.datePublished);
-  //   const edition = c.edition ? `${c.edition}` : "";
-  //   const volume = c.volumeNumber ? `Vol. ${c.volumeNumber}` : "";
-  //   return `${authors} (${year}). ${c.title} ${edition || volume ? "(" + edition + (volume && edition ? ", " : "") + volume + ")" : ""} ${c.publisher ? c.publisher + "." : ""}`;
-  // }
-
-  // private async formatWebsite(c: WebsiteCitation) {
-  //   const authors = await this.formatAuthors(c.authors);
-  //   const year = this.getYear(c.datePublished);
-  //   const month = c.datePublished.toLocaleString("en-US", { month: "long" });
-  //   const day = c.datePublished.getDate();
-  //   return `${authors} (${year}, ${month} ${day}). ${c.title}. ${c.websiteName}. ${c.url}`;
-  // }
-
-  // private async formatReport(c: ReportCitation) {
-  //   const authors = await this.formatAuthors(c.authors);
-  //   const year = this.getYear(c.datePublished);
-  //   return `${authors} (${year}). ${c.title}.${c.publisher ? " " + c.publisher + "." : ""}${c.url ? " " + c.url : ""}`;
-  // }
-
   public async formatAuthors(authors: any) {
     if (!authors) return "";
     const authorsArray = authors ? Object.values(authors) : [];
