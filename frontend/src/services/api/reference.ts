@@ -67,7 +67,7 @@ export const referenceApi = {
       "/references/format-style",
       data,
     );
-    console.log("data", data);
+
     return unwrap(response.data);
   },
 };
