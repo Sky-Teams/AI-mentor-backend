@@ -41,28 +41,6 @@ export class MLAFormatter {
     return `${authors}${title}${journalName}${volume}${issue}${year ? year + ", " : ""}${page}${doiPart}.`;
   }
 
-  // These functions will be needed in the future.
-
-  // private async formatBook(c: BookCitation) {
-  //   const authors = await this.formateAuthors(c.authors);
-  //   const edition = c.edition ? `${c.edition}, ` : "";
-  //   const volume = c.volumeNumber ? `Vol. ${c.volumeNumber}, ` : "";
-  //   return `${authors}. ${c.title}. ${edition}${volume} ${c.publisher ? c.publisher + ", " : ""} ${this.getYear(c.datePublished)}.`;
-  // }
-
-  // private async formatWebsite(c: WebsiteCitation) {
-  //   const authors = await this.formateAuthors(c.authors);
-  //   const year = this.getYear(c.datePublished);
-  //   const month = c.datePublished.toLocaleString("en-US", { month: "long" });
-  //   const day = c.datePublished.getDate();
-  //   return `${authors}. " ${c.title}." ${c.websiteName}, ${day} ${month} ${year}, ${c.url}`;
-  // }
-
-  // private async formatReport(c: ReportCitation) {
-  //   const authors = await this.formateAuthors(c.authors);
-  //   return `${authors}. ${c.title}. ${c.publisher ? c.publisher + ", " : ""}${this.getYear(c.datePublished)}.`;
-  // }
-
   public async formatAuthors(authors: any): Promise<string> {
     if (!authors) return "";
 
