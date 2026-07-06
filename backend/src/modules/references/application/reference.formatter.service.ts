@@ -5,6 +5,7 @@ import { MLAFormatter } from "../infrastructure/formatters/mla.formatter";
 import { VancouverFormatter } from "../infrastructure/formatters/vancouver.formatter";
 import { StatusCodes } from "http-status-codes";
 import { AMAFormatter } from "../infrastructure/formatters/ama.formatter";
+import { AmericaChemicalSocietyFormatter } from "../infrastructure/formatters/american.chemical.society.formatter";
 
 export class ReferenceFormatterService {
   constructor(
@@ -12,6 +13,7 @@ export class ReferenceFormatterService {
     private mla: MLAFormatter,
     private vancouver: VancouverFormatter,
     private ama: AMAFormatter,
+    private americanChemicalSociety: AmericaChemicalSocietyFormatter,
   ) {}
 
   format(reference: Reference, type: ReferenceTypes, style: ReferenceStyle) {
@@ -24,6 +26,8 @@ export class ReferenceFormatterService {
         return this.vancouver.format(reference, type);
       case "AMA":
         return this.ama.format(reference, type);
+      case "AMERICAN_CHEMICAL_SOCIETY":
+        return this.americanChemicalSociety.format(reference, type);
       default:
         throw new AppError(
           "Unsupported format style",
