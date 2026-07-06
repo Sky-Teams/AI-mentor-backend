@@ -5,7 +5,13 @@ export const ReferenceValue = ["JOURNAL"] as const;
 
 export type ReferenceTypes = (typeof ReferenceValue)[number];
 
-export const ReferenceStyles = ["APA", "MLA", "VANCOUVER", "AMA"] as const;
+export const ReferenceStyles = [
+  "APA",
+  "MLA",
+  "VANCOUVER",
+  "AMA",
+  "AMERICAN_CHEMICAL_SOCIETY",
+] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
 export const referenceStyles = [
@@ -15,6 +21,7 @@ export const referenceStyles = [
   },
   { title: "MLA 9 (Modern Language Association 9th edition)", value: "MLA" },
   { title: "AMA (American Medical Association)", value: "AMA" },
+  { title: "American Chemical Society", value: "AMERICAN_CHEMICAL_SOCIETY" },
   { title: "Vancouver", value: "VANCOUVER" },
 ];
 
