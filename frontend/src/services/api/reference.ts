@@ -5,8 +5,18 @@ export const ReferenceValue = ["JOURNAL"] as const;
 
 export type ReferenceTypes = (typeof ReferenceValue)[number];
 
-export const ReferenceStyles = ["APA", "MLA", "VANCOUVER"] as const;
+export const ReferenceStyles = ["APA", "MLA", "VANCOUVER", "AMA"] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
+
+export const referenceStyles = [
+  {
+    title: "APA 7 (American Psychological Association 7th edition)",
+    value: "APA",
+  },
+  { title: "MLA 9 (Modern Language Association 9th edition)", value: "MLA" },
+  { title: "AMA (American Medical Association)", value: "AMA" },
+  { title: "Vancouver", value: "VANCOUVER" },
+];
 
 export interface Authors {
   firstName: string;
@@ -23,6 +33,7 @@ export interface JournalSearchResponse {
   title?: string | null;
   authors?: Authors[];
   journalName?: string | null;
+  journalNameAbbrev?: string | null;
   datePublished?: string | null;
 }
 
@@ -56,7 +67,7 @@ export const referenceApi = {
       "/references/format-style",
       data,
     );
-
+    console.log("data", data);
     return unwrap(response.data);
   },
 };
