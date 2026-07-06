@@ -5,6 +5,7 @@ import {
   ReferenceTypes,
 } from "../../domain/reference";
 import { StatusCodes } from "http-status-codes";
+import { getYear } from "src/shared/utils/format-citation-helper";
 
 export class MLAFormatter {
   public async format(
@@ -33,7 +34,7 @@ export class MLAFormatter {
     const page = c?.page ? `pp. ${c.page}, ` : "";
     const volume = c?.volume ? `vol. ${c.volume}, ` : "";
     const issue = c?.issue ? `no. ${c.issue}, ` : "";
-    const year = this.getYear(c?.datePublished);
+    const year = await getYear(c?.datePublished);
     const doiPart = c?.doi ? `  ${c.doi}` : "";
     const title = c?.title ? `"${c.title}." ` : "";
     const journalName = c?.journalName ? `${c.journalName}, ` : "";
@@ -69,9 +70,4 @@ export class MLAFormatter {
     return `${authorsArray[0].lastName}, ${initials[0]}, et al. `;
   }
 
-  private getYear(dateInput: any): string {
-    if (!dateInput) return "";
-    const date = new Date(dateInput);
-    return !isNaN(date.getTime()) ? date.getFullYear().toString() : "";
-  }
 }
