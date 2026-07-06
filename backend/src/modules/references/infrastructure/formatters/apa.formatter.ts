@@ -33,9 +33,10 @@ export class APAFormatter {
     let publicationPart = "";
     if (c?.journalName) {
       publicationPart = ` <i>${c.journalName.trim()},</i>`;
-      if (c?.volume) publicationPart += ` <i>${c.volume}</i>`;
-      if (c?.issue) publicationPart += `(${c.issue})`;
-      if (c?.page) publicationPart += `, ${await formatPage(c.page)}`;
+      if (c?.volume)
+        publicationPart += ` <i>${c.volume}${c.issue ? "" : ","}</i>`;
+      if (c?.issue) publicationPart += `(${c.issue}),`;
+      if (c?.page) publicationPart += ` ${await formatPage(c.page)}`;
       publicationPart += ".";
     } else if (c?.page) {
       publicationPart = ` ${await formatPage(c.page)}.`;
