@@ -5,6 +5,7 @@ import {
   ReferenceTypes,
 } from "../../domain/reference";
 import { StatusCodes } from "http-status-codes";
+import { getYear } from "src/shared/utils/format-citation-helper";
 
 export class APAFormatter {
   public async format(
@@ -25,7 +26,7 @@ export class APAFormatter {
 
   private async formatJournal(c: JournalSearchResponse) {
     const authors = await this.formatAuthors(c?.authors);
-    const year = this.getYear(c?.datePublished);
+    const year = await getYear(c?.datePublished);
     const authorPart =
       c?.authors && c.authors.length !== 0 ? `${authors} ` : "";
     const yearPart = c?.datePublished ? `(${year}). ` : "";
@@ -67,11 +68,5 @@ export class APAFormatter {
 
     const lastAuthor = formatted.pop();
     return `${formatted.join(", ")}, & ${lastAuthor}`;
-  }
-
-  private getYear(dateInput: any): string {
-    if (!dateInput) return "";
-    const date = new Date(dateInput);
-    return !isNaN(date.getTime()) ? date.getFullYear().toString() : "";
   }
 }
