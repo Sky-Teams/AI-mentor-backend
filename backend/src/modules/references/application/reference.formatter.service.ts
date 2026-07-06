@@ -1,10 +1,10 @@
 import { AppError } from "src/shared/errors/app-error";
 import { Reference, ReferenceStyle, ReferenceTypes } from "../domain/reference";
-import { APAFormatter } from "../infrastructure/formatters/APAFormatter";
-import { MLAFormatter } from "../infrastructure/formatters/MLAFormatter";
-import { VancouverFormatter } from "../infrastructure/formatters/VancouverFormatter";
+import { APAFormatter } from "../infrastructure/formatters/apa.formatter";
+import { MLAFormatter } from "../infrastructure/formatters/mla.formatter";
+import { VancouverFormatter } from "../infrastructure/formatters/vancouver.formatter";
 import { StatusCodes } from "http-status-codes";
-import { AMAFormatter } from "../infrastructure/formatters/AMAFormatter";
+import { AMAFormatter } from "../infrastructure/formatters/ama.formatter";
 
 export class ReferenceFormatterService {
   constructor(
