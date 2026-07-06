@@ -115,6 +115,7 @@ export const SectionForm = ({
                 onUpdate({ ...section, title: event.target.value })
               }
               placeholder="Morning Reflection"
+              required
               value={section.title}
             />
           </label>
@@ -148,7 +149,6 @@ export const SectionForm = ({
         <label className="field">
           <span>Section AI Review Prompt</span>
           <textarea
-            required
             onChange={(event) =>
               onUpdate({ ...section, sectionPrompt: event.target.value })
             }
@@ -220,6 +220,7 @@ export const SectionForm = ({
                         })
                       }
                       placeholder="Subsection title"
+                      required
                       value={sub.title}
                     />
                   </label>
@@ -251,6 +252,7 @@ export const SectionForm = ({
                       placeholder="500"
                       type="number"
                       value={sub.maxChars}
+                      required
                     />
                   </label>
                 </div>

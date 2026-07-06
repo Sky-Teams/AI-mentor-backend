@@ -74,4 +74,12 @@ export const adminApi = {
     );
     return unwrap(response.data);
   },
+
+  async updateJournal(id: string, input: unknown): Promise<Journal> {
+    const response = await apiClient.put<ApiSuccessResponse<Journal>>(
+      `/admin/journals/${id}`,
+      input,
+    );
+    return unwrap(response.data);
+  },
 };

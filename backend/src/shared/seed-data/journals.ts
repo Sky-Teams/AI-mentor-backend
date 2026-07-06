@@ -1,29 +1,5 @@
+import { CreateJournalInput } from "src/modules/journal/domain/journal.repository.js";
 import { SPECIALTIES } from "src/shared/seed-data/constants.js";
-
-export interface SectionChecklistsGroup {
-  title: string | null;
-  items: string[];
-}
-
-export interface JournalSectionDefinition {
-  title: string;
-  sectionOrder: number;
-  isOptional: boolean;
-  sectionPrompt: string;
-  maxChars: number;
-  checklists: SectionChecklistsGroup[];
-  subsections?: JournalSectionDefinition[];
-}
-
-export interface CreateJournalInput {
-  name: string;
-  publisher: string;
-  description?: string;
-  isDefault?: boolean;
-  sections: JournalSectionDefinition[];
-  guidelinePack: string;
-  specialtyId: string;
-}
 
 export const ELSEVIER_SCARE_JOURNAL: CreateJournalInput = {
   isDefault: true,

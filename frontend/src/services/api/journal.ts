@@ -21,4 +21,11 @@ export const journalsApi = {
     );
     return unwrap(response.data);
   },
+
+  async getById(id: string) {
+    const response = await apiClient.get<ApiSuccessResponse<Journal>>(
+      `/journals/${id}`,
+    );
+    return unwrap(response.data);
+  },
 };
