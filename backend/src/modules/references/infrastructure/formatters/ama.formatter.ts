@@ -21,7 +21,7 @@ export class AMAFormatter {
   }
 
   public async formatJournal(c: JournalSearchResponse) {
-    const authors = await this.formateAuthor(c.authors);
+    const authors = await this.formatAuthor(c.authors);
     const title = c.title ? ` ${c.title}.` : "";
     const year = c.datePublished
       ? " " + (await this.getYear(c.datePublished))
@@ -32,12 +32,12 @@ export class AMAFormatter {
     const doi = c.doi ? " " + c.doi : "";
     const journalNameAbbrev = c.journalNameAbbrev
       ? `<i> ${c.journalNameAbbrev.replace(/\./g, "").trim()}</i>.`
-      : "";
+      : `<i> ${c.journalName?.replace(/\./g, "").trim()}</i>.`;
 
     return `${authors}${title}${journalNameAbbrev}${year}${volume}${issue}${page}. ${doi}`;
   }
 
-  async formateAuthor(authors: any) {
+  async formatAuthor(authors: any) {
     if (!authors) return "";
 
     const authorsArray = authors ? Object.values(authors) : [];
@@ -45,6 +45,7 @@ export class AMAFormatter {
 
     const formatted = authorsArray.map((author: any) => {
       const initials = author.firstName
+        .trim()
         .split(" ")
         .map((n: string) => n.charAt(0).toUpperCase())
         .join("");
