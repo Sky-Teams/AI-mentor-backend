@@ -5,7 +5,7 @@ import {
   ReferenceTypes,
 } from "../../domain/reference";
 import { StatusCodes } from "http-status-codes";
-import { getYear } from "src/shared/utils/format-citation-helper";
+import { formatPage, getYear } from "src/shared/utils/format-citation-helper";
 
 export class APAFormatter {
   public async format(
@@ -27,24 +27,23 @@ export class APAFormatter {
   private async formatJournal(c: JournalSearchResponse) {
     const authors = await this.formatAuthors(c?.authors);
     const year = await getYear(c?.datePublished);
-    const authorPart =
-      c?.authors && c.authors.length !== 0 ? `${authors} ` : "";
-    const yearPart = c?.datePublished ? `(${year}). ` : "";
-    const titlePart = c?.title ? `${c.title.trim()}. ` : "";
+    const authorPart = c?.authors && c.authors.length !== 0 ? `${authors}` : "";
+    const yearPart = c?.datePublished ? ` (${year}).` : "";
+    const titlePart = c?.title ? ` ${c.title.trim()}.` : "";
     let publicationPart = "";
     if (c?.journalName) {
-      publicationPart = c.journalName.trim();
-      if (c?.volume) publicationPart += `, ${c.volume}`;
+      publicationPart = ` <i>${c.journalName.trim()},</i>`;
+      if (c?.volume) publicationPart += ` <i>${c.volume}</i>`;
       if (c?.issue) publicationPart += `(${c.issue})`;
-      if (c?.page) publicationPart += `, ${c.page.trim()}`;
+      if (c?.page) publicationPart += `, ${await formatPage(c.page)}`;
       publicationPart += ".";
     } else if (c?.page) {
-      publicationPart = `${c.page.trim()}.`;
+      publicationPart = ` ${await formatPage(c.page)}.`;
     }
 
     const doiPart = c?.doi ? ` ${c.doi.trim()}` : "";
 
-    return `${authorPart}${yearPart}${titlePart}${publicationPart}${doiPart}`.trim();
+    return `${authorPart}${yearPart}${titlePart}${publicationPart}${doiPart}`;
   }
 
   public async formatAuthors(authors: any) {
@@ -55,11 +54,12 @@ export class APAFormatter {
 
     const formatted = authorsArray.map((author: any) => {
       const initials = author.firstName
+        .trim()
         .split(" ")
         .map((n: string) => n.charAt(0).toUpperCase() + ".")
         .join(" ");
 
-      return `${author.lastName}, ${initials}`;
+      return `${author.lastName.trim()}, ${initials}`;
     });
 
     if (formatted.length === 1) {
@@ -67,6 +67,12 @@ export class APAFormatter {
     }
 
     const lastAuthor = formatted.pop();
+
+    if (formatted.length > 19) {
+      const finalFormat = formatted.slice(0, 19).join(", ");
+      return `${finalFormat}, ...${lastAuthor}`;
+    }
+
     return `${formatted.join(", ")}, & ${lastAuthor}`;
   }
 }
