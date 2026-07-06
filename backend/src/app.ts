@@ -60,6 +60,7 @@ import { VancouverFormatter } from "./modules/references/infrastructure/formatte
 import { UserService } from "./modules/users/application/user.service";
 import { UserController } from "./modules/users/interfaces/user.controller";
 import { createUserRoute } from "./modules/users/interfaces/user.routes";
+import { AMAFormatter } from "./modules/references/infrastructure/formatters/AMAFormatter";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -107,10 +108,12 @@ export const createApp = (): express.Express => {
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
   const vancouver = new VancouverFormatter();
+  const ama = new AMAFormatter();
   const referenceFormatterService = new ReferenceFormatterService(
     apa,
     mla,
     vancouver,
+    ama,
   );
   const referenceService = new ReferenceSearchService(journalReferenceService);
   const subscriptionService = new SubscriptionService(

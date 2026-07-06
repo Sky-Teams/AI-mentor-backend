@@ -4,12 +4,14 @@ import { APAFormatter } from "../infrastructure/formatters/APAFormatter";
 import { MLAFormatter } from "../infrastructure/formatters/MLAFormatter";
 import { VancouverFormatter } from "../infrastructure/formatters/VancouverFormatter";
 import { StatusCodes } from "http-status-codes";
+import { AMAFormatter } from "../infrastructure/formatters/AMAFormatter";
 
 export class ReferenceFormatterService {
   constructor(
     private readonly apa: APAFormatter,
     private mla: MLAFormatter,
     private vancouver: VancouverFormatter,
+    private ama: AMAFormatter,
   ) {}
 
   format(reference: Reference, type: ReferenceTypes, style: ReferenceStyle) {
@@ -20,6 +22,8 @@ export class ReferenceFormatterService {
         return this.mla.format(reference, type);
       case "VANCOUVER":
         return this.vancouver.format(reference, type);
+      case "AMA":
+        return this.ama.format(reference, type);
       default:
         throw new AppError(
           "Unsupported format style",
