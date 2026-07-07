@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
+import { promises } from "node:dns";
 import {
   CreatedJournal,
   CreateJournalInput,
@@ -532,9 +533,133 @@ export class PrismaJournalRepository implements JournalRepository {
       }
     }
   }
-}
 
-// Used this pattern for update
-// has id → update
-// no id → create
-// in DB but not in input → delete
+  public async updateJournalSectionsOrder(
+    journalId: string,
+    sentIds: Array<{ sectionId: string; subsectionIds?: string[] }>,
+  ): Promise<CreatedJournal> {
+    // 1) validate journal
+    const journal = await this.prisma.journal.findUnique({
+      where: { id: journalId },
+      include: {
+        sectionTemplates: {
+          orderBy: { sectionOrder: "asc" },
+          include: { subsections: true },
+        },
+      },
+    });
+
+    if (!journal) {
+      throw new AppError(
+        "Journal not found",
+        StatusCodes.NOT_FOUND,
+        "JOURNAL_NOT_FOUND",
+      );
+    }
+
+    // 2) Create real journal section ids
+    const realIds = journal?.sectionTemplates
+      .filter((section) => section.parentSectionId === null)
+      .map((section) => section.id);
+
+    // 3) Normalize sent ids
+    const normalizedSentIds = sentIds.map((section) => section.sectionId);
+
+    // 4) Validate in this function
+    await this.validateOrderList(normalizedSentIds, realIds);
+
+    // collect all update operations here (sections + subsections)
+    const updateOperations: any[] = [];
+
+    // 5) updates section order
+    normalizedSentIds.forEach((id, index) => {
+      updateOperations.push(
+        this.prisma.journalSectionTemplate.update({
+          where: { id },
+          data: { sectionOrder: index + 1 },
+        }),
+      );
+    });
+
+    // 6) update subsections orders
+    for (const item of sentIds) {
+      const sentSubIds = item.subsectionIds ?? [];
+      const matchingSection = journal.sectionTemplates.find(
+        (section) => section.id === item.sectionId,
+      );
+
+      const realSubIds =
+        matchingSection?.subsections.map((sub) => sub.id) ?? [];
+
+      // only update if there are subsections to check
+      if (sentSubIds.length > 0 || realSubIds.length > 0) {
+        await this.validateOrderList(sentSubIds, realSubIds);
+
+        sentSubIds.forEach((subId, index) => {
+          updateOperations.push(
+            this.prisma.journalSectionTemplate.update({
+              where: { id: subId },
+              data: { sectionOrder: index + 1 },
+            }),
+          );
+        });
+      }
+    }
+
+    // 7) Finally do all updates in transactions
+    await this.prisma.$transaction(updateOperations);
+
+    const updatedJournal = await this.prisma.journal.findUniqueOrThrow({
+      where: { id: journalId },
+      include: {
+        guidelinePack: true,
+        specialty: true,
+        sectionTemplates: {
+          orderBy: { sectionOrder: "asc" },
+          where: { parentSectionId: null },
+          include: {
+            checklists: true,
+            subsections: {
+              orderBy: { sectionOrder: "asc" },
+              include: {
+                checklists: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return mapJournal(updatedJournal);
+  }
+
+  // Created this helper function for cleaner code
+  private async validateOrderList(sentIds: string[], realIds: string[]) {
+    const uniqueIds = new Set(sentIds);
+    if (uniqueIds.size !== sentIds.length) {
+      throw new AppError(
+        "Duplicate id in list",
+        StatusCodes.BAD_REQUEST,
+        "DUPLICATE_ID",
+      );
+    }
+
+    if (sentIds.length !== realIds.length) {
+      throw new AppError(
+        "List count mismatch",
+        StatusCodes.BAD_REQUEST,
+        "LIST_COUNT_MISMATCH",
+      );
+    }
+
+    const realSet = new Set(realIds);
+    const allBelong = sentIds.every((id) => realSet.has(id));
+    if (!allBelong) {
+      throw new AppError(
+        "Invalid id in list",
+        StatusCodes.BAD_REQUEST,
+        "INVALID_ID",
+      );
+    }
+  }
+}
