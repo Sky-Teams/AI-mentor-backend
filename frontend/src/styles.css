@@ -715,6 +715,151 @@ ul.reference-list {
   border-radius: 10px;
   background: var(--surface);
 }
+
+.journal-order-modal {
+  width: min(100%, 780px);
+  padding: 1.4rem;
+}
+
+.journal-order-modal .header-reference {
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  margin-bottom: 0.2rem;
+}
+
+.journal-order-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.journal-order-card {
+  border: 1px solid #e8dccb;
+  border-radius: 16px;
+  padding: 0.75rem 0.9rem;
+  background: linear-gradient(135deg, #fffdf9 0%, #f7efe0 100%);
+  box-shadow: 0 8px 22px rgba(66, 42, 12, 0.06);
+  display: grid;
+  gap: 0.6rem;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.journal-order-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.journal-order-card.dragging,
+.journal-order-subitem.dragging {
+  opacity: 0.6;
+  border-style: dashed;
+  transform: scale(0.98);
+}
+
+.journal-order-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.25rem 0;
+}
+
+.journal-order-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.journal-order-section-title > div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.journal-order-section-title strong {
+  display: block;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.journal-order-section-badge {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.journal-order-section-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.journal-order-drag-pill {
+  font-size: 0.78rem;
+  color: var(--accent);
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #f8eadc;
+  border: 1px solid #ecd5ba;
+}
+
+.journal-order-item,
+.journal-order-subitem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: grab;
+  padding: 0.55rem 0.7rem;
+  min-height: 2.6rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid transparent;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.journal-order-subitem:hover {
+  border-color: #ecd5ba;
+}
+
+.journal-order-sublist {
+  display: grid;
+  gap: 0.45rem;
+  margin-left: 1rem;
+  padding-left: 0.75rem;
+  border-left: 2px dashed #e7d4b5;
+}
+
+.drag-handle {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.journal-order-empty {
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.journal-order-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.2rem;
+}
+
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
