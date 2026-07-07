@@ -29,7 +29,6 @@ export class APAFormatter {
     const year = await getYear(c?.datePublished);
     const authorPart = c?.authors && c.authors.length !== 0 ? `${authors}` : "";
     const yearPart = c?.datePublished ? ` (${year}).` : "";
-    const titlePart = c?.title ? ` ${c.title.trim()}.` : "";
     let publicationPart = "";
     if (c?.journalName) {
       publicationPart = ` <i>${c.journalName.trim()},</i>`;
@@ -40,6 +39,21 @@ export class APAFormatter {
       publicationPart += ".";
     } else if (c?.page) {
       publicationPart = ` ${await formatPage(c.page)}.`;
+    }
+
+    let titlePart;
+    if (c.title) {
+      if (c.title.includes(":")) {
+        const formatTitle = c.title
+          .split(":")
+          .map((n: string) => {
+            const text = n.trim()
+            return text.charAt(0).toUpperCase() + text.slice(1)})
+          .join(": ");
+        titlePart = ` ${formatTitle}.`;
+      } else {
+        titlePart = ` ${c.title.trim()}.`;
+      }
     }
 
     const doiPart = c?.doi ? ` ${c.doi.trim()}` : "";
@@ -69,7 +83,7 @@ export class APAFormatter {
 
     const lastAuthor = formatted.pop();
 
-    if (formatted.length > 19) {
+    if (formatted.length >= 20) {
       const finalFormat = formatted.slice(0, 19).join(", ");
       return `${finalFormat}, ...${lastAuthor}`;
     }
