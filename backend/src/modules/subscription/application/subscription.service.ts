@@ -51,9 +51,27 @@ export class SubscriptionService {
     return await this.subscriptionRepository.approveRequestedPlan(userId, id);
   }
 
-  public async getActivePlan(userId: string): Promise<UserSubscription | null> {
-    return await this.subscriptionRepository.getActivePlan(userId);
+  public async upgradePlan(
+    subscriptionPlanId: string,
+    userId: string,
+  ): Promise<SubscriptionRequest> {
+    await this.userRepository.getUserById(userId);
+
+    const plan =
+      await this.subscriptionRepository.findPlanById(subscriptionPlanId);
+    if (!plan)
+      throw new AppError(
+        "Plan was not found",
+        StatusCodes.NOT_FOUND,
+        `PLAN_NOT_FOUND`,
+      );
+
+    return await this.subscriptionRepository.upgradePlan(
+      subscriptionPlanId,
+      userId,
+    );
   }
+
   public async cancelRequestedPlan(
     requestedId: string,
     userId: string,
@@ -64,6 +82,10 @@ export class SubscriptionService {
       requestedId,
       userId,
     );
+  }
+
+  public async getActivePlan(userId: string): Promise<UserSubscription | null> {
+    return await this.subscriptionRepository.getActivePlan(userId);
   }
 
   public async getUserRequestedPlan(

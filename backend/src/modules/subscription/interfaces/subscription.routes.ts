@@ -36,6 +36,14 @@ export const createSubscriptionRouter = (
   );
 
   router.patch(
+    "/plans/upgrade/:subscriptionPlanId",
+    validate(subscriptionPlanIdSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.upgradePlan(request, response),
+    ),
+  );
+
+  router.patch(
     "/plans/requested-plan/:id/cancel",
     validate(subscriptionRequestIdSchema, "params"),
     asyncHandler((request, response) =>

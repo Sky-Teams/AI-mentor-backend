@@ -1,20 +1,8 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { subscriptionApi } from "../services/api/subscription";
 
 export const AppLayout = () => {
   const { user, logout } = useAuth();
-  const [activePlanName, setActivePlanName] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const active = await subscriptionApi.getActivePlan();
-        setActivePlanName(active?.subscriptionPlan?.name ?? null);
-      } catch (error) {}
-    })();
-  }, []);
 
   return (
     <div className="app-shell">
@@ -43,10 +31,13 @@ export const AppLayout = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="user-pill">
-            <span>{user?.fullName}</span>
-            <small>{user?.role}</small>
-            {activePlanName ? <small>Plan: {activePlanName}</small> : null}
+          <div className="user-pill" style={{ position: "relative" }}>
+            <nav className="nav-list">
+              <NavLink to="/me">
+                <span>{user?.fullName}</span>
+                <p style={{ color: "gray" }}>View your profile</p>
+              </NavLink>
+            </nav>
           </div>
           <button className="secondary-button" onClick={logout} type="button">
             Sign out

@@ -165,4 +165,21 @@ export class AuthService {
 
     return { user: user, tokens: token };
   }
+
+  public async resendVerifyEmail(email: string): Promise<{ message: string }> {
+    return this.authRepository.resendVerifyEmail(email);
+  }
+
+  public async forgotPassword(email: string): Promise<{ message: string }> {
+    return await this.authRepository.forgotPassword(email);
+  }
+
+  public async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const passwordHash = await this.passwordHasher.hash(newPassword);
+
+    return await this.authRepository.resetPassword(token, passwordHash);
+  }
 }

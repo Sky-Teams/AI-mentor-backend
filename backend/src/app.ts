@@ -57,6 +57,9 @@ import { ReferenceFormatterService } from "./modules/references/application/refe
 import { APAFormatter } from "./modules/references/infrastructure/formatters/APAFormatter";
 import { MLAFormatter } from "./modules/references/infrastructure/formatters/MLAFormatter";
 import { VancouverFormatter } from "./modules/references/infrastructure/formatters/VancouverFormatter";
+import { UserService } from "./modules/users/application/user.service";
+import { UserController } from "./modules/users/interfaces/user.controller";
+import { createUserRoute } from "./modules/users/interfaces/user.routes";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -114,9 +117,9 @@ export const createApp = (): express.Express => {
     subscriptionRepository,
     userRepository,
   );
-
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalService = new JournalService(journalRepository);
+  const userService = new UserService(passwordHasher, userRepository);
 
   const authController = new AuthController(authService);
   const projectController = new ProjectController(projectService);
@@ -139,6 +142,7 @@ export const createApp = (): express.Express => {
   const subscriptionController = new SubscriptionController(
     subscriptionService,
   );
+  const userController = new UserController(userService);
 
   const app = express();
   app.disable("x-powered-by");
@@ -202,6 +206,11 @@ export const createApp = (): express.Express => {
   app.use(
     `${env.API_PREFIX}/subscriptions`,
     createSubscriptionRouter(subscriptionController, tokenService),
+  );
+
+  app.use(
+    `${env.API_PREFIX}/user`,
+    createUserRoute(userController, tokenService),
   );
 
   app.use(createErrorHandler(logger));

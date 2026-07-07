@@ -198,4 +198,147 @@ export class PrismaAuthRepository implements AuthRepository {
       updatedAt: user.updatedAt,
     };
   }
+
+  public async forgotPassword(email: string): Promise<{ message: string }> {
+    const frontendURL = process.env.FRONTEND_URL;
+
+    if (!frontendURL)
+      throw new AppError(
+        "Missing environment variable: FRONTEND_URL",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "FRONTEND_URL_NOT_FOUND",
+      );
+
+    const existing = await this.findUserByEmail(email);
+
+    if (!existing)
+      throw new AppError(
+        "User was not found",
+        StatusCodes.NOT_FOUND,
+        "USER_NOT_FOUND",
+      );
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 Min
+
+    await this.prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        passwordResetToken: hashToken(resetToken),
+        passwordResetExpires: expires,
+      },
+    });
+
+    const resetUrl = `${frontendURL}/reset-password/${resetToken}`;
+    try {
+      await sendEmail(
+        existing.email,
+        existing.fullName,
+        "Reset your password",
+        resetUrl,
+      );
+    } catch (error) {
+      console.log("Failed to send email", existing.email);
+    }
+
+    return {
+      message: "Please check your email to reset your password.",
+    };
+  }
+
+  public async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    let user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashToken(token),
+        passwordResetExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user)
+      throw new AppError(
+        "Invalid or expired token",
+        StatusCodes.BAD_REQUEST,
+        "INVALID_RESET_TOKEN",
+      );
+
+    await this.prisma.$transaction(
+      async (transaction: Prisma.TransactionClient) => {
+        await transaction.user.update({
+          where: { id: user.id },
+          data: {
+            passwordResetToken: null,
+            passwordResetExpires: null,
+            passwordHash: newPassword,
+          },
+        });
+
+        await transaction.refreshToken.updateMany({
+          where: { userId: user.id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+      },
+    );
+
+    return {
+      message: "Password updated successfully",
+    };
+  }
+
+  public async resendVerifyEmail(email: string): Promise<{ message: string }> {
+    let user = await this.findUserByEmail(email);
+
+    if (!user)
+      throw new AppError(
+        "User was not found",
+        StatusCodes.NOT_FOUND,
+        "USER_NOT_FOUND",
+      );
+
+    if (user.isVerified)
+      throw new AppError(
+        "Your account is already verified.",
+        StatusCodes.BAD_REQUEST,
+        "ACCOUNT_ALREADY_VERIFIED",
+      );
+
+    const frontendURL = process.env.FRONTEND_URL;
+
+    if (!frontendURL)
+      throw new AppError(
+        "Missing environment variable: FRONTEND_URL",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "FRONTEND_URL_NOT_FOUND",
+      );
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const hashedToken = hashToken(token);
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 Min
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: expires,
+      },
+    });
+
+    const verifyUrl = `${frontendURL}/verify-email/${token}`;
+    try {
+      await sendEmail(
+        user.email,
+        user.fullName,
+        "Verify your email",
+        verifyUrl,
+      );
+    } catch (error) {
+      console.log("Failed to send email", user.email);
+    }
+
+    return {
+      message: "Please check your email to activate your account.",
+    };
+  }
 }

@@ -24,6 +24,20 @@ export class SubscriptionController {
     response.status(StatusCodes.OK).json(successResponse(result));
   }
 
+  public async upgradePlan(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { subscriptionPlanId } = request.params as {
+      subscriptionPlanId: string;
+    };
+    const result = await this.subscriptionService.upgradePlan(
+      subscriptionPlanId,
+      request.auth!.userId,
+    );
+    response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
   public async getActivePlan(req: Request, res: Response): Promise<void> {
     const userId = req.auth!.userId;
 
@@ -31,6 +45,7 @@ export class SubscriptionController {
 
     res.status(StatusCodes.OK).json(successResponse(activePlan));
   }
+  
   public async cancelRequestedPlan(
     request: Request,
     response: Response,
