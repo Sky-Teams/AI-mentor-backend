@@ -69,7 +69,7 @@ export const updateJournalSchema = z.object({
         title: z.string().min(1).max(180).optional(),
         sectionOrder: z.number().int().min(1).optional(),
         isOptional: z.boolean().optional().optional(),
-        maxChars: z.number().min(1).optional(),
+        maxWords: z.number().min(1).optional(),
         sectionPrompt: z.string().min(1).max(1000).optional(),
         checklists: z
           .array(
@@ -87,7 +87,7 @@ export const updateJournalSchema = z.object({
               title: z.string().min(1).max(180).optional(),
               sectionOrder: z.number().int().min(1).optional(),
               isOptional: z.boolean().optional(),
-              maxChars: z.number().min(1).optional(),
+              maxWords: z.number().min(1).optional(),
               sectionPrompt: z.string().min(1).max(1000).optional(),
               checklists: z
                 .array(
