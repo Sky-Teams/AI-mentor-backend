@@ -22,18 +22,22 @@ export class AMAFormatter {
   }
 
   public async formatJournal(c: JournalSearchResponse) {
-    const authors = await this.formatAuthor(c.authors);
+    const authors = c.authors ? await this.formatAuthor(c.authors) : "";
     const title = c.title ? ` ${c.title}.` : "";
     const year = c.datePublished ? " " + (await getYear(c.datePublished)) : "";
-    const volume = c.volume ? ";" + c.volume : "";
+    const volume = c.volume ? `${year ? ";" : " "}${c.volume}` : "";
     const issue = c.issue ? `(${c.issue})` : "";
-    const page = c.page ? `: ${await formatPage(c.page)}` : "";
-    const doi = c.doi ? " " + c.doi : "";
+    const page = c.page ? `:${await formatPage(c.page)}` : "";
+    let doi = c.doi ? ". " + c.doi : "";
     const journalNameAbbrev = c.journalNameAbbrev
-      ? `<i> ${c.journalNameAbbrev.replace(/\./g, "").trim()}</i>.`
-      : `<i> ${c.journalName?.replace(/\./g, "").trim()}</i>.`;
+      ? ` <i>${c.journalNameAbbrev.replace(/\./g, "").trim()}</i>.`
+      : ` <i>${c.journalName?.replace(/\./g, "").trim()}</i>.`;
 
-    return `${authors}${title}${journalNameAbbrev}${year}${volume}${issue}${page}. ${doi}`;
+    let publicationPart = year + volume + issue + page;
+
+    if (!publicationPart && doi) doi = ` ${c.doi}`;
+
+    return `${authors}${title}${journalNameAbbrev}${year}${volume}${issue}${page}${doi}`;
   }
 
   async formatAuthor(authors: any) {
