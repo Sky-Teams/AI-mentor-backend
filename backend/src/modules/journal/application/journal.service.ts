@@ -22,4 +22,14 @@ export class JournalService {
   public async updateJournal(journalId: string, journal: UpdateJournalInput) {
     return this.journalRepository.updateJournal(journalId, journal);
   }
+
+  public async updateJournalSectionsOrder(
+    journalId: string,
+    sectionIds: Array<{ sectionId: string; subsectionIds?: string[] }>,
+  ) {
+    return this.journalRepository.updateJournalSectionsOrder(
+      journalId,
+      sectionIds,
+    );
+  }
 }
