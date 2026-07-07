@@ -80,7 +80,6 @@ export class MLAFormatter {
       return `pp. ${pages}`;
 
     if (formatPages.length === 2 && formatPages[0] === formatPages[1]) {
-      console.log("length 2");
       return `p. ${formatPages[0]}`;
     }
 
