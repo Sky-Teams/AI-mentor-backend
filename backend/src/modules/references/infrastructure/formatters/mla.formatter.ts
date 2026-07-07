@@ -27,11 +27,15 @@ export class MLAFormatter {
   private async formatJournal(c: JournalSearchResponse) {
     let authors = await this.formatAuthors(c?.authors);
 
-    const page = c?.page ? ` ${await this.formatMLAPages(c.page)},` : "";
+    const page = c?.page ? ` ${await this.formatMLAPages(c.page)}.` : "";
     const volume = c?.volume ? ` vol. ${c.volume},` : "";
-    const issue = c?.issue ? ` no. ${c.issue},` : "";
-    const year = c.datePublished ? ` ${await getYear(c?.datePublished)},` : "";
-    const doiPart = c?.doi ? `  ${c.doi}.` : "";
+    const issue = c?.issue
+      ? ` no. ${c.issue}${c.datePublished ? "," : "."}`
+      : "";
+    const year = c.datePublished
+      ? ` ${await getYear(c?.datePublished)}${c.page ? "," : "."}`
+      : "";
+    const doiPart = c?.doi ? ` ${c.doi}.` : "";
     const title = c?.title ? ` "${c.title}." ` : "";
     const journalName = c?.journalName ? ` <i>${c.journalName},</i>` : "";
 
