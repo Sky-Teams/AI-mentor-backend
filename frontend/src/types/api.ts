@@ -309,7 +309,7 @@ export interface CreateJournalInput {
     sectionOrder: number;
     isOptional?: boolean;
     maxWords: number;
-    sectionPrompt: string;
+    sectionPrompt?: string;
     checklists: Array<{
       title: string | null;
       items: string[];
@@ -319,7 +319,7 @@ export interface CreateJournalInput {
       sectionOrder: number;
       isOptional?: boolean;
       maxWords: number;
-      description?: string;
+      sectionPrompt?: string;
       checklists: Array<{
         title: string | null;
         items: string[];

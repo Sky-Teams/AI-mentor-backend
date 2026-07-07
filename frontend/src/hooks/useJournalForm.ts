@@ -135,6 +135,11 @@ export const useJournalForm = () => {
     setError(null);
     setMessage(null);
 
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      return;
+    }
+
     const payload = buildJournalPayload(form);
 
     if (!payload.name || !payload.guidelinePack || !payload.specialtyId) {
