@@ -107,3 +107,13 @@ export const updateJournalSchema = z.object({
     .min(1)
     .optional(),
 });
+
+
+export const updateSectionsOrderSchema = z.object({
+  sectionIds: z.array(
+    z.object({
+      sectionId: z.string().cuid(),
+      subsectionIds: z.array(z.string().cuid()).optional().default([]),
+    }),
+  ),
+});
