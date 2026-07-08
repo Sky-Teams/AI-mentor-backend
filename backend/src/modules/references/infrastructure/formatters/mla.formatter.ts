@@ -25,21 +25,81 @@ export class MLAFormatter {
   }
 
   private async formatJournal(c: JournalSearchResponse) {
-    let authors = await this.formatAuthors(c?.authors);
+    const authors = await this.formatAuthors(c?.authors);
 
-    const page = c?.page ? ` ${await this.formatMLAPages(c.page)}.` : "";
-    const volume = c?.volume ? ` vol. ${c.volume},` : "";
-    const issue = c?.issue
-      ? ` no. ${c.issue}${c.datePublished ? "," : "."}`
-      : "";
-    const year = c.datePublished
-      ? ` ${await getYear(c?.datePublished)}${c.page ? "," : "."}`
-      : "";
-    const doiPart = c?.doi ? ` ${c.doi}.` : "";
-    const title = c?.title ? ` "${c.title}." ` : "";
-    const journalName = c?.journalName ? ` <i>${c.journalName},</i>` : "";
+    let titlePart = "";
+    if (c.title) {
+      titlePart = ` "${c.title}."`;
+    }
 
-    return `${authors}${title}${journalName}${volume}${issue}${year}${page}${doiPart}`;
+    let journalPart = "";
+    if (c.journalName) {
+      journalPart = ` <i>${c.journalName}</i>`;
+    }
+
+    let publicationPart = "";
+
+    if (c.volume) {
+      publicationPart += `, vol. ${c.volume}`;
+
+      if (c.issue) {
+        publicationPart += `, no. ${c.issue}`;
+      }
+
+      if (c.datePublished) {
+        publicationPart += `, ${await getYear(c.datePublished)}`;
+      }
+
+      if (c.page) {
+        publicationPart += `, ${await this.formatMLAPages(c.page)}`;
+      }
+
+      publicationPart += ".";
+    } else {
+      if (c.issue) {
+        publicationPart += `, no. ${c.issue}`;
+
+        if (c.datePublished) {
+          publicationPart += `, ${await getYear(c.datePublished)}`;
+        }
+
+        if (c.page) {
+          publicationPart += `, ${await this.formatMLAPages(c.page)}`;
+        }
+
+        publicationPart += ".";
+      } else {
+        if (c.datePublished) {
+          publicationPart += `, ${await getYear(c.datePublished)}`;
+        }
+
+        if (c.page) {
+          if (c.datePublished) {
+            publicationPart += `, ${await this.formatMLAPages(c.page)}`;
+          } else {
+            publicationPart += ` ${await this.formatMLAPages(c.page)}`;
+          }
+        }
+
+        if (publicationPart) {
+          publicationPart += ".";
+        }
+      }
+    }
+
+    if (!publicationPart && journalPart) {
+      journalPart += ".";
+    }
+
+    let doiPart = "";
+    if (c.doi) {
+      doiPart = ` https://doi.org/${c.doi.replace(
+        /^https?:\/\/doi\.org\//,
+        "",
+      )}`;
+    }
+
+    return `${authors}${titlePart}${journalPart}${publicationPart}${doiPart}`;
   }
 
   private async formatAuthors(authors: any): Promise<string> {
@@ -81,7 +141,7 @@ export class MLAFormatter {
       formatPages.length === 2 &&
       formatPages[0].length !== formatPages[1].length
     )
-      return `pp. ${pages}`;
+      return `pp. ${formatPages[0]}–${formatPages[1]}`;
 
     if (formatPages.length === 2 && formatPages[0] === formatPages[1]) {
       return `p. ${formatPages[0]}`;
@@ -97,6 +157,6 @@ export class MLAFormatter {
       sharedIndex++;
     }
 
-    return `pp. ${formatPages[0]}-${formatPages[1].slice(sharedIndex)}`;
+    return `pp. ${formatPages[0]}–${formatPages[1].slice(sharedIndex)}`;
   }
 }
