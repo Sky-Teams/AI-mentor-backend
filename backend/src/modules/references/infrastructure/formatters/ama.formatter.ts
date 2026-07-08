@@ -24,20 +24,43 @@ export class AMAFormatter {
   public async formatJournal(c: JournalSearchResponse) {
     const authors = c.authors ? await this.formatAuthor(c.authors) : "";
     const title = c.title ? ` ${c.title}.` : "";
-    const year = c.datePublished ? " " + (await getYear(c.datePublished)) : "";
-    const volume = c.volume ? `${year ? ";" : " "}${c.volume}` : "";
-    const issue = c.issue ? `(${c.issue})` : "";
-    const page = c.page ? `:${await formatPage(c.page)}` : "";
-    let doi = c.doi ? ". " + c.doi : "";
     const journalNameAbbrev = c.journalNameAbbrev
       ? ` <i>${c.journalNameAbbrev.replace(/\./g, "").trim()}</i>.`
-      : ` <i>${c.journalName?.replace(/\./g, "").trim()}</i>.`;
+      : c.journalName
+        ? ` <i>${c.journalName.replace(/\./g, "").trim()}</i>.`
+        : "";
 
-    let publicationPart = year + volume + issue + page;
+    let publicationPart = "";
 
-    if (!publicationPart && doi) doi = ` ${c.doi}`;
+    if (c.datePublished) {
+      publicationPart += ` ${await getYear(c.datePublished)}`;
+    }
 
-    return `${authors}${title}${journalNameAbbrev}${year}${volume}${issue}${page}${doi}`;
+    if (c.volume) {
+      publicationPart += `${c.datePublished ? ";" : " "}${c.volume}`;
+    }
+
+    if (c.issue) {
+      publicationPart += `(${c.issue})`;
+    }
+
+    if (c.page) {
+      if (c.datePublished || c.volume || c.issue) {
+        publicationPart += `:${(await formatPage(c.page))!.replace("–", "-")}`;
+      } else {
+        publicationPart += `${(await formatPage(c.page))!.replace("–", "-")}`;
+      }
+    }
+
+    if (publicationPart) {
+      publicationPart += ".";
+    }
+
+    const doi = c.doi
+      ? ` doi:${c.doi.replace(/^https?:\/\/doi\.org\//, "")}`
+      : "";
+
+    return `${authors}${title}${journalNameAbbrev}${publicationPart}${doi}`;
   }
 
   async formatAuthor(authors: any) {

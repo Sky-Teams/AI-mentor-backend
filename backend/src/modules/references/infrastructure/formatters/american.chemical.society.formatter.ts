@@ -24,17 +24,42 @@ export class AmericaChemicalSocietyFormatter {
   public async formatJournal(c: JournalSearchResponse) {
     const authors = c.authors ? await this.formatAuthors(c.authors) : "";
     const title = c.title ? ` ${c.title}.` : "";
-    const journalNameAbbrev = c.journalNameAbbrev
-      ? `<i> ${c.journalNameAbbrev}</i>`
-      : `<i> ${c.journalName?.replace(/\./g, "").trim()}</i>.`;
-    const year = c.datePublished
-      ? `<b> ${await getYear(c.datePublished)}</b>,`
+    let journalNameAbbrev = c.journalNameAbbrev
+      ? ` <i>${c.journalNameAbbrev}</i>`
+      : c.journalName
+        ? ` <i>${c.journalName.replace(/\./g, "").trim()}</i>`
+        : "";
+
+    let publicationPart = "";
+    if (c.datePublished) {
+      publicationPart += ` <b>${await getYear(c.datePublished)}</b>`;
+    }
+
+    if (c.volume) {
+      publicationPart += `, <i>${c.volume}</i>`;
+
+      if (c.issue) {
+        publicationPart += ` (${c.issue})`;
+      }
+    }
+
+    if (c.page) {
+      publicationPart += `, ${await formatPage(c.page)}`;
+    }
+
+    if (publicationPart) {
+      publicationPart += ".";
+    }
+
+    if (!publicationPart && journalNameAbbrev) {
+      journalNameAbbrev += ".";
+    }
+
+    const doi = c.doi
+      ? ` DOI: ${c.doi.replace(/^https?:\/\/doi\.org\//, "")}`
       : "";
-    const volume = c.volume ? `<i> ${c.volume}</i>${c.issue ? "" : ","}` : "";
-    const issue = c.issue ? `(${c.issue}),` : "";
-    const page = c.page ? ` ${await formatPage(c.page)}.` : "";
-    const doi = c.doi ? ` ${c.doi}` : "";
-    return `${authors}${title}${journalNameAbbrev}${year}${volume}${issue}${page}${doi}`;
+
+    return `${authors}${title}${journalNameAbbrev}${publicationPart}${doi}`;
   }
 
   async formatAuthors(authors: any) {

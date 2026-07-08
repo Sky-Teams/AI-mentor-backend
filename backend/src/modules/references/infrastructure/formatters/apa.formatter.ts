@@ -25,40 +25,53 @@ export class APAFormatter {
   }
 
   private async formatJournal(c: JournalSearchResponse) {
-    const authors = await this.formatAuthors(c?.authors);
-    const year = await getYear(c?.datePublished);
-    const authorPart = c?.authors && c.authors.length !== 0 ? `${authors}` : "";
-    const yearPart = c?.datePublished ? ` (${year}).` : "";
-    let publicationPart = "";
-    if (c?.journalName) {
-      publicationPart = ` <i>${c.journalName.trim()},</i>`;
-      if (c?.volume)
-        publicationPart += ` <i>${c.volume}${c.issue ? "" : ","}</i>`;
-      if (c?.issue) publicationPart += `(${c.issue}),`;
-      if (c?.page) publicationPart += ` ${await formatPage(c.page)}`;
-      publicationPart += ".";
-    } else if (c?.page) {
-      publicationPart = ` ${await formatPage(c.page)}.`;
-    }
+    const authors = c.authors ? await this.formatAuthors(c.authors) : "";
+    const year = c.datePublished ? ` (${await getYear(c.datePublished)}).` : "";
 
-    let titlePart;
+    let titlePart = "";
     if (c.title) {
       if (c.title.includes(":")) {
         const formatTitle = c.title
           .split(":")
-          .map((n: string) => {
-            const text = n.trim()
-            return text.charAt(0).toUpperCase() + text.slice(1)})
+          .map((text: string) => {
+            text = text.trim();
+            return text.charAt(0).toUpperCase() + text.slice(1);
+          })
           .join(": ");
+
         titlePart = ` ${formatTitle}.`;
       } else {
         titlePart = ` ${c.title.trim()}.`;
       }
     }
 
-    const doiPart = c?.doi ? ` ${c.doi.trim()}` : "";
+    let publicationPart = "";
 
-    return `${authorPart}${yearPart}${titlePart}${publicationPart}${doiPart}`;
+    if (c.journalName) {
+      publicationPart = ` <i>${c.journalName.trim()}</i>`;
+
+      if (c.volume) {
+        publicationPart += `, <i>${c.volume}</i>`;
+
+        if (c.issue) {
+          publicationPart += `(${c.issue})`;
+        }
+      } else if (c.issue) {
+        publicationPart += `, (${c.issue})`;
+      }
+
+      if (c.page) {
+        publicationPart += `, ${await formatPage(c.page)}`;
+      }
+
+      publicationPart += ".";
+    }
+
+    const doiPart = c?.doi
+      ? ` https://doi.org/${c.doi.trim().replace(/^https?:\/\/doi\.org\//, "")}`
+      : "";
+
+    return `${authors}${year}${titlePart}${publicationPart}${doiPart}`;
   }
 
   public async formatAuthors(authors: any) {

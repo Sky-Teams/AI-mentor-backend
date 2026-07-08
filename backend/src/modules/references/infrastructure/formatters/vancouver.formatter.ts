@@ -26,27 +26,53 @@ export class VancouverFormatter {
 
   private async formatJournal(c: JournalSearchResponse) {
     const authors = c.authors ? `${await this.formatAuthors(c?.authors)}` : "";
-    const year = c.datePublished ? ` ${await getYear(c?.datePublished)};` : "";
     const journalNameAbbrev = c?.journalNameAbbrev
-      ? ` ${c.journalNameAbbrev.replace(/\./g, "")}`
-      : ` ${c.journalName}`;
+      ? ` ${c.journalNameAbbrev.replace(/\./g, "")}.`
+      : c.journalName
+        ? ` ${c.journalName}.`
+        : "";
     const title = c?.title ? ` ${c.title}.` : "";
     const formatPages = this.formatPages(c?.page);
 
-    let citationDetails = year;
-    if (c?.volume || c?.page || c?.issue) {
-      if (c?.volume) citationDetails += ` ${c.volume}${c.issue ? "" : ":"}`;
-      if (c?.issue) citationDetails += `(${c.issue}):`;
-      if (c?.page) {
-        if (c?.volume || c?.issue) {
-          citationDetails += ` ${formatPages}.`;
-        } else {
-          citationDetails += ` ${formatPages}.`;
-        }
+    let citationDetails = "";
+
+    if (c.datePublished) {
+      citationDetails += ` ${await getYear(c.datePublished)}`;
+
+      if (c.volume || c.issue || c.page) {
+        citationDetails += ";";
+      } else {
+        citationDetails += ".";
       }
     }
 
-    const doiPart = c?.doi ? ` ${c.doi}` : "";
+    if (c.volume) {
+      citationDetails += c.volume;
+
+      if (c.issue) {
+        citationDetails += `(${c.issue})`;
+      }
+
+      if (c.page) {
+        citationDetails += `:${formatPages}`;
+      }
+
+      citationDetails += ".";
+    } else if (c.issue) {
+      citationDetails += `(${c.issue})`;
+
+      if (c.page) {
+        citationDetails += `:${formatPages}`;
+      }
+
+      citationDetails += ".";
+    } else if (c.page) {
+      citationDetails += `${formatPages}.`;
+    }
+
+    const doiPart = c.doi
+      ? ` https://doi.org/${c.doi.replace(/^https?:\/\/doi\.org\//, "")}.`
+      : "";
 
     return `${authors}${title}${journalNameAbbrev}${citationDetails}${doiPart}`;
   }
