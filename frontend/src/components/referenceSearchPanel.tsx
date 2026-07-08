@@ -66,9 +66,16 @@ export const ReferenceSearchPanel = ({
   };
 
   const handleSearchReferences = async () => {
-    const isIdentifier = searchInput.includes("/") || /\d/.test(searchInput);
-    let searchParams = {};
-    searchParams = isIdentifier ? { doi: searchInput } : { title: searchInput };
+    const doiPattern = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i;
+
+    const normalized = searchInput.trim();
+
+    const isIdentifier = doiPattern.test(normalized);
+
+    const searchParams = isIdentifier
+      ? { doi: normalized }
+      : { title: searchInput.trim() };
+
     try {
       setIsLoading(true);
       setErrorMessage("");
