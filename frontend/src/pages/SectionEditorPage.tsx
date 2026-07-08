@@ -141,7 +141,8 @@ export const SectionEditorPage = () => {
   );
 
   const countWords = (text: string) => {
-    return text.trim().split(/\s+/).length;
+    const trimmed = text.trim();
+    return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
   };
 
   return (
