@@ -107,4 +107,8 @@ export interface JournalRepository {
   findById(id: string): Promise<CreatedJournal | null>;
   createJournal(input: CreateJournalInput): Promise<CreatedJournal>;
   updateJournal(id: string, input: UpdateJournalInput): Promise<CreatedJournal>;
+  updateJournalSectionsOrder(
+    journalId: string,
+    sectionIds: Array<{ sectionId: string; subsectionIds?: string[] }>,
+  ): Promise<CreatedJournal>;
 }

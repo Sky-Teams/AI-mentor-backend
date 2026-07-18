@@ -9,7 +9,9 @@ import {
   mapJournalToFormState,
   buildUpdateJournalPayload,
   type JournalFormState,
+  SectionDraft,
 } from "../utils/journalForm";
+import { SectionOrderModal } from '../components/journal/SectionOrderModal.js';
 
 export const EditJournalPage = () => {
   const { id = "" } = useParams();
@@ -19,6 +21,9 @@ export const EditJournalPage = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -61,6 +66,38 @@ export const EditJournalPage = () => {
     }, 0);
   };
 
+  const handleSaveSectionOrder = async (nextSections: SectionDraft[]) => {
+    if (!id) return;
+
+    setIsSavingOrder(true);
+    setOrderError(null);
+    setSaveError(null);
+
+    try {
+      const payload = {
+        sectionIds: nextSections
+          .filter((section) => section.id && !section.id.startsWith("temp-"))
+          .map((section) => ({
+            sectionId: section.id,
+            subsectionIds: (section.subsections || [])
+              .filter((sub) => sub.id && !sub.id.startsWith("temp-"))
+              .map((sub) => sub.id),
+          })),
+      };
+
+      await adminApi.updateSectionsOrder(id, payload);
+      journalForm.updateSections(nextSections);
+      setIsOrderModalOpen(false);
+      setSaveSuccess("Section order updated successfully.");
+    } catch (e: any) {
+      setOrderError(
+        e?.response?.data?.error?.message || "Could not update section order",
+      );
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
   const handleUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaveError(null);
@@ -98,6 +135,7 @@ export const EditJournalPage = () => {
       {saveSuccess ? <p className="success-text">{saveSuccess}</p> : null}
       {saveError ? <p className="error-text">{saveError}</p> : null}
       {loadError ? <p className="error-text">{loadError}</p> : null}
+      {orderError ? <p className="error-text">{orderError}</p> : null}
 
       <BasicInfoForm
         form={journalForm.form}
@@ -116,13 +154,23 @@ export const EditJournalPage = () => {
               {journalForm.totalItemCount} items
             </p>
           </div>
-          <button
-            className="secondary-button"
-            onClick={handleAddSection}
-            type="button"
-          >
-            + Add Section
-          </button>
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <button
+              className="secondary-button"
+              onClick={() => setIsOrderModalOpen(true)}
+              type="button"
+            >
+              Reorder Sections
+            </button>
+
+            <button
+              className="secondary-button"
+              onClick={handleAddSection}
+              type="button"
+            >
+              + Add Section
+            </button>
+          </div>
         </div>
 
         <div className="journal-section-list">
@@ -148,6 +196,14 @@ export const EditJournalPage = () => {
           ))}
         </div>
       </section>
+
+      <SectionOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        isSaving={isSavingOrder}
+        onSave={handleSaveSectionOrder}
+        sections={journalForm.form.sections}
+      />
     </form>
   );
 };

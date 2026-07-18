@@ -18,6 +18,7 @@ import {
   createJournalSchema,
   journalIdParamsSchema,
   updateJournalSchema,
+  updateSectionsOrderSchema,
 } from "src/modules/journal/interface/journal.schema.js";
 
 export const createAdminRouter = (
@@ -100,6 +101,13 @@ export const createAdminRouter = (
     validate(subscriptionRequestIdSchema, "params"),
     validate(userIdSchema, "body"),
     asyncHandler((req, res) => controller.approveRequestedPlan(req, res)),
+  );
+
+  router.put(
+    "/journals/:id/sections-order",
+    validate(updateSectionsOrderSchema, "body"),
+    validate(journalIdParamsSchema, "params"),
+    asyncHandler((req, res) => controller.updateJournalSectionsOrder(req, res)),
   );
 
   return router;
