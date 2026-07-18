@@ -22,7 +22,7 @@ const mapSection = (section: {
   content: string;
   sectionOrder: number;
   isOptional: boolean;
-  maxChars: number;
+  maxWords: number;
   status: ProjectSection["status"];
   lastEditedAt: Date | null;
   updatedAt: Date;
@@ -31,7 +31,7 @@ const mapSection = (section: {
   id: section.id,
   projectId: section.projectId,
   key: section.key,
-  maxChars: section.maxChars,
+  maxWords: section.maxWords,
   title: section.title,
   content: section.content,
   sectionOrder: section.sectionOrder,
@@ -68,7 +68,7 @@ const mapProject = (project: {
     content: string;
     sectionOrder: number;
     isOptional: boolean;
-    maxChars: number;
+    maxWords: number;
     status: ProjectSection["status"];
     lastEditedAt: Date | null;
     updatedAt: Date;
@@ -177,7 +177,7 @@ export class PrismaProjectRepository implements ProjectRepository {
               title: template.title,
               sectionOrder: template.sectionOrder,
               isOptional: template.isOptional,
-              maxChars: template.maxChars,
+              maxWords: template.maxWords,
             },
           });
 
@@ -190,7 +190,7 @@ export class PrismaProjectRepository implements ProjectRepository {
                 title: sub.title,
                 sectionOrder: sub.sectionOrder,
                 isOptional: sub.isOptional,
-                maxChars: sub.maxChars,
+                maxWords: sub.maxWords,
               })),
             });
           }
@@ -353,13 +353,13 @@ export class PrismaProjectRepository implements ProjectRepository {
           return null;
         }
 
-        const contentCharacters = input.content.trim().length;
+        let contentWords = input.content.trim().split(/\s+/).length;
 
-        if (section.maxChars < contentCharacters)
+        if (section.maxWords < contentWords)
           throw new AppError(
-            `Content exceeds maximum limit of ${section.maxChars} characters.`,
+            `Content exceeds maximum limit of ${section.maxWords} Words.`,
             StatusCodes.BAD_REQUEST,
-            `CONTENT_EXCEEDS_LIMIT_CHARACTERS`,
+            `CONTENT_EXCEEDS_LIMIT_WORDS`,
           );
 
         const latestVersion = await transaction.sectionVersion.findFirst({

@@ -47,7 +47,7 @@ export interface ProjectSection {
   content: string;
   sectionOrder: number;
   isOptional: boolean;
-  maxChars: number;
+  maxWords: number;
   status: SectionStatus;
   lastEditedAt: string | null;
   updatedAt: string;
@@ -308,7 +308,7 @@ export interface CreateJournalInput {
     title: string;
     sectionOrder: number;
     isOptional?: boolean;
-    maxChars: number;
+    maxWords: number;
     sectionPrompt?: string;
     checklists: Array<{
       title: string | null;
@@ -318,7 +318,7 @@ export interface CreateJournalInput {
       title: string;
       sectionOrder: number;
       isOptional?: boolean;
-      maxChars: number;
+      maxWords: number;
       sectionPrompt?: string;
       checklists: Array<{
         title: string | null;

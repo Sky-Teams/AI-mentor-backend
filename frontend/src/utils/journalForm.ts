@@ -17,7 +17,7 @@ export type SectionDraft = {
   title: string;
   sectionPrompt: string;
   isOptional: boolean;
-  maxChars: string;
+  maxWords: string;
   checklists: ChecklistDraft[];
   subsections: SectionDraft[]; // NEW
 };
@@ -60,7 +60,7 @@ export const createSection = (): SectionDraft => ({
   title: "",
   sectionPrompt: "",
   isOptional: false,
-  maxChars: "",
+  maxWords: "",
   checklists: [createChecklist()],
   subsections: [], // NEW
 });
@@ -89,7 +89,7 @@ export const buildJournalPayload = (
     sectionPrompt: section.sectionPrompt.trim(),
     sectionOrder: sectionIndex + 1,
     isOptional: section.isOptional,
-    maxChars: Number(section.maxChars),
+    maxWords: Number(section.maxWords),
     checklists: section.checklists.map((checklist) => ({
       title: checklist.title.trim() || null,
       items: checklist.items
@@ -101,7 +101,7 @@ export const buildJournalPayload = (
       sectionPrompt: sub.sectionPrompt.trim() || undefined,
       sectionOrder: subIndex + 1,
       isOptional: sub.isOptional,
-      maxChars: Number(sub.maxChars),
+      maxWords: Number(sub.maxWords),
       checklists: sub.checklists
         .map((c) => ({
           title: c.title.trim() || null,
@@ -126,7 +126,7 @@ export const buildUpdateJournalPayload = (
     sectionPrompt: section.sectionPrompt.trim() || undefined,
     sectionOrder: sectionIndex + 1,
     isOptional: section.isOptional,
-    maxChars: Number(section.maxChars),
+    maxWords: Number(section.maxWords),
     checklists: section.checklists.map((checklist) => ({
       id: getPayloadId(checklist.id),
       title: checklist.title.trim() || null,
@@ -140,7 +140,7 @@ export const buildUpdateJournalPayload = (
       sectionPrompt: sub.sectionPrompt.trim() || undefined,
       sectionOrder: subIndex + 1,
       isOptional: sub.isOptional,
-      maxChars: Number(sub.maxChars),
+      maxWords: Number(sub.maxWords),
       checklists: sub.checklists.map((c) => ({
         id: getPayloadId(c.id),
         title: c.title.trim() || null,
@@ -161,7 +161,7 @@ export const journalPayloadHasEmptyNestedFields = (
       !section.title ||
       !section.sectionPrompt ||
       section.sectionPrompt.trim().length === 0 ||
-      section.maxChars < 1 ||
+      section.maxWords < 1 ||
       section.checklists.length === 0 ||
       section.checklists.some((checklist) => checklist.items.length === 0),
   );
@@ -177,7 +177,7 @@ export const mapJournalToFormState = (journal: any): JournalFormState => ({
     title: section.title || "",
     sectionPrompt: section.sectionPrompt || "",
     isOptional: section.isOptional ?? false,
-    maxChars: String(section.maxChars ?? ""),
+    maxWords: String(section.maxWords ?? ""),
     checklists: (section.checklists || []).map((checklist: any) => ({
       id: checklist.id,
       title: checklist.title || "",
@@ -192,7 +192,7 @@ export const mapJournalToFormState = (journal: any): JournalFormState => ({
         title: sub.title || "",
         sectionPrompt: sub.sectionPrompt || "",
         isOptional: sub.isOptional ?? false,
-        maxChars: String(sub.maxChars ?? ""),
+        maxWords: String(sub.maxWords ?? ""),
         checklists: (sub.checklists || []).map((checklist: any) => ({
           id: checklist.id,
           title: checklist.title || "",

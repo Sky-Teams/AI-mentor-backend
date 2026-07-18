@@ -32,7 +32,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
     title: section.title,
     sectionOrder: section.sectionOrder,
     isOptional: section.isOptional,
-    maxChars: section.maxChars,
+    maxWords: section.maxWords,
     sectionPrompt: section.sectionPrompt,
     createdAt: section.createdAt,
     updatedAt: section.updatedAt,
@@ -50,7 +50,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
         title: sub.title,
         sectionOrder: sub.sectionOrder,
         isOptional: sub.isOptional,
-        maxChars: sub.maxChars,
+        maxWords: sub.maxWords,
         sectionPrompt: sub.sectionPrompt,
         createdAt: sub.createdAt,
         updatedAt: sub.updatedAt,
@@ -151,7 +151,7 @@ export class PrismaJournalRepository implements JournalRepository {
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
-              maxChars: section.maxChars,
+              maxWords: section.maxWords,
               sectionPrompt: section.sectionPrompt,
               checklists: {
                 create: section.checklists.map((checklist) => ({
@@ -196,7 +196,7 @@ export class PrismaJournalRepository implements JournalRepository {
               title: sub.title,
               sectionOrder: sub.sectionOrder,
               isOptional: sub.isOptional,
-              maxChars: sub.maxChars,
+              maxWords: sub.maxWords,
               sectionPrompt: sub.sectionPrompt,
             },
           });
@@ -347,8 +347,8 @@ export class PrismaJournalRepository implements JournalRepository {
         sectionData.isOptional = section.isOptional;
       if (section.sectionPrompt !== undefined)
         sectionData.sectionPrompt = section.sectionPrompt;
-      if (section.maxChars !== undefined)
-        sectionData.maxChars = section.maxChars;
+      if (section.maxWords !== undefined)
+        sectionData.maxWords = section.maxWords;
 
       if (Object.keys(sectionData).length > 0) {
         await transaction.journalSectionTemplate.update({
@@ -380,7 +380,7 @@ export class PrismaJournalRepository implements JournalRepository {
           title: section.title ?? "",
           sectionOrder: section.sectionOrder ?? 0,
           isOptional: section.isOptional ?? false,
-          maxChars: section.maxChars ?? 0,
+          maxWords: section.maxWords ?? 0,
           sectionPrompt: section.sectionPrompt,
           checklists: section.checklists
             ? {
@@ -479,8 +479,8 @@ export class PrismaJournalRepository implements JournalRepository {
         sectionData.isOptional = subsection.isOptional;
       if (subsection.sectionPrompt !== undefined)
         sectionData.sectionPrompt = subsection.sectionPrompt;
-      if (subsection.maxChars !== undefined)
-        sectionData.maxChars = subsection.maxChars;
+      if (subsection.maxWords !== undefined)
+        sectionData.maxWords = subsection.maxWords;
 
       if (Object.keys(sectionData).length > 0) {
         await transaction.journalSectionTemplate.update({
@@ -508,7 +508,7 @@ export class PrismaJournalRepository implements JournalRepository {
             title: subsection.title ?? "",
             sectionOrder: subsection.sectionOrder ?? 0,
             isOptional: subsection.isOptional ?? false,
-            maxChars: subsection.maxChars ?? 0,
+            maxWords: subsection.maxWords ?? 0,
             sectionPrompt: subsection.sectionPrompt,
             checklists: subsection.checklists
               ? {

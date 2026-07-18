@@ -16,7 +16,7 @@ export const createJournalSchema = z.object({
         title: z.string().min(1).max(180),
         sectionOrder: z.number().int().min(1),
         isOptional: z.boolean().optional(),
-        maxChars: z.number().min(1),
+        maxWords: z.number().min(1),
         sectionPrompt: z.string().min(1).optional(),
         checklists: z.array(
           z.object({
@@ -30,13 +30,16 @@ export const createJournalSchema = z.object({
               title: z.string().min(1).max(180),
               sectionOrder: z.number().int().min(1),
               isOptional: z.boolean().optional(),
-              maxChars: z.number().min(1),
+              maxWords: z.number().min(1),
               sectionPrompt: z.string().min(1).max(1000).optional(),
               checklists: z
                 .array(
                   z.object({
                     title: z.string().min(1).max(180).nullable(),
-                    items: z.array(z.string().min(1).max(500)).optional().default([]),
+                    items: z
+                      .array(z.string().min(1).max(500))
+                      .optional()
+                      .default([]),
                   }),
                 )
                 .optional()
@@ -66,7 +69,7 @@ export const updateJournalSchema = z.object({
         title: z.string().min(1).max(180).optional(),
         sectionOrder: z.number().int().min(1).optional(),
         isOptional: z.boolean().optional().optional(),
-        maxChars: z.number().min(1).optional(),
+        maxWords: z.number().min(1).optional(),
         sectionPrompt: z.string().min(1).max(1000).optional(),
         checklists: z
           .array(
@@ -84,7 +87,7 @@ export const updateJournalSchema = z.object({
               title: z.string().min(1).max(180).optional(),
               sectionOrder: z.number().int().min(1).optional(),
               isOptional: z.boolean().optional(),
-              maxChars: z.number().min(1).optional(),
+              maxWords: z.number().min(1).optional(),
               sectionPrompt: z.string().min(1).max(1000).optional(),
               checklists: z
                 .array(
