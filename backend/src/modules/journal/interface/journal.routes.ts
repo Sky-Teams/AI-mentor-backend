@@ -28,6 +28,11 @@ export const createJournalRouter = (
     asyncHandler((req, res) => controller.getAllSpecialties(req, res)),
   );
 
+  router.post(
+    "/generate-from-name",
+    asyncHandler((req, res) => controller.generateFromName(req, res)),
+  );
+
   router.get(
     "/:id",
     validate(journalIdParamsSchema, "params"),
