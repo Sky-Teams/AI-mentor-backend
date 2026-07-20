@@ -76,6 +76,11 @@ export const createAdminRouter = (
     asyncHandler((req, res) => controller.createJournal(req, res)),
   );
 
+  router.post(
+    "/journals/generate-from-name",
+    asyncHandler((req, res) => controller.generateJournalFromName(req, res)),
+  );
+
   // Subscription Routes
   router.get(
     "/subscriptions/requested-plans",

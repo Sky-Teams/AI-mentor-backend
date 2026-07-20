@@ -4,6 +4,7 @@ import { successResponse } from "../../../shared/http/api-response";
 import type { AdminService } from "../application/admin.service";
 import { SubscriptionService } from "src/modules/subscription/application/subscription.service";
 import { JournalService } from "src/modules/journal/application/journal.service.js";
+import { AppError } from "src/shared/errors/app-error.js";
 
 export class AdminController {
   public constructor(
@@ -90,5 +91,32 @@ export class AdminController {
   public async createJournal(req: Request, res: Response) {
     const journal = await this.journalService.createJournal(req.body);
     res.status(StatusCodes.CREATED).json(successResponse(journal));
+  }
+
+  public async generateJournalFromName(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const { journalName } = req.body as {
+      journalName?: string;
+    };
+
+    if (
+      !journalName ||
+      typeof journalName !== "string" ||
+      !journalName.trim()
+    ) {
+      throw new AppError(
+        "journalName is required",
+        400,
+        "JOURNAL_NAME_REQUIRED",
+      );
+    }
+
+    const generatedJournal = await this.journalService.generateJournalFromName({
+      journalName: journalName.trim(),
+    });
+
+    res.status(StatusCodes.OK).json(successResponse(generatedJournal));
   }
 }
