@@ -1,6 +1,8 @@
 import OpenAI from "openai";
+import { LengthFinishReasonError } from "openai/error";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
+import { StatusCodes } from "http-status-codes";
 import { env } from "src/shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
 import type { CreateJournalInput } from "src/shared/seed-data/journals";
@@ -62,6 +64,10 @@ You are generating a journal template for a medical case report workflow.
 Task:
 Create a JSON object matching the journal schema for the journal named "${journalName}".
 
+Rules:
+- Sections can have subsections, but subsections must NOT contain their own subsections.
+- Do not add a "subsections" field inside any subsection object.
+
 Requirements:
 - Return a complete journal payload with name, publisher, description, guidelinePack, and sections.
 - The sections should reflect a publication-ready case report structure appropriate for the journal.
@@ -92,22 +98,43 @@ export class OpenAiJournalGenerator {
 
     const context = buildJournalGenerationContext(input.journalName);
 
-    const response = await this.client.beta.chat.completions.parse({
-      model: env.OPENAI_MODEL,
-      temperature: 0.3,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You generate structured journal templates for medical case report workflows. Return strict JSON matching the schema.",
-        },
-        { role: "user", content: context.userPrompt },
-      ],
-      response_format: zodResponseFormat(
-        AiJournalGenerationSchema,
-        "journal_template_generation",
-      ),
-    });
+    let response;
+
+    try {
+      response = await this.client.beta.chat.completions.parse({
+        model: env.OPENAI_MODEL,
+        temperature: 0.3,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You generate structured journal templates for medical case report workflows. Return strict JSON matching the schema.",
+          },
+          { role: "user", content: context.userPrompt },
+        ],
+        response_format: zodResponseFormat(
+          AiJournalGenerationSchema,
+          "journal_template_generation",
+        ),
+      });
+    } catch (error: any) {
+      const isLengthError =
+        error?.name === "LengthFinishReasonError" ||
+        error?.type === "LengthFinishReasonError" ||
+        error?.message?.includes("length limit was reached");
+
+      const isContextTooLong = error?.code === "context_length_exceeded";
+
+      if (isLengthError || isContextTooLong) {
+        throw new AppError(
+          "The generated journal is too large for the AI response limit. Please try again.",
+          StatusCodes.UNPROCESSABLE_ENTITY,
+          "AI_RESPONSE_LIMIT_REACHED",
+        );
+      }
+
+      throw error;
+    }
 
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {
