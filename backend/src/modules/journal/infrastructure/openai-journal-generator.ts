@@ -68,6 +68,16 @@ Rules:
 - Sections can have subsections, but subsections must NOT contain their own subsections.
 - Do not add a "subsections" field inside any subsection object.
 
+guidelinePack field:
+- This must be a full instructional text (not a short label or code name) written for an AI reviewer, explaining how to review a case report section for this journal.
+- Write it in clear sections with headers, covering:
+  1. General expectations (case reporting principles, accuracy, no fabrication, tone)
+  2. Content quality (precision, clinical accuracy, no redundancy)
+  3. Review behavior (highlight gaps, give actionable feedback)
+  4. Section-specific expectations (tailor feedback to each section's role)
+  5. Output expectations (constructive, publication-focused feedback)
+- Length: multiple short paragraphs or bullet lists, not a single sentence.
+
 Requirements:
 - Return a complete journal payload with name, publisher, description, guidelinePack, and sections.
 - The sections should reflect a publication-ready case report structure appropriate for the journal.
