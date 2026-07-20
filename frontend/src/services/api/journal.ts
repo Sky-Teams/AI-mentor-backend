@@ -21,4 +21,12 @@ export const journalsApi = {
     );
     return unwrap(response.data);
   },
+
+  async generateFromName(input: { journalName: string }) {
+    const response = await apiClient.post<ApiSuccessResponse<Journal>>(
+      "/admin/journals/generate-from-name",
+      input,
+    );
+    return unwrap(response.data);
+  },
 };
