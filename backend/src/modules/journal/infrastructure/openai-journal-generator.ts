@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { LengthFinishReasonError } from "openai/error";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { StatusCodes } from "http-status-codes";
@@ -12,7 +11,6 @@ export const AiJournalGenerationSchema = z.object({
   publisher: z.string().min(1),
   description: z.string().min(1).optional(),
   guidelinePack: z.string().min(1),
-  specialtyId: z.string().min(1).optional(),
   sections: z.array(
     z.object({
       title: z.string().min(1),
@@ -157,7 +155,7 @@ export class OpenAiJournalGenerator {
 
     return {
       ...parsed,
-      specialtyId: parsed.specialtyId ?? "",
+      specialtyId: "",
       sections: parsed.sections.map((section, index) => ({
         ...section,
         sectionOrder: section.sectionOrder ?? index + 1,
