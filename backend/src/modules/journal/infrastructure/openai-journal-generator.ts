@@ -9,7 +9,7 @@ import type { CreateJournalInput } from "src/shared/seed-data/journals";
 export const AiJournalGenerationSchema = z.object({
   name: z.string().min(1),
   publisher: z.string().min(1),
-  description: z.string().min(1).optional(),
+  description: z.string().min(1).optional().default(""),
   guidelinePack: z.string().min(1),
   sections: z.array(
     z.object({
@@ -40,7 +40,6 @@ export const AiJournalGenerationSchema = z.object({
             ),
           }),
         )
-        .optional()
         .default([]),
     }),
   ),
