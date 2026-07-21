@@ -101,7 +101,7 @@ export const useJournalForm = () => {
               title: section.title || "",
               sectionPrompt: section.sectionPrompt || "",
               isOptional: section.isOptional ?? false,
-              maxChars: String(section.maxChars ?? 250),
+              maxWords: String(section.maxWords ?? 250),
               checklists: (section.checklists || []).map((checklist) => ({
                 id: createChecklist().id,
                 title: checklist.title || "",

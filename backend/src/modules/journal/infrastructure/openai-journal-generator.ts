@@ -4,7 +4,7 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { StatusCodes } from "http-status-codes";
 import { env } from "src/shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
-import type { CreateJournalInput } from "src/shared/seed-data/journals";
+import { CreateJournalInput } from "src/modules/journal/domain/journal.repository.js";
 
 export const AiJournalGenerationSchema = z.object({
   name: z.string().min(1),
@@ -16,7 +16,7 @@ export const AiJournalGenerationSchema = z.object({
       title: z.string().min(1),
       sectionOrder: z.number().int().min(1),
       isOptional: z.boolean().default(false),
-      maxChars: z.number().int().min(1),
+      maxWords: z.number().int().min(1),
       sectionPrompt: z.string().min(1),
       checklists: z.array(
         z.object({
@@ -29,7 +29,7 @@ export const AiJournalGenerationSchema = z.object({
           title: z.string().min(1),
           sectionOrder: z.number().int().min(1),
           isOptional: z.boolean().default(false),
-          maxChars: z.number().int().min(1),
+          maxWords: z.number().int().min(1),
           sectionPrompt: z.string().min(1),
           checklists: z.array(
             z.object({
@@ -158,7 +158,7 @@ export class OpenAiJournalGenerator {
         ...section,
         sectionOrder: section.sectionOrder ?? index + 1,
         isOptional: section.isOptional ?? false,
-        maxChars: section.maxChars,
+        maxWords: section.maxWords,
         checklists: section.checklists,
         subsections: section.subsections.map((subsection) => ({
           ...subsection,
