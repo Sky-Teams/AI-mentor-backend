@@ -5,6 +5,7 @@ import {
   Reference,
   referenceApi,
   ReferenceStyle,
+  referenceStyles,
   ReferenceStyles,
   ReferenceTypes,
 } from "../services/api/reference";
@@ -98,9 +99,9 @@ export const ReferencePage = () => {
               handleStyleChange(e.target.value as ReferenceStyle)
             }
           >
-            {ReferenceStyles.map((item, index) => (
-              <option value={item} key={index} disabled={isLoading}>
-                {isLoading ? "Loading..." : item}
+            {referenceStyles.map((item, index) => (
+              <option value={item.value} key={index} disabled={isLoading}>
+                {isLoading ? "Loading..." : item.title}
               </option>
             ))}
           </select>
@@ -118,7 +119,12 @@ export const ReferencePage = () => {
         {saveReferences.length > 0 ? (
           <ul className="saved-references-list">
             {saveReferences.map((item, index) => {
-              return <li key={item.id || index}>{item.text}</li>;
+              return (
+                <li
+                  key={item.id || index}
+                  dangerouslySetInnerHTML={{ __html: item.text }}
+                />
+              );
             })}
           </ul>
         ) : (
