@@ -1,11 +1,15 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
+import { promises } from "node:dns";
 import {
   CreatedJournal,
+  CreateJournalInput,
   JournalRepository,
+  UpdateJournalInput,
+  UpdateJournalSectionDefinition,
+  UpdateSectionChecklistsGroup,
 } from "src/modules/journal/domain/journal.repository.js";
 import { AppError } from "src/shared/errors/app-error.js";
-import { CreateJournalInput } from "src/shared/seed-data/journals.js";
 
 const mapJournal = (journal: any): CreatedJournal => ({
   id: journal.id,
@@ -29,7 +33,7 @@ const mapJournal = (journal: any): CreatedJournal => ({
     title: section.title,
     sectionOrder: section.sectionOrder,
     isOptional: section.isOptional,
-    maxChars: section.maxChars,
+    maxWords: section.maxWords,
     sectionPrompt: section.sectionPrompt,
     createdAt: section.createdAt,
     updatedAt: section.updatedAt,
@@ -47,8 +51,8 @@ const mapJournal = (journal: any): CreatedJournal => ({
         title: sub.title,
         sectionOrder: sub.sectionOrder,
         isOptional: sub.isOptional,
-        maxChars: sub.maxChars,
-        description: sub.description,
+        maxWords: sub.maxWords,
+        sectionPrompt: sub.sectionPrompt,
         createdAt: sub.createdAt,
         updatedAt: sub.updatedAt,
         checklists:
@@ -74,12 +78,27 @@ export class PrismaJournalRepository implements JournalRepository {
     });
   }
 
-  public async findById(
-    id: string,
-  ): Promise<{ id: string; name: string } | null> {
-    return this.prisma.journal.findFirst({
+  public async findById(id: string): Promise<CreatedJournal | null> {
+    const journal = await this.prisma.journal.findUnique({
       where: { id },
+      include: {
+        guidelinePack: true,
+        specialty: true,
+        sectionTemplates: {
+          where: { parentSectionId: null },
+          include: {
+            checklists: true,
+            subsections: {
+              include: { checklists: true },
+              orderBy: { sectionOrder: "asc" },
+            },
+          },
+          orderBy: { sectionOrder: "asc" },
+        },
+      },
     });
+
+    return journal ? mapJournal(journal) : null;
   }
 
   public async createJournal(
@@ -133,7 +152,7 @@ export class PrismaJournalRepository implements JournalRepository {
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
-              maxChars: section.maxChars,
+              maxWords: section.maxWords,
               sectionPrompt: section.sectionPrompt,
               checklists: {
                 create: section.checklists.map((checklist) => ({
@@ -178,7 +197,7 @@ export class PrismaJournalRepository implements JournalRepository {
               title: sub.title,
               sectionOrder: sub.sectionOrder,
               isOptional: sub.isOptional,
-              maxChars: sub.maxChars,
+              maxWords: sub.maxWords,
               sectionPrompt: sub.sectionPrompt,
             },
           });
@@ -214,5 +233,433 @@ export class PrismaJournalRepository implements JournalRepository {
     });
 
     return mapJournal(journal);
+  }
+
+  public async updateJournal(journalId: string, input: UpdateJournalInput) {
+    const journal = await this.prisma.journal.findUnique({
+      where: { id: journalId },
+      include: {
+        guidelinePack: true,
+      },
+    });
+
+    if (!journal) {
+      throw new AppError(
+        "Journal not found",
+        StatusCodes.NOT_FOUND,
+        "JOURNAL_NOT_FOUND",
+      );
+    }
+
+    return this.prisma.$transaction(async (transaction) => {
+      const journalUpdateData: any = {};
+      if (input.name !== undefined) journalUpdateData.name = input.name;
+      if (input.publisher !== undefined)
+        journalUpdateData.publisher = input.publisher;
+      if (input.description !== undefined)
+        journalUpdateData.description = input.description;
+      if (input.specialtyId !== undefined)
+        journalUpdateData.specialtyId = input.specialtyId;
+
+      if (input.specialtyId !== undefined) {
+        const specialty = await transaction.journalSpecialty.findUnique({
+          where: { id: input.specialtyId },
+        });
+
+        if (!specialty) {
+          throw new AppError(
+            "Specialty not found",
+            StatusCodes.NOT_FOUND,
+            "SPECIALTY_NOT_FOUND",
+          );
+        }
+      }
+
+      if (Object.keys(journalUpdateData).length > 0) {
+        await transaction.journal.update({
+          where: { id: journalId },
+          data: journalUpdateData,
+        });
+      }
+
+      if (input.guidelinePack !== undefined) {
+        await transaction.guidelinePack.update({
+          where: { id: journal.guidelinePackId },
+          data: {
+            rules: {
+              text: input.guidelinePack,
+            },
+          },
+        });
+      }
+
+      if (input.sections !== undefined) {
+        await this.syncSections(transaction, journalId, input.sections);
+      }
+
+      const updatedJournal = await transaction.journal.findUniqueOrThrow({
+        where: { id: journalId },
+        include: {
+          guidelinePack: true,
+          specialty: true,
+          sectionTemplates: {
+            where: { parentSectionId: null },
+            include: {
+              checklists: true,
+              subsections: {
+                include: {
+                  checklists: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return mapJournal(updatedJournal);
+    });
+  }
+
+  private async syncSections(
+    transaction: Prisma.TransactionClient,
+    journalId: string,
+    sections: UpdateJournalSectionDefinition[],
+  ) {
+    const updatedSections = sections.filter((section) => section.id);
+    const newSections = sections.filter((section) => !section.id);
+    const updatedSectionIds = updatedSections.map((section) => section.id!);
+
+    if (updatedSectionIds.length > 0) {
+      await transaction.journalSectionTemplate.deleteMany({
+        where: {
+          journalId,
+          parentSectionId: null,
+          id: { notIn: updatedSectionIds },
+        },
+      });
+    }
+
+    for (const section of updatedSections) {
+      const sectionData: any = {};
+      if (section.title !== undefined) sectionData.title = section.title;
+      if (section.sectionOrder !== undefined)
+        sectionData.sectionOrder = section.sectionOrder;
+      if (section.isOptional !== undefined)
+        sectionData.isOptional = section.isOptional;
+      if (section.sectionPrompt !== undefined)
+        sectionData.sectionPrompt = section.sectionPrompt;
+      if (section.maxWords !== undefined)
+        sectionData.maxWords = section.maxWords;
+
+      if (Object.keys(sectionData).length > 0) {
+        await transaction.journalSectionTemplate.update({
+          where: { id: section.id! },
+          data: sectionData,
+        });
+      }
+
+      await this.syncSectionChecklists(
+        transaction,
+        section.id!,
+        section.checklists,
+      );
+      await this.syncSubsections(
+        transaction,
+        journalId,
+        section.id!,
+        section.subsections,
+      );
+    }
+
+    for (const section of newSections) {
+      const createdSection = await transaction.journalSectionTemplate.create({
+        data: {
+          journalId,
+          key:
+            (section.title ?? "section") +
+            Math.floor(Math.random() * 900 + 100),
+          title: section.title ?? "",
+          sectionOrder: section.sectionOrder ?? 0,
+          isOptional: section.isOptional ?? false,
+          maxWords: section.maxWords ?? 0,
+          sectionPrompt: section.sectionPrompt,
+          checklists: section.checklists
+            ? {
+                create: section.checklists.map((checklist) => ({
+                  title: checklist.title,
+                  items: checklist.items ?? [],
+                })),
+              }
+            : undefined,
+        },
+      });
+
+      await this.syncSubsections(
+        transaction,
+        journalId,
+        createdSection.id,
+        section.subsections,
+      );
+    }
+  }
+
+  private async syncSectionChecklists(
+    transaction: Prisma.TransactionClient,
+    sectionId: string,
+    checklists?: UpdateSectionChecklistsGroup[],
+  ) {
+    if (checklists === undefined) return;
+
+    const updatedChecklists = checklists.filter((checklist) => checklist.id);
+    const newChecklists = checklists.filter((checklist) => !checklist.id);
+
+    for (const checklist of updatedChecklists) {
+      await transaction.sectionChecklist.update({
+        where: { id: checklist.id! },
+        data: {
+          ...(checklist.title !== undefined && { title: checklist.title }),
+          ...(checklist.items !== undefined && { items: checklist.items }),
+        },
+      });
+    }
+
+    if (newChecklists.length > 0) {
+      await transaction.sectionChecklist.createMany({
+        data: newChecklists.map((checklist) => ({
+          journalSectionTemplateId: sectionId,
+          title: checklist.title,
+          items: checklist.items ?? [],
+        })),
+      });
+    }
+
+    const updatedChecklistIds = updatedChecklists
+      .filter(
+        (
+          checklist,
+        ): checklist is UpdateSectionChecklistsGroup & { id: string } =>
+          Boolean(checklist.id),
+      )
+      .map((checklist) => checklist.id);
+
+    await transaction.sectionChecklist.deleteMany({
+      where: {
+        journalSectionTemplateId: sectionId,
+        id: { notIn: updatedChecklistIds },
+      },
+    });
+  }
+
+  private async syncSubsections(
+    transaction: Prisma.TransactionClient,
+    journalId: string,
+    parentSectionId: string,
+    subsections?: UpdateJournalSectionDefinition[],
+  ) {
+    if (subsections === undefined) return;
+
+    const updatedSubsections = subsections.filter((sub) => sub.id);
+    const newSubsections = subsections.filter((sub) => !sub.id);
+    const updatedSubsectionIds = updatedSubsections.map((sub) => sub.id!);
+
+    await transaction.journalSectionTemplate.deleteMany({
+      where: {
+        parentSectionId,
+        ...(updatedSubsectionIds.length > 0 && {
+          id: { notIn: updatedSubsectionIds },
+        }),
+      },
+    });
+
+    for (const subsection of updatedSubsections) {
+      const sectionData: any = {};
+      if (subsection.title !== undefined) sectionData.title = subsection.title;
+      if (subsection.sectionOrder !== undefined)
+        sectionData.sectionOrder = subsection.sectionOrder;
+      if (subsection.isOptional !== undefined)
+        sectionData.isOptional = subsection.isOptional;
+      if (subsection.sectionPrompt !== undefined)
+        sectionData.sectionPrompt = subsection.sectionPrompt;
+      if (subsection.maxWords !== undefined)
+        sectionData.maxWords = subsection.maxWords;
+
+      if (Object.keys(sectionData).length > 0) {
+        await transaction.journalSectionTemplate.update({
+          where: { id: subsection.id! },
+          data: sectionData,
+        });
+      }
+
+      await this.syncSectionChecklists(
+        transaction,
+        subsection.id!,
+        subsection.checklists,
+      );
+    }
+
+    for (const subsection of newSubsections) {
+      const createdSubsection = await transaction.journalSectionTemplate.create(
+        {
+          data: {
+            journalId,
+            parentSectionId,
+            key:
+              (subsection.title ?? "subsection") +
+              Math.floor(Math.random() * 900 + 1000),
+            title: subsection.title ?? "",
+            sectionOrder: subsection.sectionOrder ?? 0,
+            isOptional: subsection.isOptional ?? false,
+            maxWords: subsection.maxWords ?? 0,
+            sectionPrompt: subsection.sectionPrompt,
+            checklists: subsection.checklists
+              ? {
+                  create: subsection.checklists.map((checklist) => ({
+                    title: checklist.title,
+                    items: checklist.items ?? [],
+                  })),
+                }
+              : undefined,
+          },
+        },
+      );
+
+      if (subsection.subsections) {
+        await this.syncSubsections(
+          transaction,
+          journalId,
+          createdSubsection.id,
+          subsection.subsections,
+        );
+      }
+    }
+  }
+
+  public async updateJournalSectionsOrder(
+    journalId: string,
+    sentIds: Array<{ sectionId: string; subsectionIds?: string[] }>,
+  ): Promise<CreatedJournal> {
+    // 1) validate journal
+    const journal = await this.prisma.journal.findUnique({
+      where: { id: journalId },
+      include: {
+        sectionTemplates: {
+          orderBy: { sectionOrder: "asc" },
+          include: { subsections: true },
+        },
+      },
+    });
+
+    if (!journal) {
+      throw new AppError(
+        "Journal not found",
+        StatusCodes.NOT_FOUND,
+        "JOURNAL_NOT_FOUND",
+      );
+    }
+
+    // 2) Create real journal section ids
+    const realIds = journal?.sectionTemplates
+      .filter((section) => section.parentSectionId === null)
+      .map((section) => section.id);
+
+    // 3) Normalize sent ids
+    const normalizedSentIds = sentIds.map((section) => section.sectionId);
+
+    // 4) Validate in this function
+    await this.validateOrderList(normalizedSentIds, realIds);
+
+    // collect all update operations here (sections + subsections)
+    const updateOperations: any[] = [];
+
+    // 5) updates section order
+    normalizedSentIds.forEach((id, index) => {
+      updateOperations.push(
+        this.prisma.journalSectionTemplate.update({
+          where: { id },
+          data: { sectionOrder: index + 1 },
+        }),
+      );
+    });
+
+    // 6) update subsections orders
+    for (const item of sentIds) {
+      const sentSubIds = item.subsectionIds ?? [];
+      const matchingSection = journal.sectionTemplates.find(
+        (section) => section.id === item.sectionId,
+      );
+
+      const realSubIds =
+        matchingSection?.subsections.map((sub) => sub.id) ?? [];
+
+      // only update if there are subsections to check
+      if (sentSubIds.length > 0 || realSubIds.length > 0) {
+        await this.validateOrderList(sentSubIds, realSubIds);
+
+        sentSubIds.forEach((subId, index) => {
+          updateOperations.push(
+            this.prisma.journalSectionTemplate.update({
+              where: { id: subId },
+              data: { sectionOrder: index + 1 },
+            }),
+          );
+        });
+      }
+    }
+
+    // 7) Finally do all updates in transactions
+    await this.prisma.$transaction(updateOperations);
+
+    const updatedJournal = await this.prisma.journal.findUniqueOrThrow({
+      where: { id: journalId },
+      include: {
+        guidelinePack: true,
+        specialty: true,
+        sectionTemplates: {
+          orderBy: { sectionOrder: "asc" },
+          where: { parentSectionId: null },
+          include: {
+            checklists: true,
+            subsections: {
+              orderBy: { sectionOrder: "asc" },
+              include: {
+                checklists: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return mapJournal(updatedJournal);
+  }
+
+  // Created this helper function for cleaner code
+  private async validateOrderList(sentIds: string[], realIds: string[]) {
+    const uniqueIds = new Set(sentIds);
+    if (uniqueIds.size !== sentIds.length) {
+      throw new AppError(
+        "Duplicate id in list",
+        StatusCodes.BAD_REQUEST,
+        "DUPLICATE_ID",
+      );
+    }
+
+    if (sentIds.length !== realIds.length) {
+      throw new AppError(
+        "List count mismatch",
+        StatusCodes.BAD_REQUEST,
+        "LIST_COUNT_MISMATCH",
+      );
+    }
+
+    const realSet = new Set(realIds);
+    const allBelong = sentIds.every((id) => realSet.has(id));
+    if (!allBelong) {
+      throw new AppError(
+        "Invalid id in list",
+        StatusCodes.BAD_REQUEST,
+        "INVALID_ID",
+      );
+    }
   }
 }

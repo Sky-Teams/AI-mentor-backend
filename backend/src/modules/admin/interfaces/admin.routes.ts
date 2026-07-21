@@ -14,7 +14,12 @@ import {
   subscriptionRequestIdSchema,
   userIdSchema,
 } from "src/modules/subscription/interfaces/subscription.schema";
-import { createJournalSchema } from "src/modules/journal/interface/journal.schema.js";
+import {
+  createJournalSchema,
+  journalIdParamsSchema,
+  updateJournalSchema,
+  updateSectionsOrderSchema,
+} from "src/modules/journal/interface/journal.schema.js";
 
 export const createAdminRouter = (
   controller: AdminController,
@@ -81,6 +86,13 @@ export const createAdminRouter = (
     asyncHandler((req, res) => controller.generateJournalFromName(req, res)),
   );
 
+  router.put(
+    "/journals/:id",
+    validate(updateJournalSchema, "body"),
+    validate(journalIdParamsSchema, "params"),
+    asyncHandler((req, res) => controller.updateJournal(req, res)),
+  );
+
   // Subscription Routes
   router.get(
     "/subscriptions/requested-plans",
@@ -94,6 +106,13 @@ export const createAdminRouter = (
     validate(subscriptionRequestIdSchema, "params"),
     validate(userIdSchema, "body"),
     asyncHandler((req, res) => controller.approveRequestedPlan(req, res)),
+  );
+
+  router.put(
+    "/journals/:id/sections-order",
+    validate(updateSectionsOrderSchema, "body"),
+    validate(journalIdParamsSchema, "params"),
+    asyncHandler((req, res) => controller.updateJournalSectionsOrder(req, res)),
   );
 
   return router;

@@ -20,6 +20,18 @@ export const JournalPage = () => {
     setIsGenerateModalOpen(false);
   };
 
+  const handleAddSection = () => {
+    journalForm.addSection();
+    setTimeout(() => {
+      const sections =
+        document.querySelectorAll<HTMLElement>(".journal-section");
+      sections[sections.length - 1]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  };
+
   return (
     <form
       className="page-shell journal-page"
@@ -126,7 +138,7 @@ export const JournalPage = () => {
           </div>
           <button
             className="secondary-button"
-            onClick={journalForm.addSection}
+            onClick={handleAddSection}
             type="button"
           >
             + Add Section

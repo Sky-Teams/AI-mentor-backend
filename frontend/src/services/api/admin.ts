@@ -74,4 +74,27 @@ export const adminApi = {
     );
     return unwrap(response.data);
   },
+
+  async updateJournal(id: string, input: unknown): Promise<Journal> {
+    const response = await apiClient.put<ApiSuccessResponse<Journal>>(
+      `/admin/journals/${id}`,
+      input,
+    );
+    return unwrap(response.data);
+  },
+  async updateSectionsOrder(
+    journalId: string,
+    input: {
+      sectionIds: Array<{
+        sectionId: string;
+        subsectionIds?: string[];
+      }>;
+    },
+  ): Promise<Journal> {
+    const response = await apiClient.put<ApiSuccessResponse<Journal>>(
+      `/admin/journals/${journalId}/sections-order`,
+      input,
+    );
+    return unwrap(response.data);
+  },
 };

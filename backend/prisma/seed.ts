@@ -417,7 +417,7 @@ async function main() {
         sectionOrder: section.sectionOrder,
         isOptional: section.isOptional,
         sectionPrompt: section.sectionPrompt,
-        maxChars: section.maxChars,
+        maxWords: section.maxWords,
       },
     });
 
@@ -442,7 +442,7 @@ async function main() {
             sectionOrder: sub.sectionOrder,
             isOptional: sub.isOptional,
             sectionPrompt: sub.sectionPrompt,
-            maxChars: sub.maxChars,
+            maxWords: sub.maxWords,
           },
         });
 
@@ -510,7 +510,7 @@ async function main() {
         title: t.title,
         sectionOrder: t.sectionOrder,
         isOptional: t.isOptional,
-        maxChars: t.maxChars,
+        maxWords: t.maxWords,
       })),
     });
   }

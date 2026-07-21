@@ -1,5 +1,8 @@
-import { JournalRepository } from "src/modules/journal/domain/journal.repository.js";
-import { CreateJournalInput } from "src/shared/seed-data/journals.js";
+import {
+  CreateJournalInput,
+  JournalRepository,
+  UpdateJournalInput,
+} from "src/modules/journal/domain/journal.repository.js";
 import { OpenAiJournalGenerator } from "src/modules/journal/infrastructure/openai-journal-generator";
 
 export class JournalService {
@@ -18,6 +21,19 @@ export class JournalService {
 
   public async createJournal(journal: CreateJournalInput) {
     return this.journalRepository.createJournal(journal);
+  }
+  public async updateJournal(journalId: string, journal: UpdateJournalInput) {
+    return this.journalRepository.updateJournal(journalId, journal);
+  }
+
+  public async updateJournalSectionsOrder(
+    journalId: string,
+    sectionIds: Array<{ sectionId: string; subsectionIds?: string[] }>,
+  ) {
+    return this.journalRepository.updateJournalSectionsOrder(
+      journalId,
+      sectionIds,
+    );
   }
 
   public async generateJournalFromName(input: { journalName: string }) {

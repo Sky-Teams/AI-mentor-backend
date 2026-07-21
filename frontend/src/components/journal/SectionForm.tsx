@@ -115,6 +115,7 @@ export const SectionForm = ({
                 onUpdate({ ...section, title: event.target.value })
               }
               placeholder="Morning Reflection"
+              required
               value={section.title}
             />
           </label>
@@ -131,16 +132,16 @@ export const SectionForm = ({
           </label>
 
           <label className="field">
-            <span>Max Characters</span>
+            <span>Max Words</span>
             <input
               min={1}
               onChange={(event) =>
-                onUpdate({ ...section, maxChars: event.target.value })
+                onUpdate({ ...section, maxWords: event.target.value })
               }
-              placeholder="1000"
+              placeholder="150"
               required
               type="number"
-              value={section.maxChars}
+              value={section.maxWords}
             />
           </label>
         </div>
@@ -148,7 +149,6 @@ export const SectionForm = ({
         <label className="field">
           <span>Section AI Review Prompt</span>
           <textarea
-            required
             onChange={(event) =>
               onUpdate({ ...section, sectionPrompt: event.target.value })
             }
@@ -220,6 +220,7 @@ export const SectionForm = ({
                         })
                       }
                       placeholder="Subsection title"
+                      required
                       value={sub.title}
                     />
                   </label>
@@ -239,18 +240,19 @@ export const SectionForm = ({
                   </label>
 
                   <label className="field">
-                    <span>Max Characters</span>
+                    <span>Max Words</span>
                     <input
                       min={1}
                       onChange={(e) =>
                         updateSubsection(sub.id, {
                           ...sub,
-                          maxChars: e.target.value,
+                          maxWords: e.target.value,
                         })
                       }
-                      placeholder="500"
+                      placeholder="80"
                       type="number"
-                      value={sub.maxChars}
+                      value={sub.maxWords}
+                      required
                     />
                   </label>
                 </div>

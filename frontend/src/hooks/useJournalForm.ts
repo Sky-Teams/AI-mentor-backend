@@ -181,6 +181,11 @@ export const useJournalForm = () => {
     setError(null);
     setMessage(null);
 
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      return;
+    }
+
     const payload = buildJournalPayload(form);
 
     if (!payload.name || !payload.guidelinePack || !payload.specialtyId) {
@@ -191,7 +196,7 @@ export const useJournalForm = () => {
     // Mirrors the backend schema so users get a quick message before submit.
     if (journalPayloadHasEmptyNestedFields(payload)) {
       setError(
-        "Each section needs a title, max characters greater than 0, and each checklist needs at least one item.",
+        "Each section needs a title, max words greater than 0, and each checklist needs at least one item.",
       );
       return;
     }

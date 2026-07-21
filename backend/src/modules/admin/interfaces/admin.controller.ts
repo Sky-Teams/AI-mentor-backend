@@ -119,4 +119,28 @@ export class AdminController {
 
     res.status(StatusCodes.OK).json(successResponse(generatedJournal));
   }
+  public async updateJournal(req: Request, res: Response) {
+    const journal = await this.journalService.updateJournal(
+      req.params.id!,
+      req.body,
+    );
+    res.status(StatusCodes.OK).json(successResponse(journal));
+  }
+
+  public async updateJournalSectionsOrder(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const { id } = req.params as { id: string };
+    const { sectionIds } = req.body as {
+      sectionIds: Array<{ sectionId: string; subsectionIds?: string[] }>;
+    };
+
+    const journal = await this.journalService.updateJournalSectionsOrder(
+      id,
+      sectionIds,
+    );
+
+    res.status(StatusCodes.OK).json(successResponse(journal));
+  }
 }
