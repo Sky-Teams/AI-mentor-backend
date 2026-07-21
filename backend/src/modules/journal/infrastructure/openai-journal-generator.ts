@@ -9,7 +9,7 @@ import type { CreateJournalInput } from "src/shared/seed-data/journals";
 export const AiJournalGenerationSchema = z.object({
   name: z.string().min(1),
   publisher: z.string().min(1),
-  description: z.string().min(1).optional().default(""),
+  description: z.string().min(1),
   guidelinePack: z.string().min(1),
   sections: z.array(
     z.object({
@@ -24,23 +24,21 @@ export const AiJournalGenerationSchema = z.object({
           items: z.array(z.string().min(1)).min(1),
         }),
       ),
-      subsections: z
-        .array(
-          z.object({
-            title: z.string().min(1),
-            sectionOrder: z.number().int().min(1),
-            isOptional: z.boolean().default(false),
-            maxChars: z.number().int().min(1),
-            sectionPrompt: z.string().min(1),
-            checklists: z.array(
-              z.object({
-                title: z.string().nullable().default(null),
-                items: z.array(z.string().min(1)).min(1),
-              }),
-            ),
-          }),
-        )
-        .default([]),
+      subsections: z.array(
+        z.object({
+          title: z.string().min(1),
+          sectionOrder: z.number().int().min(1),
+          isOptional: z.boolean().default(false),
+          maxChars: z.number().int().min(1),
+          sectionPrompt: z.string().min(1),
+          checklists: z.array(
+            z.object({
+              title: z.string().nullable().default(null),
+              items: z.array(z.string().min(1)).min(1),
+            }),
+          ),
+        }),
+      ),
     }),
   ),
 });
@@ -64,6 +62,7 @@ Create a JSON object matching the journal schema for the journal named "${journa
 Rules:
 - Sections can have subsections, but subsections must NOT contain their own subsections.
 - Do not add a "subsections" field inside any subsection object.
+- subsections must always be included, use empty array [] if none. description is required too.
 
 guidelinePack field:
 - This must be a full instructional text (not a short label or code name) written for an AI reviewer, explaining how to review a case report section for this journal.
