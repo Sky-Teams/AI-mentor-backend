@@ -28,6 +28,7 @@ export const mapCrossRefResponse = (items: {
   title?: string[];
   volume?: string;
   "container-title"?: string[];
+  "short-container-title"?: string[];
   published?: Parameters<typeof mapDatePublished>[0];
 }): JournalSearchResponse => {
   return {
@@ -41,6 +42,9 @@ export const mapCrossRefResponse = (items: {
     authors: items?.author ? items.author.map(mapAuthors) : [],
     journalName: items["container-title"]
       ? items["container-title"]?.[0]
+      : null,
+    journalNameAbbrev: items["short-container-title"]
+      ? items["short-container-title"]?.[0]
       : null,
     datePublished: items?.published ? mapDatePublished(items.published) : null,
   };
