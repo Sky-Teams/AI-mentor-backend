@@ -6,7 +6,6 @@ import {
   referenceApi,
   ReferenceStyle,
   referenceStyles,
-  ReferenceStyles,
   ReferenceTypes,
 } from "../services/api/reference";
 

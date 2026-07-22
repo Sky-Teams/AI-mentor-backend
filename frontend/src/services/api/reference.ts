@@ -14,6 +14,8 @@ export const ReferenceStyles = [
   "CHICAGO_AUTHOR_DATE",
   "CHICAGO_FULL_NOTE",
   "OSCOLA",
+  "AMA",
+  "AMERICAN_CHEMICAL_SOCIETY",
 ] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
@@ -33,6 +35,14 @@ export const referenceStyles = [
       "OSCOLA(Oxford University Standard for Citation of Legal Authorities)",
     value: "OSCOLA",
   },
+  {
+    title: "APA 7 (American Psychological Association 7th edition)",
+    value: "APA",
+  },
+  { title: "MLA 9 (Modern Language Association 9th edition)", value: "MLA" },
+  { title: "AMA (American Medical Association)", value: "AMA" },
+  { title: "American Chemical Society", value: "AMERICAN_CHEMICAL_SOCIETY" },
+  { title: "Vancouver", value: "VANCOUVER" },
 ];
 
 export interface Authors {

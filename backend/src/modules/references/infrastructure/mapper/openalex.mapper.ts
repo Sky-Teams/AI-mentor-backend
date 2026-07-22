@@ -15,7 +15,10 @@ export const mapOpenAlexResponse = (items: any): JournalSearchResponse => {
     publisher: items?.primary_location?.source?.publisher || null,
     issue: items?.biblio?.issue || null,
     page: items?.biblio?.first_page
-      ? `${items.biblio.first_page}-${items.biblio?.last_page || ""}`
+      ? items?.biblio?.last_page &&
+        items?.biblio?.first_page !== items?.biblio?.last_page
+        ? `${items.biblio.first_page}-${items.biblio?.last_page || ""}`
+        : items?.biblio?.first_page
       : null,
     title: items?.title || null,
     volume: items?.biblio?.volume || null,

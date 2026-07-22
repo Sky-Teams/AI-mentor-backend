@@ -11,6 +11,8 @@ export const ReferenceStyles = [
   "CHICAGO_AUTHOR_DATE",
   "CHICAGO_FULL_NOTE",
   "OSCOLA",
+  "AMA",
+  "AMERICAN_CHEMICAL_SOCIETY",
 ] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
