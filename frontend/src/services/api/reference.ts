@@ -5,8 +5,25 @@ export const ReferenceValue = ["JOURNAL"] as const;
 
 export type ReferenceTypes = (typeof ReferenceValue)[number];
 
-export const ReferenceStyles = ["APA", "MLA", "VANCOUVER"] as const;
+export const ReferenceStyles = [
+  "APA",
+  "MLA",
+  "VANCOUVER",
+  "AMA",
+  "AMERICAN_CHEMICAL_SOCIETY",
+] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
+
+export const referenceStyles = [
+  {
+    title: "APA 7 (American Psychological Association 7th edition)",
+    value: "APA",
+  },
+  { title: "MLA 9 (Modern Language Association 9th edition)", value: "MLA" },
+  { title: "AMA (American Medical Association)", value: "AMA" },
+  { title: "American Chemical Society", value: "AMERICAN_CHEMICAL_SOCIETY" },
+  { title: "Vancouver", value: "VANCOUVER" },
+];
 
 export interface Authors {
   firstName: string;
@@ -23,6 +40,7 @@ export interface JournalSearchResponse {
   title?: string | null;
   authors?: Authors[];
   journalName?: string | null;
+  journalNameAbbrev?: string | null;
   datePublished?: string | null;
 }
 

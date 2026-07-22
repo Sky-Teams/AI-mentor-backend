@@ -2,7 +2,13 @@ export const ReferenceValue = ["JOURNAL"] as const;
 
 export type ReferenceTypes = (typeof ReferenceValue)[number];
 
-export const ReferenceStyles = ["APA", "MLA", "VANCOUVER"] as const;
+export const ReferenceStyles = [
+  "APA",
+  "MLA",
+  "VANCOUVER",
+  "AMA",
+  "AMERICAN_CHEMICAL_SOCIETY",
+] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
 export interface Authors {
@@ -13,6 +19,7 @@ export interface Authors {
 export interface JournalSearchResponse {
   id: string;
   publisher?: string | null;
+  journalNameAbbrev?: string | null;
   doi?: string | null;
   issue?: string | null;
   volume?: string | null;

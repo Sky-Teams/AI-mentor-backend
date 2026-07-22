@@ -54,12 +54,14 @@ import { SubscriptionService } from "./modules/subscription/application/subscrip
 import { SubscriptionController } from "./modules/subscription/interfaces/subscription.controller";
 import { createSubscriptionRouter } from "./modules/subscription/interfaces/subscription.routes";
 import { ReferenceFormatterService } from "./modules/references/application/reference.formatter.service";
-import { APAFormatter } from "./modules/references/infrastructure/formatters/APAFormatter";
-import { MLAFormatter } from "./modules/references/infrastructure/formatters/MLAFormatter";
-import { VancouverFormatter } from "./modules/references/infrastructure/formatters/VancouverFormatter";
+import { APAFormatter } from "./modules/references/infrastructure/formatters/apa.formatter";
+import { MLAFormatter } from "./modules/references/infrastructure/formatters/mla.formatter";
+import { VancouverFormatter } from "./modules/references/infrastructure/formatters/vancouver.formatter";
 import { UserService } from "./modules/users/application/user.service";
 import { UserController } from "./modules/users/interfaces/user.controller";
 import { createUserRoute } from "./modules/users/interfaces/user.routes";
+import { AMAFormatter } from "./modules/references/infrastructure/formatters/ama.formatter";
+import { AmericaChemicalSocietyFormatter } from "./modules/references/infrastructure/formatters/american.chemical.society.formatter";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -107,10 +109,14 @@ export const createApp = (): express.Express => {
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
   const vancouver = new VancouverFormatter();
+  const ama = new AMAFormatter();
+  const americanChemicalSociety = new AmericaChemicalSocietyFormatter();
   const referenceFormatterService = new ReferenceFormatterService(
     apa,
     mla,
     vancouver,
+    ama,
+    americanChemicalSociety,
   );
   const referenceService = new ReferenceSearchService(journalReferenceService);
   const subscriptionService = new SubscriptionService(

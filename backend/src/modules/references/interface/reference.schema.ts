@@ -35,6 +35,7 @@ const journalSchema = z.object({
     title: z.string().min(1).nullable().optional(),
     journalName: z.string().min(1).nullable().optional(),
     datePublished: z.string().min(1).nullable().optional(),
+    journalNameAbbrev: z.string().min(1).nullable().optional(),
   }),
 });
 
