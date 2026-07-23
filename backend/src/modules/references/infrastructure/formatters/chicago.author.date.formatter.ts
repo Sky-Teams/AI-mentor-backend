@@ -90,6 +90,9 @@ export class ChicagoAuthorDateFormatter {
 
     if (listOfPages[0]?.length !== listOfPages[1]?.length) return pages;
 
+    if (listOfPages[0]?.length! <= 2 && listOfPages[1]?.length! <= 2)
+      return pages;
+
     let sharedIndex = 0;
 
     const start = listOfPages[0];

@@ -63,7 +63,7 @@ export class ChicagoFullNoteFormatter {
       return `${author.firstName} ${author.lastName}`;
     });
 
-    if (formatted.length === 1) return `${formatted},`;
+    if (formatted.length === 1) return `${formatted[0]},`;
 
     if (formatted.length > 3) return `${formatted[0]} et al.,`;
 
@@ -84,6 +84,9 @@ export class ChicagoFullNoteFormatter {
       return listOfPages[0];
 
     if (listOfPages[0]?.length !== listOfPages[1]?.length) return pages;
+
+    if (listOfPages[0]?.length! <= 2 && listOfPages[1]?.length! <= 2)
+      return pages;
 
     let sharedIndex = 0;
 
