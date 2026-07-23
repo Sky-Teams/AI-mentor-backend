@@ -85,12 +85,9 @@ export class HarvardFormatter {
       return `${author.lastName}, ${initials}.`;
     });
 
-    if (formatted.length === 1) return formatted;
+    if (formatted.length === 1) return formatted[0];
 
     let lastAuthor = formatted.pop();
-    if (formatted.length === 2 || formatted.length === 3) {
-      return `${formatted.join(", ")} and ${lastAuthor}`;
-    }
 
     return `${formatted.join(", ")} and ${lastAuthor}`;
   }
@@ -103,9 +100,6 @@ export class HarvardFormatter {
     const listOfPages = pages.split("-");
     if (listOfPages.length === 2 && listOfPages[0] === listOfPages[1])
       return `p. ${listOfPages[0]}`;
-
-    if (listOfPages.length === 2 && listOfPages[0] !== listOfPages[1])
-      return `pp. ${pages}`;
 
     return `pp. ${pages}`;
   }

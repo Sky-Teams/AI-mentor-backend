@@ -76,7 +76,7 @@ export class IEEEFormatter {
       return `${initials}. ${author.lastName}`;
     });
 
-    if (formatted.length === 1) return `${formatted},`;
+    if (formatted.length === 1) return `${formatted[0]},`;
 
     let lastAuthor = formatted.pop();
 
@@ -93,9 +93,6 @@ export class IEEEFormatter {
     const listOfPages = pages.split("-");
     if (listOfPages.length === 2 && listOfPages[0] === listOfPages[1])
       return `p. ${listOfPages[0]}`;
-
-    if (listOfPages.length === 2 && listOfPages[0] !== listOfPages[1])
-      return `pp. ${pages}`;
 
     return `pp. ${pages}`;
   }
