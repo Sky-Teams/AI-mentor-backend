@@ -78,9 +78,9 @@ export class IEEEFormatter {
 
     if (formatted.length === 1) return `${formatted[0]},`;
 
-    let lastAuthor = formatted.pop();
+    if (formatted.length > 6) return `${formatted[0]} <i>et al.,</i>`;
 
-    if (formatted.length >= 6) return `${formatted[0]} <i>et al.,</i>`;
+    let lastAuthor = formatted.pop();
 
     return `${formatted.join(", ")}, and ${lastAuthor},`;
   }
