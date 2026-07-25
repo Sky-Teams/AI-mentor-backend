@@ -27,6 +27,7 @@ export const createProjectRouter = (
       controller.listProjects(request, response),
     ),
   );
+
   router.post(
     "/",
     validate(createProjectSchema),
@@ -88,14 +89,6 @@ export const createProjectRouter = (
     "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
     validate(toggleSectionChecklistItemSchema, "params"),
     asyncHandler((req, res) => controller.toggleSectionChecklistItem(req, res)),
-  );
-
-  router.get(
-    "/archived",
-    validate(projectStatusQuerySchema),
-    asyncHandler((request, response) =>
-      controller.listProjects(request, response),
-    ),
   );
 
   return router;
