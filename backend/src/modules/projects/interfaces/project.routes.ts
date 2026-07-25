@@ -7,6 +7,7 @@ import type { ProjectController } from "./project.controller";
 import {
   createProjectSchema,
   projectIdParamsSchema,
+  projectStatusQuerySchema,
   sectionParamsSchema,
   toggleSectionChecklistItemSchema,
   updateProjectSchema,
@@ -87,6 +88,14 @@ export const createProjectRouter = (
     "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
     validate(toggleSectionChecklistItemSchema, "params"),
     asyncHandler((req, res) => controller.toggleSectionChecklistItem(req, res)),
+  );
+
+  router.get(
+    "/archived",
+    validate(projectStatusQuerySchema),
+    asyncHandler((request, response) =>
+      controller.listProjects(request, response),
+    ),
   );
 
   return router;
