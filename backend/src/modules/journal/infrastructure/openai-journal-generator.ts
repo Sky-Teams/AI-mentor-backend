@@ -48,6 +48,16 @@ export interface JournalGenerationContext {
   userPrompt: string;
 }
 
+const isSchemaValidationError = (error: unknown): boolean => {
+  const apiError = error as { code?: string; message?: string };
+  return (
+    apiError?.code === "json_validate_failed" ||
+    apiError?.message?.includes(
+      "Generated JSON does not match the expected schema",
+    ) === true
+  );
+};
+
 export const buildJournalGenerationContext = (
   journalName: string,
 ): JournalGenerationContext => {
@@ -63,6 +73,7 @@ Rules:
 - Sections can have subsections, but subsections must NOT contain their own subsections.
 - Do not add a "subsections" field inside any subsection object.
 - subsections must always be included, use empty array [] if none. description is required too.
+- Every item in a section's "subsections" array must be one complete subsection object. Never put field names, labels, punctuation, or strings directly in that array.
 
 guidelinePack field:
 - This must be a full instructional text (not a short label or code name) written for an AI reviewer, explaining how to review a case report section for this journal.
@@ -114,7 +125,7 @@ export class OpenAiJournalGenerator {
           {
             role: "system",
             content:
-              "You generate structured journal templates for medical case report workflows. Return strict JSON matching the schema.",
+              "You generate structured journal templates for medical case report workflows. Return only a JSON object that conforms exactly to the supplied schema. In particular, each `subsections` array must contain only objects matching the subsection schema; use [] when there are no subsections.",
           },
           { role: "user", content: context.userPrompt },
         ],
@@ -139,6 +150,14 @@ export class OpenAiJournalGenerator {
         );
       }
 
+      if (isSchemaValidationError(error)) {
+        throw new AppError(
+          "The AI returned an invalid journal template. Please try again.",
+          StatusCodes.BAD_GATEWAY,
+          "AI_SCHEMA_VALIDATION_FAILED",
+        );
+      }
+
       throw error;
     }
 
@@ -146,7 +165,7 @@ export class OpenAiJournalGenerator {
     if (!parsed) {
       throw new AppError(
         "OpenAI journal generation response could not be parsed.",
-        502,
+        StatusCodes.BAD_GATEWAY,
         "OPENAI_PARSE_ERROR",
       );
     }
