@@ -229,11 +229,15 @@ export class PrismaProjectRepository implements ProjectRepository {
     return mapProject(project);
   }
 
-  public async listProjectsByOwner(ownerId: string): Promise<Project[]> {
+  public async listProjectsByOwner(
+    ownerId: string,
+    status?: Project["status"],
+  ): Promise<Project[]> {
     const projects = await this.prisma.project.findMany({
       where: {
         ownerId,
         deletedAt: null,
+        ...(status ? { status } : {}),
       },
       include: {
         journal: {
@@ -327,7 +331,6 @@ export class PrismaProjectRepository implements ProjectRepository {
       },
       data: {
         status: "ARCHIVED",
-        deletedAt: new Date(),
       },
     });
   }
