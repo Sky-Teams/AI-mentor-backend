@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { projectStatuses } from "../domain/project";
+import { ProjectStatus } from "@prisma/client";
 
 export const projectIdParamsSchema = z.object({
   projectId: z.string().min(1),
@@ -34,4 +35,8 @@ export const toggleSectionChecklistItemSchema = z.object({
   sectionKey: z.string(),
   checklistId: z.string(),
   itemIndex: z.coerce.number().int().min(0),
+});
+
+export const projectStatusQuerySchema = z.object({
+  status: z.enum(projectStatuses).optional(),
 });
