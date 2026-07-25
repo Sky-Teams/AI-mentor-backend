@@ -17,6 +17,7 @@ import {
 import {
   createJournalSchema,
   journalIdParamsSchema,
+  journalNameSchema,
   updateJournalSchema,
   updateSectionsOrderSchema,
 } from "src/modules/journal/interface/journal.schema.js";
@@ -83,6 +84,7 @@ export const createAdminRouter = (
 
   router.post(
     "/journals/generate-from-name",
+    validate(journalNameSchema),
     asyncHandler((req, res) => controller.generateJournalFromName(req, res)),
   );
 
