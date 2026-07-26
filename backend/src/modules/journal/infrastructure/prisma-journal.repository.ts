@@ -148,7 +148,7 @@ export class PrismaJournalRepository implements JournalRepository {
           specialtyId: specialty.id,
           sectionTemplates: {
             create: input.sections.map((section) => ({
-              key: section.title + Math.floor(Math.random() * 900 + 100),
+              key: section.title.toUpperCase(),
               title: section.title,
               sectionOrder: section.sectionOrder,
               isOptional: section.isOptional,
