@@ -6,7 +6,7 @@ import { ReviewPanel } from "../components/ReviewPanel";
 import { SectionChecklistPanel } from "../components/SectionChecklistPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
-import type { ProjectSection, ReviewRun } from "../types/api";
+import type { ProjectSection, ReviewRun, SectionContent } from "../types/api";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -16,7 +16,10 @@ export const SectionEditorPage = () => {
   const [section, setSection] = useState<ProjectSection | null>(null);
   const [allSections, setAllSections] = useState<ProjectSection[]>([]);
   const [reviews, setReviews] = useState<ReviewRun[]>([]);
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState<SectionContent>({
+    text: "",
+    references: [],
+  });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
@@ -73,7 +76,7 @@ export const SectionEditorPage = () => {
   );
 
   // Check if user made changes
-  const hasUnsavedChanges = section && section.content !== content;
+  const hasUnsavedChanges = section && section.content.text !== content?.text;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -168,7 +171,7 @@ export const SectionEditorPage = () => {
             className="primary-button"
             onClick={handleReview}
             type="button"
-            disabled={content.length === 0}
+            disabled={!content || content.text.length === 0}
           >
             {isReviewing ? "Reviewing..." : "Trigger Review"}
           </button>
@@ -190,14 +193,21 @@ export const SectionEditorPage = () => {
               </div>
               <textarea
                 style={
-                  (section?.maxWords as number) < countWords(content)
+                  (section?.maxWords as number) < countWords(content.text || "")
                     ? { border: "1px solid red", outline: "none" }
                     : { outline: "none" }
                 }
                 className="editor-area"
-                onChange={(event) => setContent(event.target.value)}
+                onChange={(event) =>
+                  setContent((prev) => ({ ...prev, text: event.target.value }))
+                }
                 rows={10}
-                value={content}
+                value={
+                  content.text ||
+                  content.references
+                    .map((ref) => ref.formattedText)
+                    .join("\n\n")
+                }
               />
               <span
                 style={{
@@ -210,7 +220,7 @@ export const SectionEditorPage = () => {
                 Max words {section?.maxWords}
               </span>
               <span className="badge" style={{ float: "right" }}>
-                {countWords(content)} Words
+                {countWords(content.text || "")} Words
               </span>
             </div>
 
@@ -253,7 +263,7 @@ export const SectionEditorPage = () => {
                     {sub.status} {sub.isOptional ? "· Optional" : ""}
                   </p>
                 </div>
-                <span>{sub.content.trim().length} Words</span>
+                <span>{sub.content.text.trim().length} Words</span>
               </Link>
             ))}
           </div>
@@ -262,7 +272,7 @@ export const SectionEditorPage = () => {
 
       <ParaphrasePanel
         sectionId={sectionId}
-        content={content}
+        content={content.text}
         sectionKey={sectionKey}
         onSaveSuccess={loadData}
       />
