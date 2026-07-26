@@ -10,7 +10,6 @@ export const mapOpenAlexResponse = (items: any): JournalSearchResponse => {
   let abbrevName =
     items?.primary_location?.source?.abbreviated_title ||
     items?.primary_location?.source?.display_name;
-
   return {
     id: crypto.randomUUID(),
     publisher: items?.primary_location?.source?.publisher || null,

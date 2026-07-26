@@ -9,12 +9,32 @@ export const ReferenceStyles = [
   "APA",
   "MLA",
   "VANCOUVER",
+  "HARVARD",
+  "IEEE",
+  "CHICAGO_AUTHOR_DATE",
+  "CHICAGO_FULL_NOTE",
+  "OSCOLA",
   "AMA",
   "AMERICAN_CHEMICAL_SOCIETY",
 ] as const;
 export type ReferenceStyle = (typeof ReferenceStyles)[number];
 
 export const referenceStyles = [
+  { title: "Harvard", value: "HARVARD" },
+  { title: "IEEE", value: "IEEE" },
+  {
+    title: "Chicago Manual of Style 18th edition (author-date)",
+    value: "CHICAGO_AUTHOR_DATE",
+  },
+  {
+    title: "Chicago Manual of Style 18th edition (full note)",
+    value: "CHICAGO_FULL_NOTE",
+  },
+  {
+    title:
+      "OSCOLA(Oxford University Standard for Citation of Legal Authorities)",
+    value: "OSCOLA",
+  },
   {
     title: "APA 7 (American Psychological Association 7th edition)",
     value: "APA",

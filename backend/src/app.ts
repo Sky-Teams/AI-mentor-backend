@@ -60,6 +60,11 @@ import { VancouverFormatter } from "./modules/references/infrastructure/formatte
 import { UserService } from "./modules/users/application/user.service";
 import { UserController } from "./modules/users/interfaces/user.controller";
 import { createUserRoute } from "./modules/users/interfaces/user.routes";
+import { HarvardFormatter } from "./modules/references/infrastructure/formatters/harvard.formatter";
+import { IEEEFormatter } from "./modules/references/infrastructure/formatters/IEEE.formatter";
+import { ChicagoAuthorDateFormatter } from "./modules/references/infrastructure/formatters/chicago.author.date.formatter";
+import { ChicagoFullNoteFormatter } from "./modules/references/infrastructure/formatters/chicago.full.note.formatter";
+import { OSCOLAFormatter } from "./modules/references/infrastructure/formatters/OSCOLA.formatter";
 import { AMAFormatter } from "./modules/references/infrastructure/formatters/ama.formatter";
 import { AmericaChemicalSocietyFormatter } from "./modules/references/infrastructure/formatters/american.chemical.society.formatter";
 
@@ -109,12 +114,22 @@ export const createApp = (): express.Express => {
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
   const vancouver = new VancouverFormatter();
+  const harvard = new HarvardFormatter();
+  const ieee = new IEEEFormatter();
+  const chicagoAuthorDate = new ChicagoAuthorDateFormatter();
+  const chicagoFullNote = new ChicagoFullNoteFormatter();
+  const oscola = new OSCOLAFormatter();
   const ama = new AMAFormatter();
   const americanChemicalSociety = new AmericaChemicalSocietyFormatter();
   const referenceFormatterService = new ReferenceFormatterService(
     apa,
     mla,
     vancouver,
+    harvard,
+    ieee,
+    chicagoAuthorDate,
+    chicagoFullNote,
+    oscola,
     ama,
     americanChemicalSociety,
   );

@@ -6,6 +6,11 @@ export const ReferenceStyles = [
   "APA",
   "MLA",
   "VANCOUVER",
+  "HARVARD",
+  "IEEE",
+  "CHICAGO_AUTHOR_DATE",
+  "CHICAGO_FULL_NOTE",
+  "OSCOLA",
   "AMA",
   "AMERICAN_CHEMICAL_SOCIETY",
 ] as const;
@@ -18,8 +23,8 @@ export interface Authors {
 
 export interface JournalSearchResponse {
   id: string;
-  publisher?: string | null;
   journalNameAbbrev?: string | null;
+  publisher?: string | null;
   doi?: string | null;
   issue?: string | null;
   volume?: string | null;
