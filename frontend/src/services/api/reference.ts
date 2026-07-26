@@ -33,6 +33,13 @@ export interface CreateReferenceInput {
   type: ReferenceTypes;
 }
 
+export interface LocalReferences {
+  id: string;
+  text: string;
+  raw: (CreateReferenceInput & { formattedText: string })[];
+  type: ReferenceTypes;
+}
+
 export const referenceApi = {
   async getReferences(
     input: { doi?: string; title?: string },
@@ -59,4 +66,32 @@ export const referenceApi = {
 
     return unwrap(response.data);
   },
+};
+
+/** Functions for save references to local storage */
+export const STORAGE_KEY = "references";
+
+export const getReferences = (): LocalReferences[] => {
+  const data = localStorage.getItem(STORAGE_KEY);
+  if (!data) return [];
+
+  return JSON.parse(data);
+};
+
+export const saveReference = (reference: LocalReferences[]) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reference));
+};
+
+export const addReference = (reference: LocalReferences) => {
+  const references = getReferences();
+
+  const exist = references.map((item) =>
+    item.raw.some((i) => i.reference.id === reference.id),
+  );
+  if (exist) return exist;
+
+  references.push(reference);
+
+  saveReference(references);
+  return reference;
 };
