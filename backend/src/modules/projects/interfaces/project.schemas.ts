@@ -25,7 +25,10 @@ export const updateProjectSchema = z.object({
 });
 
 export const updateSectionSchema = z.object({
-  content: z.string().max(60000),
+  content: z.object({
+    text: z.string().optional(),
+    references: z.array(z.any()).default([]).optional(),
+  }),
   changeSummary: z.string().max(240).optional(),
 });
 
