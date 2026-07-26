@@ -2,6 +2,7 @@ import { ArticleType, PrismaClient, type Prisma } from "@prisma/client";
 import type {
   Project,
   ProjectSection,
+  SectionContent,
   SectionVersion,
   Specialty,
 } from "../domain/project";
@@ -13,13 +14,14 @@ import type {
 } from "../domain/project.repository";
 import { AppError } from "src/shared/errors/app-error.js";
 import { StatusCodes } from "http-status-codes";
+import { JsonValue } from "@prisma/client/runtime/library";
 
 const mapSection = (section: {
   id: string;
   projectId: string;
   key: string;
   title: string;
-  content: string;
+  content: JsonValue;
   sectionOrder: number;
   isOptional: boolean;
   maxWords: number;
@@ -33,7 +35,11 @@ const mapSection = (section: {
   key: section.key,
   maxWords: section.maxWords,
   title: section.title,
-  content: section.content,
+  content: {
+    text: (section.content as unknown as SectionContent)?.text ?? "",
+    references:
+      (section.content as unknown as SectionContent)?.references ?? [],
+  },
   sectionOrder: section.sectionOrder,
   isOptional: section.isOptional,
   status: section.status,
@@ -65,7 +71,7 @@ const mapProject = (project: {
     projectId: string;
     key: ProjectSection["key"];
     title: string;
-    content: string;
+    content: JsonValue;
     sectionOrder: number;
     isOptional: boolean;
     maxWords: number;
@@ -353,7 +359,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           return null;
         }
 
-        let contentWords = input.content.trim().split(/\s+/).length;
+        let contentWords = input.content.text.trim().split(/\s+/).length;
 
         if (section.maxWords < contentWords)
           throw new AppError(
@@ -375,7 +381,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           data: {
             sectionId: section.id,
             versionNumber: (latestVersion?.versionNumber ?? 0) + 1,
-            content: input.content,
+            content: input.content.text,
             changeSummary: input.changeSummary,
             editedById: input.ownerId,
           },
@@ -386,8 +392,12 @@ export class PrismaProjectRepository implements ProjectRepository {
             id: section.id,
           },
           data: {
-            content: input.content,
-            status: input.content.trim().length > 0 ? "DRAFT" : "NOT_STARTED",
+            content: {
+              text: input.content.text ?? "",
+              references: input.content.references ?? [],
+            } as unknown as Prisma.InputJsonValue,
+            status:
+              input.content.text.trim().length > 0 ? "DRAFT" : "NOT_STARTED",
             lastEditedAt: new Date(),
           },
         });
