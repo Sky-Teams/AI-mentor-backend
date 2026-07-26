@@ -74,7 +74,7 @@ export interface CreateReferenceInput {
 export interface LocalReferences {
   id: string;
   text: string;
-  raw: (CreateReferenceInput & { formattedText: string })[];
+  raw: Reference;
   type: ReferenceTypes;
 }
 
@@ -123,9 +123,7 @@ export const saveReference = (reference: LocalReferences[]) => {
 export const addReference = (reference: LocalReferences) => {
   const references = getReferences();
 
-  const exist = references.map((item) =>
-    item.raw.some((i) => i.reference.id === reference.id),
-  );
+  const exist = references.some((item) => item.raw.doi === reference.raw.doi);
   if (exist) return exist;
 
   references.push(reference);
