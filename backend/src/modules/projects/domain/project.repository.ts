@@ -1,6 +1,7 @@
 import type {
   Project,
   ProjectSection,
+  SectionContent,
   SectionVersion,
   Specialty,
 } from "./project";
@@ -26,7 +27,7 @@ export interface UpdateSectionInput {
   projectId: string;
   ownerId: string;
   sectionKey: ProjectSection["key"];
-  content: string;
+  content: SectionContent;
   changeSummary?: string;
 }
 

@@ -1,3 +1,5 @@
+import { CreateReferenceInput } from "src/modules/references/domain/reference";
+
 export const projectStatuses = [
   "DRAFT",
   "IN_REVIEW",
@@ -14,12 +16,17 @@ export const sectionStatuses = [
 ] as const;
 export type SectionStatus = (typeof sectionStatuses)[number];
 
+export type SectionContent = {
+  text: string;
+  references: Array<CreateReferenceInput & { formattedText: string }>;
+};
+
 export interface ProjectSection {
   id: string;
   projectId: string;
   key: string;
   title: string;
-  content: string;
+  content: SectionContent;
   sectionOrder: number;
   isOptional: boolean;
   status: SectionStatus;
