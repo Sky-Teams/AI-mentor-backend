@@ -8,6 +8,8 @@ import {
   referenceApi,
   ReferenceStyle,
   ReferenceStyles,
+  referenceStyles,
+  ReferenceTypes,
 } from "../services/api/reference";
 import { Project, SectionContent } from "../types/api";
 import { projectsApi } from "../services/api/projects";
@@ -62,7 +64,7 @@ export const ReferencePage = () => {
       const result = addReference(newReference as unknown as LocalReferences);
       if (typeof result === "boolean" && result === true)
         setMessage("Reference already exist.");
-      
+
       setSaveReferences(getReferences());
       setIsSearchBoxOpen(false);
     } catch (error: any) {
@@ -193,9 +195,9 @@ export const ReferencePage = () => {
               handleStyleChange(e.target.value as ReferenceStyle)
             }
           >
-            {ReferenceStyles.map((item, index) => (
-              <option value={item} key={index} disabled={isLoading}>
-                {isLoading ? "Loading..." : item}
+            {referenceStyles.map((item, index) => (
+              <option value={item.value} key={index} disabled={isLoading}>
+                {isLoading ? "Loading..." : item.title}
               </option>
             ))}
           </select>
@@ -215,7 +217,10 @@ export const ReferencePage = () => {
             {saveReferences.map((item, index) => {
               return (
                 <div key={item.id || index}>
-                  <li>{item.text}</li>
+                  <li
+                    key={item.id || index}
+                    dangerouslySetInnerHTML={{ __html: item.text }}
+                  />
                   <button
                     type="submit"
                     onClick={() => handleOpenProjectModal(item)}

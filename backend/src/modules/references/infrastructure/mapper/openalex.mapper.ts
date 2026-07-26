@@ -7,12 +7,18 @@ const mapOpenAlexAuthors = (item: any): Authors => ({
 
 export const mapOpenAlexResponse = (items: any): JournalSearchResponse => {
   const datePublished = items?.publication_date ? items.publication_date : null;
+  let abbrevName =
+    items?.primary_location?.source?.abbreviated_title ||
+    items?.primary_location?.source?.display_name;
   return {
     id: crypto.randomUUID(),
     publisher: items?.primary_location?.source?.publisher || null,
     issue: items?.biblio?.issue || null,
     page: items?.biblio?.first_page
-      ? `${items.biblio.first_page}-${items.biblio?.last_page || ""}`
+      ? items?.biblio?.last_page &&
+        items?.biblio?.first_page !== items?.biblio?.last_page
+        ? `${items.biblio.first_page}-${items.biblio?.last_page || ""}`
+        : items?.biblio?.first_page
       : null,
     title: items?.title || null,
     volume: items?.biblio?.volume || null,
@@ -22,6 +28,7 @@ export const mapOpenAlexResponse = (items: any): JournalSearchResponse => {
       : [],
     journalName: items?.primary_location?.source?.display_name || null,
     datePublished,
+    journalNameAbbrev: abbrevName || null,
   };
 };
 
