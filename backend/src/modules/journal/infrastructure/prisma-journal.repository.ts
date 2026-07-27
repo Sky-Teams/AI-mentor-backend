@@ -193,7 +193,7 @@ export class PrismaJournalRepository implements JournalRepository {
             data: {
               journalId: journal.id,
               parentSectionId: parentSection.id,
-              key: sub.title + Math.floor(Math.random() * 900 + 1000),
+              key: sub.title.toUpperCase(),
               title: sub.title,
               sectionOrder: sub.sectionOrder,
               isOptional: sub.isOptional,
@@ -375,9 +375,7 @@ export class PrismaJournalRepository implements JournalRepository {
       const createdSection = await transaction.journalSectionTemplate.create({
         data: {
           journalId,
-          key:
-            (section.title ?? "section") +
-            Math.floor(Math.random() * 900 + 100),
+          key: section.title?.toUpperCase() ?? "",
           title: section.title ?? "",
           sectionOrder: section.sectionOrder ?? 0,
           isOptional: section.isOptional ?? false,
@@ -503,9 +501,7 @@ export class PrismaJournalRepository implements JournalRepository {
           data: {
             journalId,
             parentSectionId,
-            key:
-              (subsection.title ?? "subsection") +
-              Math.floor(Math.random() * 900 + 1000),
+            key: subsection.title?.toUpperCase() ?? "",
             title: subsection.title ?? "",
             sectionOrder: subsection.sectionOrder ?? 0,
             isOptional: subsection.isOptional ?? false,
