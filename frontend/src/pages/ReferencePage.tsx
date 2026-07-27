@@ -22,10 +22,6 @@ export const ReferencePage = () => {
   const [message, setMessage] = useState("");
   const [listProjects, setListProjects] = useState<Project[]>([]);
   const [selectedReference, setSelectedReference] = useState<LocalReferences>();
-  const [content, setContent] = useState<SectionContent>({
-    text: "",
-    references: [],
-  });
 
   useEffect(() => {
     const references = getReferences();
@@ -110,6 +106,7 @@ export const ReferencePage = () => {
   const handleSaveToSectionReference = async (
     reference: LocalReferences,
     projectId: string,
+    style: ReferenceStyle,
   ) => {
     const project = await projectsApi.get(projectId);
 
@@ -122,22 +119,26 @@ export const ReferencePage = () => {
       setErrorMessage("References Section does not exist.");
       setMessage("");
       setIsOpenProjectModal(false);
-      return
+      return;
     }
 
     const oldContent = referenceSection?.content || {
       text: "",
-      references: [],
+      references: {
+        style: "APA",
+        items: [],
+      },
     };
-    const exist = oldContent.references.some(
-      (item) => item.reference.id === reference.id,
+
+    const exist = oldContent?.references?.items?.some(
+      (item) => item?.reference?.id === reference.id,
     );
 
     if (exist) {
       setIsOpenProjectModal(false);
       setErrorMessage("");
       setMessage("Reference already exists");
-      return
+      return;
     }
 
     try {
@@ -145,14 +146,17 @@ export const ReferencePage = () => {
         ...oldContent,
         references: exist
           ? oldContent.references
-          : [
-              ...oldContent.references,
-              {
-                reference: reference.raw,
-                type: reference.type,
-                formattedText: reference.text,
-              },
-            ],
+          : {
+              style: style,
+              items: [
+                ...(oldContent?.references?.items ?? []),
+                {
+                  reference: reference.raw,
+                  type: reference.type,
+                  formattedText: reference.text,
+                },
+              ],
+            },
       };
 
       await projectsApi.updateSection(projectId, "REFERENCES", {
@@ -161,7 +165,8 @@ export const ReferencePage = () => {
       setMessage("Reference add successfully");
       setIsOpenProjectModal(false);
     } catch (error: any) {
-      setErrorMessage(error);
+      console.log(error);
+      setErrorMessage(error || "Unexpected error");
     } finally {
       setIsOpenProjectModal(false);
     }
@@ -250,6 +255,7 @@ export const ReferencePage = () => {
                         handleSaveToSectionReference(
                           selectedReference,
                           item.id,
+                          currentStyle,
                         );
                       }}
                     >
