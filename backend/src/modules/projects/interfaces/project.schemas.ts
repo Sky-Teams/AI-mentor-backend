@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { projectStatuses } from "../domain/project";
+import { ReferenceStyles } from "src/modules/references/domain/reference";
+import { a } from "js-tiktoken/dist/core-71f59181";
 
 export const projectIdParamsSchema = z.object({
   projectId: z.string().min(1),
@@ -27,7 +29,12 @@ export const updateProjectSchema = z.object({
 export const updateSectionSchema = z.object({
   content: z.object({
     text: z.string().optional(),
-    references: z.array(z.any()).default([]).optional(),
+    references: z
+      .object({
+        style: z.enum(ReferenceStyles),
+        items: z.array(z.any()),
+      })
+      .optional(),
   }),
   changeSummary: z.string().max(240).optional(),
 });
