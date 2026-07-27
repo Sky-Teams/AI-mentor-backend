@@ -23,7 +23,7 @@ export const createProjectRouter = (
 
   router.get(
     "/",
-    validate(projectStatusQuerySchema, "query"),
+    validate(projectStatusQuerySchema),
     asyncHandler((request, response) =>
       controller.listProjects(request, response),
     ),

@@ -237,7 +237,7 @@ export class PrismaProjectRepository implements ProjectRepository {
       where: {
         ownerId,
         deletedAt: null,
-        ...(status ? { status } : {}),
+        ...(status ? { status } : { status: { not: "ARCHIVED" } }),
       },
       include: {
         journal: {
