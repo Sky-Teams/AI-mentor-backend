@@ -15,7 +15,7 @@ export class ProjectController {
 
     const projects = await this.projectService.listProjects(
       request.auth!.userId,
-      status,
+      status!,
     );
     response.status(StatusCodes.OK).json(successResponse(projects));
   }
