@@ -37,8 +37,7 @@ const mapSection = (section: {
   title: section.title,
   content: {
     text: (section.content as unknown as SectionContent)?.text ?? "",
-    references:
-      (section.content as unknown as SectionContent)?.references ?? [],
+    references: (section.content as unknown as SectionContent)?.references,
   },
   sectionOrder: section.sectionOrder,
   isOptional: section.isOptional,
@@ -394,7 +393,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           data: {
             content: {
               text: input.content.text ?? "",
-              references: input.content.references ?? [],
+              references: input.content.references ?? {},
             } as unknown as Prisma.InputJsonValue,
             status:
               input.content.text.trim().length > 0 ? "DRAFT" : "NOT_STARTED",

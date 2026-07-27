@@ -1,4 +1,7 @@
-import { CreateReferenceInput } from "src/modules/references/domain/reference";
+import {
+  CreateReferenceInput,
+  ReferenceStyle,
+} from "src/modules/references/domain/reference";
 
 export const projectStatuses = [
   "DRAFT",
@@ -18,7 +21,10 @@ export type SectionStatus = (typeof sectionStatuses)[number];
 
 export type SectionContent = {
   text: string;
-  references: Array<CreateReferenceInput & { formattedText: string }>;
+  references?: {
+    style: ReferenceStyle;
+    items: Array<CreateReferenceInput & { formattedText: string }>;
+  };
 };
 
 export interface ProjectSection {
