@@ -15,8 +15,11 @@ export class ProjectService {
     return this.projectRepository.createProject(input);
   }
 
-  public async listProjects(ownerId: string): Promise<Project[]> {
-    return this.projectRepository.listProjectsByOwner(ownerId);
+  public async listProjects(
+    ownerId: string,
+    status: Project["status"],
+  ): Promise<Project[]> {
+    return this.projectRepository.listProjectsByOwner(ownerId, status);
   }
 
   public async getProject(
