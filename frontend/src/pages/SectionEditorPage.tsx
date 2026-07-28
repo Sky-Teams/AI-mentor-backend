@@ -18,7 +18,6 @@ export const SectionEditorPage = () => {
   const [reviews, setReviews] = useState<ReviewRun[]>([]);
   const [content, setContent] = useState<SectionContent>({
     text: "",
-    references: [],
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -204,8 +203,8 @@ export const SectionEditorPage = () => {
                 rows={10}
                 value={
                   content.text ||
-                  content.references
-                    .map((ref) => ref.formattedText)
+                  content.references?.items
+                    ?.map((ref) => ref.formattedText)
                     .join("\n\n")
                 }
               />
@@ -272,7 +271,7 @@ export const SectionEditorPage = () => {
 
       <ParaphrasePanel
         sectionId={sectionId}
-        content={content.text}
+        content={content}
         sectionKey={sectionKey}
         onSaveSuccess={loadData}
       />

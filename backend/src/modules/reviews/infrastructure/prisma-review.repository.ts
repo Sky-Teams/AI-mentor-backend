@@ -1,5 +1,8 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
-import type { ProjectSection } from "../../projects/domain/project";
+import type {
+  ProjectSection,
+  SectionContent,
+} from "../../projects/domain/project";
 import type {
   ReadinessSnapshot,
   ReviewIssue,
@@ -440,7 +443,7 @@ export class PrismaReviewRepository implements ReviewRepository {
       projectId: section.projectId,
       key: section.key,
       title: section.title,
-      content: section.content,
+      content: section.content as unknown as SectionContent,
       sectionOrder: section.sectionOrder,
       maxWords: section.maxWords,
       isOptional: section.isOptional,

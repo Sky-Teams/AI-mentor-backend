@@ -47,8 +47,8 @@ export type SectionStatus = "NOT_STARTED" | "DRAFT" | "IN_REVIEW" | "READY";
 export type SectionContent = {
   text: string;
   references?: {
-    style: ReferenceStyle;
-    items: Array<CreateReferenceInput & { formattedText: string }>;
+    style?: ReferenceStyle;
+    items?: Array<CreateReferenceInput & { formattedText: string }>;
   };
 };
 export interface ProjectSection {

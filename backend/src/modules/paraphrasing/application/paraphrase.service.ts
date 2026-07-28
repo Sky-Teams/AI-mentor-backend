@@ -58,7 +58,7 @@ export class ParaphraseService {
       input.ownerId,
       input.projectId,
     );
-    if (!section.content.trim()) {
+    if (!section.content.text.trim()) {
       throw new AppError(
         "Section content is required before paraphrasing.",
         StatusCodes.BAD_REQUEST,
@@ -72,10 +72,10 @@ export class ParaphraseService {
     const promptTemplate = activePrompt?.templateText
       ? activePrompt.templateText
           .replace("{{tone}}", toneText)
-          .replace("{{content}}", section.content)
+          .replace("{{content}}", section.content.text)
       : PROMPT_TEMPLATE.PARAPHRASE.replace("{{tone}}", toneText).replace(
           "{{content}}",
-          section.content,
+          section.content.text,
         );
 
     const GuidelinePack =
@@ -96,7 +96,7 @@ export class ParaphraseService {
         section: {
           key: section.key,
           title: section.title,
-          content: section.content,
+          content: section.content.text,
         },
         promptTemplate,
         guidelineRules,
@@ -132,7 +132,7 @@ export class ParaphraseService {
       const execution = await this.sectionParaphrase.paraphraseSection({
         project,
         sectionId: section.id,
-        originalText: section.content,
+        originalText: section.content.text,
         tone: input.tone,
         preservedWords: input.preservedWords,
         lengthStrategy: input.lengthStrategy,
@@ -174,7 +174,7 @@ export class ParaphraseService {
         projectId: input.projectId,
         sectionId: section.id,
         initiatedById: input.ownerId,
-        originalText: section.content,
+        originalText: section.content.text,
         paraphrasedText: execution.result.paraphrasedText,
         grammarTips: execution.result.grammarTips ?? [],
         tone: execution.result.tone ?? input.tone,
