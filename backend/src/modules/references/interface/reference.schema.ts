@@ -14,7 +14,7 @@ export const queryReferenceSchema = z
     path: ["title"],
   });
 
-const authorSchema = z.object({
+export const authorSchema = z.object({
   firstName: z
     .string({ message: "First name is required" })
     .min(1, { message: "First name is required" }),
