@@ -1,4 +1,9 @@
-import { LengthStrategy, ParaphraseRun, ToneType } from "../types/api";
+import {
+  LengthStrategy,
+  ParaphraseRun,
+  SectionContent,
+  ToneType,
+} from "../types/api";
 import { paraphraseApi } from "../services/api/paraphrase";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -7,7 +12,7 @@ import { projectsApi } from "../services/api/projects";
 
 interface ParaphrasePanelProps {
   sectionId: string;
-  content: string;
+  content: SectionContent;
   sectionKey: string;
   onSaveSuccess?: () => void | Promise<void>;
 }
@@ -28,6 +33,7 @@ export const ParaphrasePanel = ({
   const [inputWords, setInputWords] = useState("");
   const [paraphrasedText, setParaphraseText] = useState("");
   const [isSavedContent, setIsSavedContent] = useState(false);
+  const [error, setError] = useState("");
   // no longer needed because history list is disabled
   // const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -68,6 +74,8 @@ export const ParaphrasePanel = ({
       // if (result) {
       //   setRefreshTrigger((prev) => prev + 1);
       // }
+    } catch (error: any) {
+      setError(error?.response?.data?.error?.message || "An error occurred.");
     } finally {
       setIsParaphrasing(false);
     }
@@ -85,14 +93,16 @@ export const ParaphrasePanel = ({
       const textToSave =
         paraphrasedText && paraphrasedText.trim() !== ""
           ? paraphrasedText
-          : content;
+          : content.text;
       await projectsApi.updateSection(projectId, sectionKey, {
-        content: textToSave,
+        content: { text: textToSave },
         changeSummary: "Saved change",
       });
       if (onSaveSuccess) {
         await onSaveSuccess();
       }
+    } catch (error: any) {
+      setError(error?.response?.data?.error?.message || "An error occurred.");
     } finally {
       setIsSavedContent(false);
     }
@@ -103,7 +113,7 @@ export const ParaphrasePanel = ({
         <div className="paraphrase-header">
           <h3>Paraphrase this section</h3>
         </div>
-
+        {error && <p className="error-text">{error}</p>}
         <div className="card">
           <div className="paraphrase-wrapper">
             <div className="tone-wrapper">
