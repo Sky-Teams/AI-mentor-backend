@@ -67,6 +67,10 @@ import { ChicagoFullNoteFormatter } from "./modules/references/infrastructure/fo
 import { OSCOLAFormatter } from "./modules/references/infrastructure/formatters/OSCOLA.formatter";
 import { AMAFormatter } from "./modules/references/infrastructure/formatters/ama.formatter";
 import { AmericaChemicalSocietyFormatter } from "./modules/references/infrastructure/formatters/american.chemical.society.formatter";
+import { APACitationFormatter } from "./modules/citation/infrastructure/formatters/apa.formatter";
+import { CitationFormatterService } from "./modules/citation/application/citation.formatter.service";
+import { CitationController } from "./modules/citation/interface/citation.controller";
+import { createCitationRouter } from "./modules/citation/interface/citation.routes";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -133,6 +137,12 @@ export const createApp = (): express.Express => {
     ama,
     americanChemicalSociety,
   );
+  /** Citation Formatter */
+  const apaCitationFormat = new APACitationFormatter();
+  const citationFormatterService = new CitationFormatterService(
+    apaCitationFormat,
+  );
+
   const referenceService = new ReferenceSearchService(journalReferenceService);
   const subscriptionService = new SubscriptionService(
     subscriptionRepository,
@@ -160,6 +170,7 @@ export const createApp = (): express.Express => {
     referenceService,
     referenceFormatterService,
   );
+  const citationController = new CitationController(citationFormatterService);
   const subscriptionController = new SubscriptionController(
     subscriptionService,
   );
@@ -222,6 +233,11 @@ export const createApp = (): express.Express => {
   app.use(
     `${env.API_PREFIX}/references`,
     createReferenceRouter(referenceController, tokenService),
+  );
+
+  app.use(
+    `${env.API_PREFIX}/citations`,
+    createCitationRouter(citationController, tokenService),
   );
 
   app.use(
