@@ -62,7 +62,7 @@ export class ReviewService {
       );
     }
 
-    if (!section.content.trim()) {
+    if (!section.content.text.trim()) {
       throw new AppError(
         "Section content is required before running review.",
         StatusCodes.BAD_REQUEST,
@@ -94,7 +94,7 @@ export class ReviewService {
         section: {
           key: section.key,
           title: section.title,
-          content: section.content,
+          content: section.content.text,
         },
         promptTemplate,
         guidelineRules,
@@ -126,7 +126,7 @@ export class ReviewService {
         section: {
           key: section.key,
           title: section.title,
-          content: section.content,
+          content: section.content.text,
           sectionPrompt: section.sectionPrompt ?? "",
         },
         promptTemplate,
@@ -265,7 +265,8 @@ export class ReviewService {
 
     const sectionScores = Object.fromEntries(
       (project.sections ?? []).map((section) => {
-        const completenessScore = section.content.trim().length > 0 ? 100 : 0;
+        const completenessScore =
+          section.content.text.trim().length > 0 ? 100 : 0;
         return [section.key, completenessScore];
       }),
     );
@@ -274,7 +275,7 @@ export class ReviewService {
       (section) => section.isOptional === false,
     );
     const completedRequiredSections = requiredSections.filter(
-      (section) => section.content.trim().length > 0,
+      (section) => section.content.text.trim().length > 0,
     ).length;
 
     const completenessScore =
@@ -321,7 +322,7 @@ export class ReviewService {
         )
         .map((issue) => `${issue.category}: ${issue.title}`),
       strengths: requiredSections
-        .filter((section) => section.content.trim().length > 0)
+        .filter((section) => section.content.text.trim().length > 0)
         .slice(0, 5)
         .map((section) => `${section.title} drafted`),
       sectionScores,

@@ -87,7 +87,10 @@ export const ProjectDetailsPage = () => {
                         {section.isOptional ? "· Optional" : ""}
                       </p>
                     </div>
-                    <span>{section.content.trim().length} Words</span>
+                    <span>
+                      {section.content.text.trim().length}
+                      Words
+                    </span>
                   </Link>
 
                   {subsections.map((sub) => (
@@ -107,7 +110,7 @@ export const ProjectDetailsPage = () => {
                           {sub.status} {sub.isOptional ? "· Optional" : ""}
                         </p>
                       </div>
-                      <span>{sub.content.trim().length} Words</span>
+                      <span>{sub.content.text.trim().length} Words</span>
                     </Link>
                   ))}
                 </div>

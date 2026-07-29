@@ -317,7 +317,7 @@ model ProjectSection {
   projectId                  String
   key                        String
   title                      String
-  content                    String                      @default("")
+  content                    Json?
   sectionOrder               Int
   isOptional                 Boolean                     @default(false)
   status                     SectionStatus               @default(NOT_STARTED)

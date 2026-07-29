@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { projectStatuses } from "../domain/project";
+import { ReferenceStyles } from "src/modules/references/domain/reference";
 import { ProjectStatus } from "@prisma/client";
 
 export const projectIdParamsSchema = z.object({
@@ -26,7 +27,15 @@ export const updateProjectSchema = z.object({
 });
 
 export const updateSectionSchema = z.object({
-  content: z.string().max(60000),
+  content: z.object({
+    text: z.string().optional(),
+    references: z
+      .object({
+        style: z.enum(ReferenceStyles).optional(),
+        items: z.array(z.any()).optional(),
+      })
+      .optional(),
+  }),
   changeSummary: z.string().max(240).optional(),
 });
 

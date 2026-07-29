@@ -4,6 +4,7 @@ import type {
   ArticleType,
   Project,
   ProjectSection,
+  SectionContent,
   Specialty,
 } from "../../types/api";
 
@@ -61,7 +62,7 @@ export const projectsApi = {
   async updateSection(
     projectId: string,
     sectionKey: string,
-    input: { content: string; changeSummary?: string },
+    input: { content: SectionContent; changeSummary?: string },
   ): Promise<{ section: ProjectSection; versionNumber: number }> {
     const response = await apiClient.put<
       ApiSuccessResponse<{ section: ProjectSection; versionNumber: number }>

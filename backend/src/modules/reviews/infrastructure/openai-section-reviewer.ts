@@ -79,7 +79,7 @@ export class OpenAiSectionReviewer implements SectionReviewer {
         allSectionStates: (context.project.sections ?? []).map((section) => ({
           key: section.key,
           title: section.title,
-          drafted: section.content.trim().length > 0,
+          drafted: section.content.text.trim().length > 0,
         })),
         guidelineRules: context.guidelineRules,
       },
