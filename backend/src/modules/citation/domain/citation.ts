@@ -1,10 +1,9 @@
-import { Reference, ReferenceStyle } from "src/modules/references/domain/reference";
-export const citationType = ["PARENTHETICAL"] as const;
-
-export type CitationType = (typeof citationType)[number];
+import {
+  Reference,
+  ReferenceStyle,
+} from "src/modules/references/domain/reference";
 
 export interface Citation {
-  type: CitationType;
-  style: ReferenceStyle
+  style: ReferenceStyle;
   reference: Reference;
 }

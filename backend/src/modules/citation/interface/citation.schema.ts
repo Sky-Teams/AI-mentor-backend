@@ -1,10 +1,8 @@
 import z from "zod";
-import { citationType } from "../domain/citation";
 import { authorSchema } from "src/modules/references/interface/reference.schema";
 import { ReferenceStyles } from "src/modules/references/domain/reference";
 
 export const citationSchema = z.object({
-  type: z.enum(citationType),
   style: z.enum(ReferenceStyles),
   references: z.array(
     z.object({

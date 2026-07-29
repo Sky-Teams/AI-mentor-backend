@@ -1,27 +1,14 @@
 import { Reference } from "src/modules/references/domain/reference";
-import { AppError } from "src/shared/errors/app-error";
-import { StatusCodes } from "http-status-codes";
-import { CitationType } from "../../domain/citation";
 import { getYear } from "src/shared/utils/format-citation-helper";
 
 export class APACitationFormatter {
-  public async formatCitation(
-    type: CitationType,
-    reference: Reference,
-  ): Promise<string> {
-    switch (type) {
-      case "PARENTHETICAL":
-        return this.parentheticalCitationFormat(reference);
-      default:
-        throw new AppError(
-          "Unsupported citation type",
-          StatusCodes.BAD_REQUEST,
-          "UNSUPPORTED_CITATION_TYPE",
-        );
-    }
+  public async formatCitation(reference: Reference): Promise<string> {
+    return await this.parentheticalCitationFormat(reference);
   }
 
-  private async parentheticalCitationFormat(reference: Reference): Promise<string> {
+  private async parentheticalCitationFormat(
+    reference: Reference,
+  ): Promise<string> {
     const year = reference?.datePublished
       ? await getYear(reference.datePublished)
       : "";
