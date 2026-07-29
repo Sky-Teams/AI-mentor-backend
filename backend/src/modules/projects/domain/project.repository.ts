@@ -40,7 +40,10 @@ export interface ArticleType {
 
 export interface ProjectRepository {
   createProject(input: CreateProjectInput): Promise<Project>;
-  listProjectsByOwner(ownerId: string): Promise<Project[]>;
+  listProjectsByOwner(
+    ownerId: string,
+    status?: Project["status"],
+  ): Promise<Project[]>;
   findProjectByIdForOwner(
     projectId: string,
     ownerId: string,

@@ -111,7 +111,6 @@ export const updateJournalSchema = z.object({
     .optional(),
 });
 
-
 export const updateSectionsOrderSchema = z.object({
   sectionIds: z.array(
     z.object({
@@ -119,4 +118,8 @@ export const updateSectionsOrderSchema = z.object({
       subsectionIds: z.array(z.string().cuid()).optional().default([]),
     }),
   ),
+});
+
+export const journalNameSchema = z.object({
+  journalName: z.string().min(1),
 });
