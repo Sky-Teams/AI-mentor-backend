@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { CitationFormatterService } from "../application/citation.formatter.service";
 import {
-  CreateReferenceInput,
+  Reference,
   ReferenceStyle,
 } from "src/modules/references/domain/reference";
 import { StatusCodes } from "http-status-codes";
@@ -16,19 +16,15 @@ export class CitationController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const { style, references } = request.body as {
+    const { style, reference } = request.body as {
       style: ReferenceStyle;
-      references: Omit<CreateReferenceInput, "type">[];
+      reference: Reference;
     };
 
-    const result = await Promise.all(
-      references.map((item) =>
-        this.citationFormatterService.generateCitation({
-          style: style,
-          reference: item.reference,
-        }),
-      ),
-    );
+    const result = await this.citationFormatterService.generateCitation({
+      style: style,
+      reference: reference,
+    });
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
