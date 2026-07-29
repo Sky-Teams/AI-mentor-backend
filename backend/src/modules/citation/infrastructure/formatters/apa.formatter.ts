@@ -10,8 +10,8 @@ export class APACitationFormatter {
     reference: Reference,
   ): Promise<string> {
     switch (type) {
-      case "IN_TEXT":
-        return this.InTextCitationFormat(reference);
+      case "PARENTHETICAL":
+        return this.parentheticalCitationFormat(reference);
       default:
         throw new AppError(
           "Unsupported citation type",
@@ -21,7 +21,7 @@ export class APACitationFormatter {
     }
   }
 
-  private async InTextCitationFormat(reference: Reference): Promise<string> {
+  private async parentheticalCitationFormat(reference: Reference): Promise<string> {
     const year = reference?.datePublished
       ? await getYear(reference.datePublished)
       : "";
