@@ -1,7 +1,3 @@
-import {
-  Reference,
-  ReferenceStyle,
-} from "src/modules/references/domain/reference";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
 import { APACitationFormatter } from "../infrastructure/formatters/apa.formatter";
