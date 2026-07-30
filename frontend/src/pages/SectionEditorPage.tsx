@@ -240,10 +240,8 @@ export const SectionEditorPage = () => {
           </button>
         </div>
       </div>
-
       {error && <p className="error-text">{error}</p>}
       {statusMessage ? <p className="success-text">{statusMessage}</p> : null}
-
       <div className="content-layout">
         <div className="two-column-grid">
           <div className="section-editor__content-shell">
@@ -315,7 +313,6 @@ export const SectionEditorPage = () => {
         </div>
         <ReviewLayout review={latestSectionReview} />
       </div>
-
       {/* subsections LIST */}
       {subsections.length > 0 && (
         <div className="card" style={{ marginTop: "1.5rem" }}>
@@ -346,7 +343,6 @@ export const SectionEditorPage = () => {
           </div>
         </div>
       )}
-
       <ParaphrasePanel
         sectionId={sectionId}
         content={content}
@@ -354,6 +350,7 @@ export const SectionEditorPage = () => {
         onSaveSuccess={loadData}
       />
 
+      {/* {console.log("projectReferences:", projectReferences)} */}
       {citationOpen && (
         <InlineCitationModal
           references={projectReferences}
@@ -362,7 +359,6 @@ export const SectionEditorPage = () => {
           onInsert={insertCitation}
         />
       )}
-
       {/* Navigation buttons */}
       <div
         className="button-row"
@@ -391,7 +387,6 @@ export const SectionEditorPage = () => {
           {isLast ? `Finish ${"\u2192"}` : `Next ${"\u2192"}`}
         </button>
       </div>
-
       <p className="muted-text">
         Reminder: AI feedback is helpful, but please have a human review it
         before you act on it.
