@@ -104,6 +104,17 @@ export const referenceApi = {
 
     return unwrap(response.data);
   },
+
+  async formatInlineCitation(data: {
+    reference: Reference;
+    style: ReferenceStyle;
+  }) {
+    const response = await apiClient.post<ApiSuccessResponse<string>>(
+      "/references/format-style",
+      data,
+    );
+    return unwrap(response.data);
+  },
 };
 
 /** Functions for save references to local storage */
