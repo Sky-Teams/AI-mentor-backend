@@ -7,7 +7,10 @@ import { SectionChecklistPanel } from "../components/SectionChecklistPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
 import type { ProjectSection, ReviewRun, SectionContent } from "../types/api";
-import type { CreateReferenceInput } from "../services/api/reference";
+import type {
+  CreateReferenceInput,
+  Reference,
+} from "../services/api/reference";
 import { referenceApi } from "../services/api/reference";
 import { InlineCitationModal } from "../components/InlineCitationModal";
 
@@ -202,13 +205,43 @@ export const SectionEditorPage = () => {
     );
   };
 
-  const insertCitation = (citation: string) => {
+  const insertCitation = async (citation: string, reference: Reference) => {
     if (!selection) return;
-    setContent((value) => ({
-      ...value,
-      text: `${value.text.slice(0, selection.end)} ${citation}${value.text.slice(selection.end)}`,
-    }));
+
+    // Ensure the reference exists in the REFERENCES section
+    if (
+      !projectReferences.some((item) => item.reference.id === reference.id) &&
+      referenceSection
+    ) {
+      const referenceInput: CreateReferenceInput = {
+        reference,
+        type: "JOURNAL",
+      };
+      await addProjectReference(referenceInput);
+    }
+
+    // Insert citation text into the current section
+    const currentText = content.text || "";
+    const updatedContent: SectionContent = {
+      ...content,
+      text: `${currentText.slice(0, selection.end)} ${citation}${currentText.slice(selection.end)}`,
+    };
+    setContent(updatedContent);
     setSelection(null);
+
+    // Persist the updated section to the database
+    try {
+      setError("");
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content: updatedContent,
+        changeSummary: "Added inline citation",
+      });
+      setStatusMessage("Citation inserted and saved.");
+    } catch (error: any) {
+      setError(
+        error?.response?.data?.error?.message || "Failed to save citation.",
+      );
+    }
   };
 
   return (
@@ -350,7 +383,6 @@ export const SectionEditorPage = () => {
         onSaveSuccess={loadData}
       />
 
-      {/* {console.log("projectReferences:", projectReferences)} */}
       {citationOpen && (
         <InlineCitationModal
           references={projectReferences}
