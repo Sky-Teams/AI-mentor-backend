@@ -5,10 +5,13 @@ import {
   ReferenceStyle,
   referenceStyles,
 } from "../services/api/reference";
-import type { CreateReferenceInput } from "../services/api/reference";
+import type {
+  CreateReferenceInput,
+  Reference,
+} from "../services/api/reference";
 
 type Props = {
-  references: Array<CreateReferenceInput & { formattedText: string }>;
+  references: Array<{ reference: Reference; formattedText: string }>;
   onClose: () => void;
   onAddReference: (reference: CreateReferenceInput) => Promise<void>;
   onInsert: (citation: string) => void;
@@ -50,7 +53,6 @@ export const InlineCitationModal = ({
       const citation = await referenceApi.formatInlineCitation({
         reference: item.reference,
         style,
-        referenceNumber: selected + 1,
       });
 
       onInsert(citation);
