@@ -110,7 +110,7 @@ export const referenceApi = {
     style: ReferenceStyle;
   }) {
     const response = await apiClient.post<ApiSuccessResponse<string>>(
-      "/references/format-style",
+      "/citations/format-style",
       data,
     );
     return unwrap(response.data);
