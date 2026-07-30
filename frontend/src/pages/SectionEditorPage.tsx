@@ -208,7 +208,7 @@ export const SectionEditorPage = () => {
   const insertCitation = async (citation: string, reference: Reference) => {
     if (!selection) return;
 
-    // Ensure the reference exists in the global REFERENCES section
+    // Ensure the reference exists in the REFERENCES section
     if (
       !projectReferences.some((item) => item.reference.id === reference.id) &&
       referenceSection
