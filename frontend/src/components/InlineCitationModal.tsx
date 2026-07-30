@@ -14,7 +14,7 @@ type Props = {
   references: Array<{ reference: Reference; formattedText: string }>;
   onClose: () => void;
   onAddReference: (reference: CreateReferenceInput) => Promise<void>;
-  onInsert: (citation: string) => void;
+  onInsert: (citation: string, reference: Reference) => void;
 };
 
 export const InlineCitationModal = ({
@@ -55,7 +55,7 @@ export const InlineCitationModal = ({
         style,
       });
 
-      onInsert(citation);
+      onInsert(citation, item.reference);
       onClose();
     } catch (error: any) {
       setError(
@@ -82,9 +82,9 @@ export const InlineCitationModal = ({
         className="modal-content"
         onClick={(event) => event.stopPropagation()}
       >
-        {/* <button className="close" onClick={onClose} type="button">
+        <button className="close" onClick={onClose} type="button">
           X
-        </button> */}
+        </button>
 
         <h3>Add citation</h3>
 
