@@ -7,6 +7,7 @@ import type { ProjectController } from "./project.controller";
 import {
   createProjectSchema,
   projectIdParamsSchema,
+  projectStatusQuerySchema,
   sectionParamsSchema,
   toggleSectionChecklistItemSchema,
   updateProjectSchema,
@@ -22,10 +23,12 @@ export const createProjectRouter = (
 
   router.get(
     "/",
+    validate(projectStatusQuerySchema),
     asyncHandler((request, response) =>
       controller.listProjects(request, response),
     ),
   );
+
   router.post(
     "/",
     validate(createProjectSchema),

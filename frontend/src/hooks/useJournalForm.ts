@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { adminApi } from "../services/api/admin";
+import { journalsApi } from "../services/api/journal.js";
 import type { Specialty } from "../types/api";
 import {
   buildJournalPayload,
@@ -14,11 +15,11 @@ import {
   type JournalFormState,
   type SectionDraft,
 } from "../utils/journalForm";
-import { journalsApi } from "../services/api/journal.js";
 
 export const useJournalForm = () => {
   const [form, setForm] = useState<JournalFormState>(createEmptyJournalForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingSpecialties, setIsLoadingSpecialties] = useState(true);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [message, setMessage] = useState<string | null>(null);
@@ -78,6 +79,51 @@ export const useJournalForm = () => {
       ...current,
       sections: [...current.sections, createSection()],
     }));
+  };
+
+  const generateFromName = async (journalName: string) => {
+    setError(null);
+    setMessage(null);
+    setIsGenerating(true);
+
+    try {
+      const generated = await journalsApi.generateFromName({ journalName });
+
+      setForm((current) => ({
+        ...current,
+        name: generated.name || current.name,
+        publisher: generated.publisher || current.publisher,
+        description: generated.description || current.description,
+        guidelinePack: generated.guidelinePack || current.guidelinePack,
+        sections: generated.sections?.length
+          ? generated.sections.map((section, index) => ({
+              id: current.sections[index]?.id || createSection().id,
+              title: section.title || "",
+              sectionPrompt: section.sectionPrompt || "",
+              isOptional: section.isOptional ?? false,
+              maxWords: String(section.maxWords ?? 250),
+              checklists: (section.checklists || []).map((checklist) => ({
+                id: createChecklist().id,
+                title: checklist.title || "",
+                items: (checklist.items || []).map((item) => ({
+                  id: createItem().id,
+                  text: item,
+                })),
+              })),
+              subsections: [],
+            }))
+          : current.sections,
+      }));
+
+      setMessage(`Generated journal structure for "${journalName}".`);
+    } catch (generateError: any) {
+      setError(
+        generateError?.response?.data?.error?.message ??
+          "Could not generate a journal structure from that name.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const removeSection = (sectionId: string) => {
@@ -176,6 +222,8 @@ export const useJournalForm = () => {
     addSection,
     error,
     form,
+    generateFromName,
+    isGenerating,
     isLoadingSpecialties,
     isSubmitting,
     message,

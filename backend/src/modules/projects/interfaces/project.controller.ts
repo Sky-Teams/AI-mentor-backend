@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
+import { Project } from "src/modules/projects/domain/project.js";
 
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
@@ -10,8 +11,11 @@ export class ProjectController {
     request: Request,
     response: Response,
   ): Promise<void> {
+    const status = request.query.status as Project["status"] | undefined;
+
     const projects = await this.projectService.listProjects(
       request.auth!.userId,
+      status!,
     );
     response.status(StatusCodes.OK).json(successResponse(projects));
   }

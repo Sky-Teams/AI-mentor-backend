@@ -716,6 +716,43 @@ ul.reference-list {
   background: var(--surface);
 }
 
+.journal-ai-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgb(0 0 0 / 45%);
+}
+
+.journal-ai-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 20%);
+}
+
+.journal-ai-modal-title {
+  margin-top: 0;
+}
+
+.journal-ai-modal-description {
+  margin-top: 4px;
+}
+
+.journal-ai-modal-input {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.journal-ai-modal-actions {
+  justify-content: flex-end;
+}
+
 .journal-order-modal {
   width: min(100%, 780px);
   padding: 1.4rem;
