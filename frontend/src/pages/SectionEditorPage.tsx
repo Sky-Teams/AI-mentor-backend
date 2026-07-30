@@ -208,7 +208,7 @@ export const SectionEditorPage = () => {
   const insertCitation = async (citation: string, reference: Reference) => {
     if (!selection) return;
 
-    // Ensure the reference exists in the REFERENCES section
+    // Ensure the reference exists in the global REFERENCES section
     if (
       !projectReferences.some((item) => item.reference.id === reference.id) &&
       referenceSection
@@ -220,11 +220,30 @@ export const SectionEditorPage = () => {
       await addProjectReference(referenceInput);
     }
 
-    // Insert citation text into the current section
+    // Build the inline citation item to store in the current section
+    const existingItems = content.references?.items || [];
+    const citationItem = {
+      reference,
+      type: "JOURNAL" as const,
+      formattedText: citation,
+    };
+
+    // Avoid duplicating the same reference in the section's references
+    const sectionReferences = existingItems.some(
+      (item) => item.reference.id === reference.id,
+    )
+      ? existingItems
+      : [...existingItems, citationItem];
+
+    // Insert citation text into the current section and store the reference
     const currentText = content.text || "";
     const updatedContent: SectionContent = {
       ...content,
       text: `${currentText.slice(0, selection.end)} ${citation}${currentText.slice(selection.end)}`,
+      references: {
+        style: content.references?.style || "APA",
+        items: sectionReferences,
+      },
     };
     setContent(updatedContent);
     setSelection(null);
@@ -385,7 +404,7 @@ export const SectionEditorPage = () => {
 
       {citationOpen && (
         <InlineCitationModal
-          references={projectReferences}
+          references={content.references?.items || projectReferences}
           onAddReference={addProjectReference}
           onClose={() => setCitationOpen(false)}
           onInsert={insertCitation}
