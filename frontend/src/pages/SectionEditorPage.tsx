@@ -7,6 +7,9 @@ import { SectionChecklistPanel } from "../components/SectionChecklistPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
 import type { ProjectSection, ReviewRun, SectionContent } from "../types/api";
+import type { CreateReferenceInput } from "../services/api/reference";
+import { referenceApi } from "../services/api/reference";
+import { InlineCitationModal } from "../components/InlineCitationModal";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -24,6 +27,11 @@ export const SectionEditorPage = () => {
   const [isReviewing, setIsReviewing] = useState(false);
   const [sectionId, setSectionId] = useState("");
   const [error, setError] = useState("");
+  const [selection, setSelection] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+  const [citationOpen, setCitationOpen] = useState(false);
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
@@ -147,6 +155,62 @@ export const SectionEditorPage = () => {
     return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
   };
 
+  const referenceSection = allSections.find(
+    (item) => item.key === "REFERENCES",
+  );
+  const projectReferences = referenceSection?.content.references?.items || [];
+
+  const addProjectReference = async (item: CreateReferenceInput) => {
+    if (!referenceSection)
+      throw new Error("References section does not exist.");
+    if (
+      projectReferences.some(
+        (reference) => reference.reference.id === item.reference.id,
+      )
+    )
+      return;
+    const [formattedText] = await referenceApi.formatReference({
+      references: [item],
+      style: "APA",
+    });
+    const newReferences = [...projectReferences, { ...item, formattedText }];
+    await projectsApi.updateSection(projectId, "REFERENCES", {
+      content: {
+        ...referenceSection.content,
+        references: {
+          ...referenceSection.content.references,
+          items: newReferences,
+        },
+      },
+      changeSummary: "Added reference for inline citation",
+    });
+    setAllSections((items) =>
+      items.map((section) =>
+        section.key === "REFERENCES"
+          ? {
+              ...section,
+              content: {
+                ...section.content,
+                references: {
+                  ...section.content.references,
+                  items: newReferences,
+                },
+              },
+            }
+          : section,
+      ),
+    );
+  };
+
+  const insertCitation = (citation: string) => {
+    if (!selection) return;
+    setContent((value) => ({
+      ...value,
+      text: `${value.text.slice(0, selection.end)} ${citation}${value.text.slice(selection.end)}`,
+    }));
+    setSelection(null);
+  };
+
   return (
     <div className="page-shell">
       <div className="page-header">
@@ -200,6 +264,11 @@ export const SectionEditorPage = () => {
                 onChange={(event) =>
                   setContent((prev) => ({ ...prev, text: event.target.value }))
                 }
+                onSelect={(event) => {
+                  const { selectionStart: start, selectionEnd: end } =
+                    event.currentTarget;
+                  setSelection(start !== end ? { start, end } : null);
+                }}
                 rows={10}
                 value={
                   content.text ||
@@ -208,6 +277,15 @@ export const SectionEditorPage = () => {
                     .join("\n\n")
                 }
               />
+              {selection && (
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => setCitationOpen(true)}
+                >
+                  Add citation
+                </button>
+              )}
               <span
                 style={{
                   color: "green",
@@ -275,6 +353,15 @@ export const SectionEditorPage = () => {
         sectionKey={sectionKey}
         onSaveSuccess={loadData}
       />
+
+      {citationOpen && (
+        <InlineCitationModal
+          references={projectReferences}
+          onAddReference={addProjectReference}
+          onClose={() => setCitationOpen(false)}
+          onInsert={insertCitation}
+        />
+      )}
 
       {/* Navigation buttons */}
       <div
