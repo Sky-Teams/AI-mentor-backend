@@ -205,50 +205,74 @@ export const SectionEditorPage = () => {
     );
   };
 
+  // citations are stored as {{cite:refId}} markers in content.text,
+  // and swapped for the real formatted text only when shown to the user
+  const getShownText = () => {
+    const items = content.references?.items || [];
+    let text = content.text || "";
+    for (const item of items) {
+      text = text
+        .split(`{{cite:${item.reference.id}}}`)
+        .join(item.formattedText);
+    }
+
+    return text;
+  };
+
+  const getRawText = (
+    shownText: string,
+    items = content.references?.items || [],
+  ) => {
+    let text = shownText;
+    for (const item of items) {
+      text = text
+        .split(item.formattedText)
+        .join(`{{cite:${item.reference.id}}}`);
+    }
+    return text;
+  };
+
   const insertCitation = async (citation: string, reference: Reference) => {
     if (!selection) return;
 
-    // Ensure the reference exists in the REFERENCES section
-    if (
-      !projectReferences.some((item) => item.reference.id === reference.id) &&
-      referenceSection
-    ) {
-      const referenceInput: CreateReferenceInput = {
-        reference,
-        type: "JOURNAL",
-      };
-      await addProjectReference(referenceInput);
+    const alreadyUsed = projectReferences.some(
+      (r) => r.reference.id === reference.id,
+    );
+    if (!alreadyUsed && referenceSection) {
+      await addProjectReference({ reference, type: "JOURNAL" });
     }
 
-    // Build the inline citation item to store in the current section
-    const existingItems = content.references?.items || [];
-    const citationItem = {
-      reference,
-      type: "JOURNAL" as const,
-      formattedText: citation,
-    };
+    const items = content.references?.items || [];
+    const alreadyInSection = items.some((r) => r.reference.id === reference.id);
+    const updatedItems = alreadyInSection
+      ? items
+      : [
+          ...items,
+          { reference, type: "JOURNAL" as const, formattedText: citation },
+        ];
 
-    // Avoid duplicating the same reference in the section's references
-    const sectionReferences = existingItems.some(
-      (item) => item.reference.id === reference.id,
-    )
-      ? existingItems
-      : [...existingItems, citationItem];
+    const shown = getShownText();
+    const newShown =
+      shown.slice(0, selection.end) +
+      " " +
+      citation +
+      shown.slice(selection.end);
+    const newText = getRawText(newShown, updatedItems);
 
     // Insert citation text into the current section and store the reference
-    const currentText = content.text || "";
     const updatedContent: SectionContent = {
       ...content,
-      text: `${currentText.slice(0, selection.end)} ${citation}${currentText.slice(selection.end)}`,
+      text: newText,
       references: {
         style: content.references?.style || "APA",
-        items: sectionReferences,
+        items: updatedItems,
       },
     };
+
     setContent(updatedContent);
     setSelection(null);
 
-    // Persist the updated section to the database
+    // save the updated section to the database
     try {
       setError("");
       await projectsApi.updateSection(projectId, sectionKey, {
@@ -256,9 +280,9 @@ export const SectionEditorPage = () => {
         changeSummary: "Added inline citation",
       });
       setStatusMessage("Citation inserted and saved.");
-    } catch (error: any) {
+    } catch (err: any) {
       setError(
-        error?.response?.data?.error?.message || "Failed to save citation.",
+        err?.response?.data?.error?.message || "Failed to save citation.",
       );
     }
   };
@@ -311,21 +335,19 @@ export const SectionEditorPage = () => {
                     : { outline: "none" }
                 }
                 className="editor-area"
-                onChange={(event) =>
-                  setContent((prev) => ({ ...prev, text: event.target.value }))
-                }
+                onChange={(event) => {
+                  setContent((prev) => ({
+                    ...prev,
+                    text: getRawText(event.target.value),
+                  }));
+                }}
                 onSelect={(event) => {
                   const { selectionStart: start, selectionEnd: end } =
                     event.currentTarget;
                   setSelection(start !== end ? { start, end } : null);
                 }}
                 rows={10}
-                value={
-                  content.text ||
-                  content.references?.items
-                    ?.map((ref) => ref.formattedText)
-                    .join("\n\n")
-                }
+                value={getShownText()}
               />
               {selection && (
                 <button
@@ -404,7 +426,7 @@ export const SectionEditorPage = () => {
 
       {citationOpen && (
         <InlineCitationModal
-          references={content.references?.items || projectReferences}
+          references={projectReferences}
           onAddReference={addProjectReference}
           onClose={() => setCitationOpen(false)}
           onInsert={insertCitation}
