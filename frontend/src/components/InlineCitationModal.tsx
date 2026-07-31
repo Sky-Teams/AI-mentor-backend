@@ -91,11 +91,14 @@ export const InlineCitationModal = ({
             value={style}
             onChange={(event) => setStyle(event.target.value as ReferenceStyle)}
           >
-            {referenceStyles.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.title}
-              </option>
-            ))}
+            {referenceStyles
+              // for now we filter just APA style (supported one), we can add more later
+              .filter((item) => item.value === "APA")
+              .map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.title}
+                </option>
+              ))}
           </select>
         </label>
 
