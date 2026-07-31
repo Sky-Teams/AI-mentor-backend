@@ -75,71 +75,82 @@ export const InlineCitationModal = ({
   return (
     <div className="modal-reference" onClick={onClose}>
       <div
-        className="modal-content"
+        className="modal-content citation-modal-content"
         onClick={(event) => event.stopPropagation()}
       >
-        <button className="close" onClick={onClose} type="button">
-          X
-        </button>
+        <div className="citation-modal-header">
+          <h3 className="citation-modal-title">Add citation</h3>
+          <button
+            className="close citation-modal-close"
+            onClick={onClose}
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
 
-        <h3>Add citation</h3>
-
-        <label>
-          Citation type
+        <label className="citation-modal-label">
+          <span className="citation-modal-label-text">Citation style</span>
           <select
-            className="modern-select"
+            className="modern-select citation-modal-select"
             value={style}
             onChange={(event) => setStyle(event.target.value as ReferenceStyle)}
           >
-            {referenceStyles
-              // for now we filter just APA style (supported one), we can add more later
-              .filter((item) => item.value === "APA")
-              .map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.title}
-                </option>
-              ))}
+            {referenceStyles.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.title}
+              </option>
+            ))}
           </select>
         </label>
 
-        <p>
+        <div className="citation-modal-references-header">
           <strong>References</strong>
-        </p>
-
-        {references.map((item, index) => (
           <button
-            className={
-              selected === index ? "primary-button" : "secondary-button"
-            }
-            key={`${item.reference.id}-${index}`}
-            onClick={() => setSelected(index)}
+            className="secondary-button citation-modal-find-button"
+            onClick={() => setSearchOpen(true)}
             type="button"
-            style={{
-              display: "block",
-              width: "100%",
-              marginBottom: "0.5rem",
-              textAlign: "left",
-            }}
           >
-            {item.formattedText}
+            + Find new
           </button>
-        ))}
+        </div>
 
-        {!references.length && (
-          <p className="muted-text">No references in this project yet.</p>
+        {references.length ? (
+          <div className="citation-modal-references-list">
+            {references.map((item, index) => (
+              <label
+                key={`${item.reference.id}-${index}`}
+                className={`citation-modal-reference-item ${
+                  selected === index
+                    ? "citation-modal-reference-item--selected"
+                    : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="reference"
+                  className="citation-modal-radio"
+                  checked={selected === index}
+                  onChange={() => setSelected(index)}
+                />
+                <span className="citation-modal-reference-text">
+                  {item.formattedText}
+                </span>
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className="muted-text citation-modal-empty">
+            No references in this project yet. Click "Find new" to add one.
+          </p>
         )}
 
         {error && <p className="error-text">{error}</p>}
 
-        <div className="button-row">
-          <button
-            className="secondary-button"
-            onClick={() => setSearchOpen(true)}
-            type="button"
-          >
-            Find new reference
+        <div className="button-row citation-modal-actions">
+          <button className="secondary-button" onClick={onClose} type="button">
+            Cancel
           </button>
-
           <button
             className="primary-button"
             disabled={selected === null || loading}
