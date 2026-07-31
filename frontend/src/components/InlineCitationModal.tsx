@@ -34,10 +34,6 @@ export const InlineCitationModal = ({
     try {
       await onAddReference(reference);
       setSearchOpen(false);
-    } catch (error: any) {
-      setError(
-        error?.response?.data?.error?.message || "Could not add reference.",
-      );
     } finally {
       setLoading(false);
     }
