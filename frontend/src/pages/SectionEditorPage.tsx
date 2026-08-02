@@ -173,10 +173,12 @@ export const SectionEditorPage = () => {
       throw new Error("References section does not exist.");
     if (
       projectReferences.some(
-        (reference) => getItemReferenceId(reference) === item.reference.id,
+        (reference) => (reference as any).reference?.doi === item.reference.doi,
       )
-    )
+    ) {
+      alert("This reference already exists in the project.");
       return;
+    }
     const [formattedText] = await referenceApi.formatReference({
       references: [item],
       style: "APA",
