@@ -57,10 +57,15 @@ export const ReferencePage = () => {
       setSaveReferences(getReferences());
       setIsSearchBoxOpen(false);
     } catch (error: any) {
-      console.log(error);
-      setErrorMessage(
-        error?.response?.data?.error?.message || "Failed to add reference",
-      );
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setErrorMessage(`${field}: ${message}`);
+      } else {
+        setErrorMessage(
+          error?.response?.data?.error?.message || "Failed to add reference",
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +93,15 @@ export const ReferencePage = () => {
       });
       setSaveReferences(updateFormatStyles);
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "Failed to format reference",
-      );
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setErrorMessage(`${field}: ${message}`);
+      } else {
+        setErrorMessage(
+          error?.response?.data?.error?.message || "Failed to format reference",
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +177,15 @@ export const ReferencePage = () => {
       setIsOpenProjectModal(false);
     } catch (error: any) {
       console.log(error);
-      setErrorMessage(error || "Unexpected error");
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setErrorMessage(`${field}: ${message}`);
+      } else {
+        setErrorMessage(
+          error?.response?.data?.error?.message || "Unexpected error",
+        );
+      }
     } finally {
       setIsOpenProjectModal(false);
     }

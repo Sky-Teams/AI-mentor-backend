@@ -75,7 +75,13 @@ export const ParaphrasePanel = ({
       //   setRefreshTrigger((prev) => prev + 1);
       // }
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setError(`${field}: ${message}`);
+      } else {
+        setError(error?.response?.data?.error?.message || "An error occurred.");
+      }
     } finally {
       setIsParaphrasing(false);
     }
@@ -102,7 +108,13 @@ export const ParaphrasePanel = ({
         await onSaveSuccess();
       }
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setError(`${field}: ${message}`);
+      } else {
+        setError(error?.response?.data?.error?.message || "An error occurred.");
+      }
     } finally {
       setIsSavedContent(false);
     }

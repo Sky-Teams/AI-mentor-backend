@@ -11,7 +11,7 @@ import {
   type JournalFormState,
   SectionDraft,
 } from "../utils/journalForm";
-import { SectionOrderModal } from '../components/journal/SectionOrderModal.js';
+import { SectionOrderModal } from "../components/journal/SectionOrderModal.js";
 
 export const EditJournalPage = () => {
   const { id = "" } = useParams();
@@ -112,10 +112,16 @@ export const EditJournalPage = () => {
       const payload = buildUpdatePayload(journalForm.form);
       await adminApi.updateJournal(id, payload);
       setSaveSuccess("Journal updated successfully.");
-    } catch (e: any) {
-      setSaveError(
-        e?.response?.data?.error?.message || "Could not update journal",
-      );
+    } catch (err: any) {
+      if (err?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = err?.response?.data?.error?.details[0].field;
+        const message = err?.response?.data?.error?.details[0].message;
+        setSaveError(`${field}: ${message}`);
+      } else {
+        setSaveError(
+          err?.response?.data?.error?.message || "Could not update journal",
+        );
+      }
     }
   };
 

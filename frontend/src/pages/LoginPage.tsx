@@ -31,10 +31,17 @@ export const LoginPage = () => {
         (location.state as { from?: string } | null)?.from ?? "/dashboard";
       navigate(next, { replace: true });
     } catch (error: any) {
-      setError(
-        error?.response?.data?.error?.message ||
-          "Login failed. Check the seeded user or your credentials.",
-      );
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setError(`${field}: ${message}`);
+      } else {
+        setError(
+          error?.response?.data?.error?.message ||
+            "Login failed. Check the seeded user or your credentials.",
+        );
+      }
+
       if (error?.response?.data?.error?.code === "EMAIL_NOT_VERIFIED") {
         setIsVerified(false);
         setEnteredEmail(emailValue);
@@ -52,7 +59,13 @@ export const LoginPage = () => {
       await authApi.resendVerifyEmail(enteredEmail);
       setIsSendVerifyEmail(true);
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setError(`${field}: ${message}`);
+      } else {
+        setError(error?.response?.data?.error?.message || "An error occurred.");
+      }
     } finally {
       setIsSubmitting(false);
     }

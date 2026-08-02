@@ -23,8 +23,14 @@ export const RegisterPage = () => {
         password: String(formData.get("password")),
       });
       setIsRegistered(true);
-    } catch {
-      setError("Registration failed. The email may already exist.");
+    } catch (error: any) {
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setError(`${field}: ${message}`);
+      } else {
+        setError(error?.response?.data?.error?.message || "Unexpected error");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -33,7 +39,7 @@ export const RegisterPage = () => {
   return (
     <div className="auth-shell">
       {isRegistered && (
-        <div style={{ color: "green" , textAlign:'center'}}>
+        <div style={{ color: "green", textAlign: "center" }}>
           <h5>You registered successfully</h5>
           <p>Please check your email and verify account.</p>
         </div>

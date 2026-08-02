@@ -32,9 +32,15 @@ export function UpdateProfilePane({ isOpen, onClose, onSavedProfile }: Props) {
       window.location.reload();
       onClose();
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "An error occurred.",
-      );
+      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = error?.response?.data?.error?.details[0].field;
+        const message = error?.response?.data?.error?.details[0].message;
+        setErrorMessage(`${field}: ${message}`);
+      } else {
+        setErrorMessage(
+          error?.response?.data?.error?.message || "An error occurred",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }

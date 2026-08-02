@@ -117,10 +117,17 @@ export const useJournalForm = () => {
 
       setMessage(`Generated journal structure for "${journalName}".`);
     } catch (generateError: any) {
-      setError(
-        generateError?.response?.data?.error?.message ??
-          "Could not generate a journal structure from that name.",
-      );
+      if (generateError?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = generateError?.response?.data?.error?.details[0].field;
+        const message =
+          generateError?.response?.data?.error?.details[0].message;
+        setError(`${field} ${message}`);
+      } else {
+        setError(
+          generateError?.response?.data?.error?.message ??
+            "Could not generate a journal structure from that name.",
+        );
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -207,10 +214,16 @@ export const useJournalForm = () => {
       setMessage(`${journal.name} was created.`);
       resetForm();
     } catch (createError: any) {
-      setError(
-        createError?.response?.data?.error?.message ??
-          "Could not create journal. Please check the fields and try again.",
-      );
+      if (createError?.response?.data?.error?.code === "VALIDATION_ERROR") {
+        const field = createError?.response?.data?.error?.details[0].field;
+        const message = createError?.response?.data?.error?.details[0].message;
+        setError(`${field} ${message}`);
+      } else {
+        setError(
+          createError?.response?.data?.error?.message ??
+            "Could not create journal. Please check the fields and try again.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
