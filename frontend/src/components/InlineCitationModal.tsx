@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ReferenceSearchPanel } from "./referenceSearchPanel";
 import {
   referenceApi,
@@ -35,6 +35,53 @@ export const InlineCitationModal = ({
   const [searchOpen, setSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [displayedReferences, setDisplayedReferences] = useState<string[]>(
+    references.map((item) => item.formattedText),
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    const formatReferences = async () => {
+      try {
+        const items = references.filter(
+          (item): item is Extract<ReferenceItem, { reference: Reference }> =>
+            "reference" in item,
+        );
+
+        if (!items.length) {
+          setDisplayedReferences(references.map((item) => item.formattedText));
+          return;
+        }
+
+        const formatted = await referenceApi.formatReference({
+          references: items.map((item) => ({
+            reference: item.reference,
+            type: "JOURNAL",
+          })),
+          style,
+        });
+
+        if (!active) return;
+
+        let index = 0;
+        setDisplayedReferences(
+          references.map((item) =>
+            "reference" in item ? formatted[index++] : item.formattedText,
+          ),
+        );
+      } catch {
+        if (active) {
+          setDisplayedReferences(references.map((item) => item.formattedText));
+        }
+      }
+    };
+
+    formatReferences();
+    return () => {
+      active = false;
+    };
+  }, [references, style]);
 
   const addReference = async (reference: CreateReferenceInput) => {
     setLoading(true);
@@ -142,7 +189,7 @@ export const InlineCitationModal = ({
                   onChange={() => setSelected(index)}
                 />
                 <span className="citation-modal-reference-text">
-                  {item.formattedText}
+                  {displayedReferences[index] ?? item.formattedText}
                 </span>
               </label>
             ))}
