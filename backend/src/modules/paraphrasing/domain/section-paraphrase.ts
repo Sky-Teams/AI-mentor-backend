@@ -9,7 +9,8 @@ export interface ParaphraseContext {
   preservedWords?: string[];
   lengthStrategy?: LengthStrategy;
   promptTemplate?: string;
-  guidelineRules: Record<string, unknown>
+  guidelineRules: Record<string, unknown>;
+  maxWords: number;
 }
 
 export interface ParaphraseExecutionResult {
