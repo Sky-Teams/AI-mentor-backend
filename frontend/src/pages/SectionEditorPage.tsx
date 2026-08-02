@@ -163,12 +163,17 @@ export const SectionEditorPage = () => {
   );
   const projectReferences = referenceSection?.content.references?.items || [];
 
+  const getItemReferenceId = (item: {
+    referenceId?: string;
+    reference?: { id?: string };
+  }): string => item.referenceId ?? item.reference?.id ?? "";
+
   const addProjectReference = async (item: CreateReferenceInput) => {
     if (!referenceSection)
       throw new Error("References section does not exist.");
     if (
       projectReferences.some(
-        (reference) => reference.reference.id === item.reference.id,
+        (reference) => getItemReferenceId(reference) === item.reference.id,
       )
     )
       return;
@@ -212,7 +217,7 @@ export const SectionEditorPage = () => {
     let text = content.text || "";
     for (const item of items) {
       text = text
-        .split(`{{cite:${item.reference.id}}}`)
+        .split(`{{cite:${getItemReferenceId(item)}}}`)
         .join(item.formattedText);
     }
 
@@ -227,7 +232,7 @@ export const SectionEditorPage = () => {
     for (const item of items) {
       text = text
         .split(item.formattedText)
-        .join(`{{cite:${item.reference.id}}}`);
+        .join(`{{cite:${getItemReferenceId(item)}}}`);
     }
     return text;
   };
@@ -236,20 +241,19 @@ export const SectionEditorPage = () => {
     if (!selection) return;
 
     const alreadyUsed = projectReferences.some(
-      (r) => r.reference.id === reference.id,
+      (r) => getItemReferenceId(r) === reference.id,
     );
     if (!alreadyUsed && referenceSection) {
       await addProjectReference({ reference, type: "JOURNAL" });
     }
 
     const items = content.references?.items || [];
-    const alreadyInSection = items.some((r) => r.reference.id === reference.id);
+    const alreadyInSection = items.some(
+      (r) => getItemReferenceId(r) === reference.id,
+    );
     const updatedItems = alreadyInSection
       ? items
-      : [
-          ...items,
-          { reference, type: "JOURNAL" as const, formattedText: citation },
-        ];
+      : [...items, { referenceId: reference.id, formattedText: citation }];
 
     const shown = getShownText();
     const newShown =

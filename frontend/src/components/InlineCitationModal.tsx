@@ -10,12 +10,19 @@ import type {
   Reference,
 } from "../services/api/reference";
 
+type ReferenceItem =
+  | { reference: Reference; formattedText: string }
+  | { referenceId: string; formattedText: string };
+
 type Props = {
-  references: Array<{ reference: Reference; formattedText: string }>;
+  references: ReferenceItem[];
   onClose: () => void;
   onAddReference: (reference: CreateReferenceInput) => Promise<void>;
   onInsert: (citation: string, reference: Reference) => void;
 };
+
+const getReferenceId = (item: ReferenceItem): string =>
+  "referenceId" in item ? item.referenceId : item.reference.id;
 
 export const InlineCitationModal = ({
   references,
@@ -45,6 +52,7 @@ export const InlineCitationModal = ({
     setLoading(true);
     try {
       const item = references[selected];
+      if (!("reference" in item)) return;
 
       const citation = await referenceApi.formatInlineCitation({
         reference: item.reference,
@@ -119,7 +127,7 @@ export const InlineCitationModal = ({
           <div className="citation-modal-references-list">
             {references.map((item, index) => (
               <label
-                key={`${item.reference.id}-${index}`}
+                key={`${getReferenceId(item)}-${index}`}
                 className={`citation-modal-reference-item ${
                   selected === index
                     ? "citation-modal-reference-item--selected"
