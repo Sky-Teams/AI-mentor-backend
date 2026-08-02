@@ -1,7 +1,6 @@
 import {
   LengthStrategy,
   ParaphraseRun,
-  SectionContent,
   ToneType,
 } from "../types/api";
 import { paraphraseApi } from "../services/api/paraphrase";
@@ -12,7 +11,7 @@ import { projectsApi } from "../services/api/projects";
 
 interface ParaphrasePanelProps {
   sectionId: string;
-  content: SectionContent;
+  content: string;
   sectionKey: string;
   onSaveSuccess?: () => void | Promise<void>;
 }
@@ -34,6 +33,7 @@ export const ParaphrasePanel = ({
   const [paraphrasedText, setParaphraseText] = useState("");
   const [isSavedContent, setIsSavedContent] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   // no longer needed because history list is disabled
   // const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -47,10 +47,10 @@ export const ParaphrasePanel = ({
     if (!projectId) return;
 
     try {
-      await projectsApi.updateSection(projectId, sectionKey, {
-        content,
-        changeSummary: "Saved before AI paraphrase",
-      });
+      // await projectsApi.updateSection(projectId, sectionKey, {
+      //   content,
+      //   changeSummary: "Saved before AI paraphrase",
+      // });
 
       const finalWords = inputWords
         .split(/[,\s]+/)
@@ -58,6 +58,8 @@ export const ParaphrasePanel = ({
         .filter((word) => word !== "");
 
       setIsParaphrasing(true);
+      setMessage("");
+      setError("");
 
       const result = await paraphraseApi.triggerParaphrase({
         projectId: projectId,
@@ -65,6 +67,7 @@ export const ParaphrasePanel = ({
         tone: selectedTone.toLocaleUpperCase() as ToneType,
         lengthStrategy: selectedLength.toLocaleUpperCase() as LengthStrategy,
         preservedWords: finalWords,
+        content: content,
       });
 
       // show latest generated paraphrase directly
@@ -90,10 +93,17 @@ export const ParaphrasePanel = ({
   const saveChange = async () => {
     try {
       setIsSavedContent(true);
+      setError("");
+      setMessage("");
+
       const textToSave =
-        paraphrasedText && paraphrasedText.trim() !== ""
-          ? paraphrasedText
-          : content.text;
+        paraphrasedText && paraphrasedText.trim() !== "" ? paraphrasedText : "";
+
+      if (!textToSave || textToSave.length === 0) {
+        setError("The paraphrased text is empty");
+        return;
+      }
+
       await projectsApi.updateSection(projectId, sectionKey, {
         content: { text: textToSave },
         changeSummary: "Saved change",
@@ -101,6 +111,7 @@ export const ParaphrasePanel = ({
       if (onSaveSuccess) {
         await onSaveSuccess();
       }
+      setMessage("Section content updated successfully.");
     } catch (error: any) {
       setError(error?.response?.data?.error?.message || "An error occurred.");
     } finally {
@@ -114,6 +125,7 @@ export const ParaphrasePanel = ({
           <h3>Paraphrase this section</h3>
         </div>
         {error && <p className="error-text">{error}</p>}
+        {message && <p className="success-text">{message}</p>}
         <div className="card">
           <div className="paraphrase-wrapper">
             <div className="tone-wrapper">
@@ -194,9 +206,10 @@ export const ParaphrasePanel = ({
 
             <div className="review-layout save-button" id="">
               <button
-                className="outline-button"
+                className="outline-button "
                 type="button"
                 onClick={saveChange}
+                disabled={!paraphrasedText || paraphrasedText.length === 0}
               >
                 {isSavedContent ? "Saving ..." : "Save Change"}
               </button>
@@ -208,7 +221,7 @@ export const ParaphrasePanel = ({
                     <h3>Changes</h3>
 
                     {currentData.changes?.map((change, index) => (
-                      <ul key={currentData.id || index}>
+                      <ul key={index}>
                         <li>
                           <strong>Original Text: </strong>
                           {change.originalPhrase}
@@ -232,7 +245,7 @@ export const ParaphrasePanel = ({
                     <h3>Grammar Tips</h3>
 
                     {currentData.grammarTips.map((grammer, index) => (
-                      <ul key={currentData.id || index}>
+                      <ul key={index}>
                         <li>
                           <strong>Name: </strong> {grammer.ruleName}
                         </li>
@@ -254,7 +267,7 @@ export const ParaphrasePanel = ({
                     <h3>Metrics</h3>
 
                     {currentData.metrics.map((metric, index) => (
-                      <ul key={currentData.id || index}>
+                      <ul key={index}>
                         <li>
                           <strong>Name: </strong> {metric.name}
                         </li>
