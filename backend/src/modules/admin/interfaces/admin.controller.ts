@@ -143,4 +143,12 @@ export class AdminController {
 
     res.status(StatusCodes.OK).json(successResponse(journal));
   }
+
+  public async searchJournalByName(req: Request, res: Response) {
+    const journalName = req.query.journalName;
+
+    const journal = await this.journalService.findJournalByName(journalName);
+
+    res.status(StatusCodes.OK).json(successResponse(journal));
+  }
 }
