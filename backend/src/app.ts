@@ -71,6 +71,9 @@ import { APACitationFormatter } from "./modules/citation/infrastructure/formatte
 import { CitationFormatterService } from "./modules/citation/application/citation.formatter.service";
 import { CitationController } from "./modules/citation/interface/citation.controller";
 import { createCitationRouter } from "./modules/citation/interface/citation.routes";
+import { ChicagoAuthorDateCitationFormatter } from "./modules/citation/infrastructure/formatters/chicago.author.date.formatter";
+import { HarvardCitationFormatter } from "./modules/citation/infrastructure/formatters/harvard.formatter";
+import { MLACitationFormatter } from "./modules/citation/infrastructure/formatters/mla.formatter";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -139,8 +142,15 @@ export const createApp = (): express.Express => {
   );
   /** Citation Formatter */
   const apaCitationFormat = new APACitationFormatter();
+  const chicagoAuthorDateCitationFormat =
+    new ChicagoAuthorDateCitationFormatter();
+  const harvardCitationFormat = new HarvardCitationFormatter();
+  const mlaCitationFormat = new MLACitationFormatter();
   const citationFormatterService = new CitationFormatterService(
     apaCitationFormat,
+    chicagoAuthorDateCitationFormat,
+    harvardCitationFormat,
+    mlaCitationFormat,
   );
 
   const referenceService = new ReferenceSearchService(journalReferenceService);

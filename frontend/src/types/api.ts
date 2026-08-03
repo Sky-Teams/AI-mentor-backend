@@ -48,7 +48,10 @@ export type SectionContent = {
   text: string;
   references?: {
     style?: ReferenceStyle;
-    items?: Array<CreateReferenceInput & { formattedText: string }>;
+    items?: Array<
+      | (CreateReferenceInput & { formattedText: string })
+      | { referenceId: string; formattedText: string }
+    >;
   };
 };
 export interface ProjectSection {

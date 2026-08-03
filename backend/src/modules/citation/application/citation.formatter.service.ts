@@ -5,6 +5,9 @@ import { Citation } from "../domain/citation";
 import { IEEECitationFormatter } from "../infrastructure/formatters/IEEE.formatter";
 import { AMACitationFormatter } from "../infrastructure/formatters/ama.formatter";
 import { ChicagoFullNoteCitationFormatter } from "../infrastructure/formatters/chicago.full.note.formatter";
+import { ChicagoAuthorDateCitationFormatter } from "../infrastructure/formatters/chicago.author.date.formatter";
+import { MLACitationFormatter } from "../infrastructure/formatters/mla.formatter";
+import { HarvardCitationFormatter } from "../infrastructure/formatters/harvard.formatter";
 
 export class CitationFormatterService {
   constructor(
@@ -12,6 +15,9 @@ export class CitationFormatterService {
     private readonly ieeeCitationFormat: IEEECitationFormatter,
     private readonly amaCitationFormat: AMACitationFormatter,
     private chicagoFullNoteCitationFormat: ChicagoFullNoteCitationFormatter,
+    private readonly chicagoAuthorDate: ChicagoAuthorDateCitationFormatter,
+    private readonly harvard: HarvardCitationFormatter,
+    private readonly mla: MLACitationFormatter,
   ) {}
 
   public async generateCitation(
@@ -44,6 +50,12 @@ export class CitationFormatterService {
           input.reference,
           sectionId,
         );
+      case "CHICAGO_AUTHOR_DATE":
+        return this.chicagoAuthorDate.formatCitation(input.reference);
+      case "MLA":
+        return this.mla.formatCitation(input.reference);
+      case "HARVARD":
+        return this.harvard.formatCitation(input.reference);
       default:
         throw new AppError(
           "Unsupported citation type",

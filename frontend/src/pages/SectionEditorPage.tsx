@@ -7,6 +7,12 @@ import { SectionChecklistPanel } from "../components/SectionChecklistPanel";
 import { projectsApi } from "../services/api/projects";
 import { reviewsApi } from "../services/api/reviews";
 import type { ProjectSection, ReviewRun, SectionContent } from "../types/api";
+import type {
+  CreateReferenceInput,
+  Reference,
+} from "../services/api/reference";
+import { referenceApi } from "../services/api/reference";
+import { InlineCitationModal } from "../components/InlineCitationModal";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -24,6 +30,11 @@ export const SectionEditorPage = () => {
   const [isReviewing, setIsReviewing] = useState(false);
   const [sectionId, setSectionId] = useState("");
   const [error, setError] = useState("");
+  const [selection, setSelection] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+  const [citationOpen, setCitationOpen] = useState(false);
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
@@ -147,6 +158,141 @@ export const SectionEditorPage = () => {
     return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
   };
 
+  const referenceSection = allSections.find(
+    (item) => item.key === "REFERENCES",
+  );
+  const projectReferences = referenceSection?.content.references?.items || [];
+
+  const getItemReferenceId = (item: {
+    referenceId?: string;
+    reference?: { id?: string };
+  }): string => item.referenceId ?? item.reference?.id ?? "";
+
+  const addProjectReference = async (item: CreateReferenceInput) => {
+    if (!referenceSection)
+      throw new Error("References section does not exist.");
+    if (
+      projectReferences.some(
+        (reference) => (reference as any).reference?.doi === item.reference.doi,
+      )
+    ) {
+      alert("This reference already exists in the project.");
+      return;
+    }
+    const [formattedText] = await referenceApi.formatReference({
+      references: [item],
+      style: "APA",
+    });
+    const newReferences = [...projectReferences, { ...item, formattedText }];
+    await projectsApi.updateSection(projectId, "REFERENCES", {
+      content: {
+        ...referenceSection.content,
+        references: {
+          ...referenceSection.content.references,
+          items: newReferences,
+        },
+      },
+      changeSummary: "Added reference for inline citation",
+    });
+    setAllSections((items) =>
+      items.map((section) =>
+        section.key === "REFERENCES"
+          ? {
+              ...section,
+              content: {
+                ...section.content,
+                references: {
+                  ...section.content.references,
+                  items: newReferences,
+                },
+              },
+            }
+          : section,
+      ),
+    );
+  };
+
+  // citations are stored as {{cite:refId}} markers in content.text,
+  // and swapped for the real formatted text only when shown to the user
+  const getShownText = () => {
+    const items = content.references?.items || [];
+    let text = content.text || "";
+    for (const item of items) {
+      text = text
+        .split(`{{cite:${getItemReferenceId(item)}}}`)
+        .join(item.formattedText);
+    }
+
+    return text;
+  };
+
+  const getRawText = (
+    shownText: string,
+    items = content.references?.items || [],
+  ) => {
+    let text = shownText;
+    for (const item of items) {
+      text = text
+        .split(item.formattedText)
+        .join(`{{cite:${getItemReferenceId(item)}}}`);
+    }
+    return text;
+  };
+
+  const insertCitation = async (citation: string, reference: Reference) => {
+    if (!selection) return;
+
+    const alreadyUsed = projectReferences.some(
+      (r) => getItemReferenceId(r) === reference.id,
+    );
+    if (!alreadyUsed && referenceSection) {
+      await addProjectReference({ reference, type: "JOURNAL" });
+    }
+
+    const items = content.references?.items || [];
+    const alreadyInSection = items.some(
+      (r) => getItemReferenceId(r) === reference.id,
+    );
+    const updatedItems = alreadyInSection
+      ? items
+      : [...items, { referenceId: reference.id, formattedText: citation }];
+
+    const shown = getShownText();
+    const newShown =
+      shown.slice(0, selection.end) +
+      " " +
+      citation +
+      shown.slice(selection.end);
+    const newText = getRawText(newShown, updatedItems);
+
+    // Insert citation text into the current section and store the reference
+    const updatedContent: SectionContent = {
+      ...content,
+      text: newText,
+      references: {
+        style: content.references?.style || "APA",
+        items: updatedItems,
+      },
+    };
+
+    setContent(updatedContent);
+    setSelection(null);
+
+    // save the updated section to the database
+    try {
+      setError("");
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content: updatedContent,
+        changeSummary: "Added inline citation",
+      });
+      setStatusMessage("Citation inserted and saved.");
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.error?.message || "Failed to save citation.",
+      );
+    }
+  };
+
   return (
     <div className="page-shell">
       <div className="page-header">
@@ -176,10 +322,8 @@ export const SectionEditorPage = () => {
           </button>
         </div>
       </div>
-
       {error && <p className="error-text">{error}</p>}
       {statusMessage ? <p className="success-text">{statusMessage}</p> : null}
-
       <div className="content-layout">
         <div className="two-column-grid">
           <div className="section-editor__content-shell">
@@ -197,17 +341,29 @@ export const SectionEditorPage = () => {
                     : { outline: "none" }
                 }
                 className="editor-area"
-                onChange={(event) =>
-                  setContent((prev) => ({ ...prev, text: event.target.value }))
-                }
+                onChange={(event) => {
+                  setContent((prev) => ({
+                    ...prev,
+                    text: getRawText(event.target.value),
+                  }));
+                }}
+                onSelect={(event) => {
+                  const { selectionStart: start, selectionEnd: end } =
+                    event.currentTarget;
+                  setSelection(start !== end ? { start, end } : null);
+                }}
                 rows={10}
-                value={
-                  content.text ||
-                  content.references?.items
-                    ?.map((ref) => ref.formattedText)
-                    .join("\n\n")
-                }
+                value={getShownText()}
               />
+              {selection && (
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => setCitationOpen(true)}
+                >
+                  Add citation
+                </button>
+              )}
               <span
                 style={{
                   color: "green",
@@ -237,7 +393,6 @@ export const SectionEditorPage = () => {
         </div>
         <ReviewLayout review={latestSectionReview} />
       </div>
-
       {/* subsections LIST */}
       {subsections.length > 0 && (
         <div className="card" style={{ marginTop: "1.5rem" }}>
@@ -268,7 +423,6 @@ export const SectionEditorPage = () => {
           </div>
         </div>
       )}
-
       <ParaphrasePanel
         sectionId={sectionId}
         content={content}
@@ -276,6 +430,14 @@ export const SectionEditorPage = () => {
         onSaveSuccess={loadData}
       />
 
+      {citationOpen && (
+        <InlineCitationModal
+          references={projectReferences}
+          onAddReference={addProjectReference}
+          onClose={() => setCitationOpen(false)}
+          onInsert={insertCitation}
+        />
+      )}
       {/* Navigation buttons */}
       <div
         className="button-row"
@@ -304,7 +466,6 @@ export const SectionEditorPage = () => {
           {isLast ? `Finish ${"\u2192"}` : `Next ${"\u2192"}`}
         </button>
       </div>
-
       <p className="muted-text">
         Reminder: AI feedback is helpful, but please have a human review it
         before you act on it.

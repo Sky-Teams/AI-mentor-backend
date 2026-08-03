@@ -636,6 +636,95 @@ ul.reference-list {
   margin: 10px;
 }
 
+/* InlineCitationModal */
+.citation-modal-content {
+  max-width: 480px;
+}
+
+.citation-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.citation-modal-title {
+  margin: 0;
+}
+
+.citation-modal-close {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.citation-modal-label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.citation-modal-label-text {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.citation-modal-select {
+  width: 100%;
+}
+
+.citation-modal-references-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.citation-modal-find-button {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+}
+
+.citation-modal-references-list {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.citation-modal-reference-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.citation-modal-reference-item:last-child {
+  border-bottom: none;
+}
+
+.citation-modal-reference-item--selected {
+  background-color: #f4f6ff;
+}
+
+.citation-modal-radio {
+  margin-top: 0.2rem;
+}
+
+.citation-modal-reference-text {
+  font-size: 0.9rem;
+}
+
+.citation-modal-empty {
+  margin-bottom: 1rem;
+}
+
+.citation-modal-actions {
+  justify-content: flex-end;
+}
+
 .journal-page {
   max-width: 1120px;
 }
