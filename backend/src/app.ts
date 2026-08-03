@@ -151,7 +151,10 @@ export const createApp = (): express.Express => {
   );
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalSearchRepository = new JournalSearchRepository();
-  const journalService = new JournalService(journalRepository);
+  const journalService = new JournalService(
+    journalRepository,
+    journalSearchRepository,
+  );
 
   const userService = new UserService(passwordHasher, userRepository);
 
