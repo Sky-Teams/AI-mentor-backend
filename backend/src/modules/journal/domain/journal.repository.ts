@@ -24,6 +24,25 @@ export interface CreateJournalInput {
   specialtyId: string;
 }
 
+export interface JournalSearchResult {
+  id: string;
+  title: string;
+  publisher: string;
+  url: string;
+  issn: string | null;
+}
+
+export interface CrossRefJournalResponse {
+  message: {
+    items: {
+      title?: string;
+      publisher?: string;
+      URL?: string;
+      ISSN?: string[];
+    };
+  };
+}
+
 // Update journal interface
 export interface UpdateSectionChecklistsGroup {
   id?: string;
