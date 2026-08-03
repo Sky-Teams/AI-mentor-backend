@@ -71,6 +71,7 @@ import { APACitationFormatter } from "./modules/citation/infrastructure/formatte
 import { CitationFormatterService } from "./modules/citation/application/citation.formatter.service";
 import { CitationController } from "./modules/citation/interface/citation.controller";
 import { createCitationRouter } from "./modules/citation/interface/citation.routes";
+import { JournalSearchRepository } from "src/modules/journal/infrastructure/journal-search.repository.js";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -149,7 +150,9 @@ export const createApp = (): express.Express => {
     userRepository,
   );
   const journalRepository = new PrismaJournalRepository(prisma);
+  const journalSearchRepository = new JournalSearchRepository();
   const journalService = new JournalService(journalRepository);
+
   const userService = new UserService(passwordHasher, userRepository);
 
   const authController = new AuthController(authService);
