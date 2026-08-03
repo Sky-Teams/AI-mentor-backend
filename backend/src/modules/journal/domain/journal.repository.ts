@@ -32,16 +32,25 @@ export interface JournalSearchResult {
   issn: string | null;
 }
 
-export interface CrossRefJournalResponse {
+export type OpenAlexJournalResponse = {
+  results: Array<{
+    display_name?: string;
+    publisher?: string | null;
+    homepage_url?: string | null;
+    issn_l?: string[];
+  }>;
+};
+
+export type CrossRefJournalResponse = {
   message: {
-    items: {
-      title?: string;
+    items: Array<{
+      title?: string[];
       publisher?: string;
       URL?: string;
       ISSN?: string[];
-    };
+    }>;
   };
-}
+};
 
 // Update journal interface
 export interface UpdateSectionChecklistsGroup {

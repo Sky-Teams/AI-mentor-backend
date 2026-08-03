@@ -9,8 +9,8 @@ import { OpenAiJournalGenerator } from "src/modules/journal/infrastructure/opena
 export class JournalService {
   public constructor(
     private readonly journalRepository: JournalRepository,
-    private readonly journalGenerator: OpenAiJournalGenerator = new OpenAiJournalGenerator(),
     private readonly journalSearchRepository: JournalSearchRepository,
+    private readonly journalGenerator: OpenAiJournalGenerator = new OpenAiJournalGenerator(),
   ) {}
 
   public async getAllJournals(specialtyId: string) {
