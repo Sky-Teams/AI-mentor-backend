@@ -88,7 +88,7 @@ export const createAdminRouter = (
     asyncHandler((req, res) => controller.generateJournalFromName(req, res)),
   );
 
-  router.post(
+  router.get(
     "/journals/findByName",
     validate(journalNameSchema),
     asyncHandler((req, res) => controller.searchJournalByName(req, res)),

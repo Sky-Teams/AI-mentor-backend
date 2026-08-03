@@ -145,7 +145,7 @@ export class AdminController {
   }
 
   public async searchJournalByName(req: Request, res: Response) {
-    const journalName = req.query.journalName;
+    const journalName = req.body.journalName;
 
     const journal = await this.journalService.findJournalByName(journalName);
 
