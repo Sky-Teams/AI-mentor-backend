@@ -11,14 +11,16 @@ export class APACitationFormatter {
   ): Promise<string> {
     const year = reference?.datePublished
       ? await getYear(reference.datePublished)
-      : "";
+      : "n.d.";
 
     const authors =
       reference?.authors && reference.authors?.length !== 0
-        ? `${await this.formatAuthor(reference.authors)}${year ? ", " : ""}`
-        : "";
+        ? `${await this.formatAuthor(reference.authors)}${year ? "," : ""}`
+        : reference.title
+          ? `"${reference.title},"`
+          : "";
 
-    let publicationPart = year || authors ? `(${authors}${year})` : "";
+    let publicationPart = year && authors ? `(${authors} ${year})` : "";
     return publicationPart;
   }
 
