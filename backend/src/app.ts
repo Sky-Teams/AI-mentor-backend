@@ -74,6 +74,10 @@ import { createCitationRouter } from "./modules/citation/interface/citation.rout
 import { ChicagoAuthorDateCitationFormatter } from "./modules/citation/infrastructure/formatters/chicago.author.date.formatter";
 import { HarvardCitationFormatter } from "./modules/citation/infrastructure/formatters/harvard.formatter";
 import { MLACitationFormatter } from "./modules/citation/infrastructure/formatters/mla.formatter";
+import { IEEECitationFormatter } from "./modules/citation/infrastructure/formatters/IEEE.formatter";
+import { AMACitationFormatter } from "./modules/citation/infrastructure/formatters/ama.formatter";
+import { ChicagoFullNoteCitationFormatter } from "./modules/citation/infrastructure/formatters/chicago.full.note.formatter";
+import { OSCOLACitationFormatter } from "./modules/citation/infrastructure/formatters/OSCOLA.formatter";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -146,11 +150,19 @@ export const createApp = (): express.Express => {
     new ChicagoAuthorDateCitationFormatter();
   const harvardCitationFormat = new HarvardCitationFormatter();
   const mlaCitationFormat = new MLACitationFormatter();
+  const ieeeCitationFormat = new IEEECitationFormatter();
+  const amaCitationFormat = new AMACitationFormatter();
+  const chicagoFullNoteCitationFormat = new ChicagoFullNoteCitationFormatter();
+  const oscolaCitationFormat = new OSCOLACitationFormatter();
   const citationFormatterService = new CitationFormatterService(
     apaCitationFormat,
     chicagoAuthorDateCitationFormat,
     harvardCitationFormat,
     mlaCitationFormat,
+    ieeeCitationFormat,
+    amaCitationFormat,
+    chicagoFullNoteCitationFormat,
+    oscolaCitationFormat,
   );
 
   const referenceService = new ReferenceSearchService(journalReferenceService);
