@@ -1,31 +1,45 @@
 import {
-  CrossRefJournalResponse,
   JournalSearchResult,
+  OpenAlexJournalResponse,
 } from "src/modules/journal/domain/journal.repository.js";
 
 export class JournalSearchRepository {
-  private readonly crossRefUrl: string = "https://api.crossref.org";
+  private readonly openAlexUrl = "https://api.openalex.org";
 
   public async findJournalByName(
     journalName: string,
-  ): Promise<JournalSearchResult> {
-    const response = await fetch(
-      `${this.crossRefUrl}/journals?query=${encodeURIComponent(journalName)}&rows=10`,
-      {
-        headers: { Accept: "application/json" },
-      },
-    );
+  ): Promise<JournalSearchResult[]> {
+    return this.searchOpenAlex(journalName);
+  }
 
-    if (!response.ok) return [];
+  private async searchOpenAlex(query: string): Promise<JournalSearchResult[]> {
+    try {
+      const res = await fetch(
+        `${this.openAlexUrl}/sources?search=${encodeURIComponent(query)}&per-page=10`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+          signal: AbortSignal.timeout(5000),
+        },
+      );
 
-    const data = (await response.json()) as CrossRefJournalResponse;
+      if (!res.ok) return [];
 
-    return data.message.items.map((item) => ({
-      id: crypto.randomUUID(),
-      title: item.title || "",
-      publisher: item.publisher || "",
-      url: item.url || "",
-      issn: item.ISSN[0] || null,
-    }));
+      const data = (await res.json()) as OpenAlexJournalResponse;
+
+      return data.results
+        .filter((item) => item.homepage_url !== null)
+        .map((item) => ({
+          id: crypto.randomUUID(),
+          title: item.display_name ?? "",
+          publisher: item.publisher ?? "",
+          url: item.homepage_url ?? "",
+          issn: item.issn_l ?? null,
+        }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
   }
 }
