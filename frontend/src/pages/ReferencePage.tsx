@@ -131,7 +131,8 @@ export const ReferencePage = () => {
     };
 
     const exist = oldContent?.references?.items?.some(
-      (item) => item?.reference?.id === reference.id,
+      (item: any) =>
+        (item?.referenceId ?? item?.reference?.id) === reference.id,
     );
 
     if (exist) {
