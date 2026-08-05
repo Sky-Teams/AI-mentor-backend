@@ -2,8 +2,11 @@ import { Reference } from "src/modules/references/domain/reference";
 import { getYear } from "src/shared/utils/format-citation-helper";
 
 export class APACitationFormatter {
-  public async formatCitation(reference: Reference): Promise<string> {
-    return await this.parentheticalCitationFormat(reference);
+  public async formatCitation(reference: Reference) {
+    const result = await this.parentheticalCitationFormat(reference);
+    return {
+      formattedText: result,
+    };
   }
 
   private async parentheticalCitationFormat(

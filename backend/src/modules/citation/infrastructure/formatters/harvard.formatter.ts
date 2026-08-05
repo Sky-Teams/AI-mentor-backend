@@ -3,7 +3,10 @@ import { formatPage, getYear } from "src/shared/utils/format-citation-helper";
 
 export class HarvardCitationFormatter {
   public formatCitation(reference: Reference) {
-    return this.parentheticalCitationFormat(reference);
+    const result = this.parentheticalCitationFormat(reference);
+    return {
+      formattedText: result,
+    };
   }
 
   private parentheticalCitationFormat(reference: Reference): string {

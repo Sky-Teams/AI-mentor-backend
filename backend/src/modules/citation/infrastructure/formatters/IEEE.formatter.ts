@@ -1,5 +1,7 @@
 export class IEEECitationFormatter {
   public formatCitation(citationNumber: number) {
-    return `[${citationNumber}]`;
+    return {
+      formattedText: `[${citationNumber}]`,
+    };
   }
 }

@@ -3,7 +3,10 @@ import { formatPage } from "src/shared/utils/format-citation-helper";
 
 export class MLACitationFormatter {
   public formatCitation(reference: Reference) {
-    return this.parentheticalCitationFormat(reference);
+    const result = this.parentheticalCitationFormat(reference);
+    return {
+      formattedText: result,
+    };
   }
 
   private parentheticalCitationFormat(reference: Reference): string {
