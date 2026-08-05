@@ -10,15 +10,20 @@ import type {
   Reference,
 } from "../services/api/reference";
 
-type ReferenceItem =
-  | { reference: Reference; formattedText: string }
-  | { referenceId: string; formattedText: string };
+export type ReferenceItem =
+  | (CreateReferenceInput & { formattedText?: string })
+  | { referenceId: string; formattedText?: string; footnote?: string };
 
 type Props = {
   references: ReferenceItem[];
   onClose: () => void;
   onAddReference: (reference: CreateReferenceInput) => Promise<void>;
-  onInsert: (citation: string, reference: Reference) => void;
+  onInsert: (
+    citation: { formattedText?: string; footnote?: string },
+    reference: Reference,
+  ) => void;
+  onStyleChange: (style: ReferenceStyle) => void;
+  style: ReferenceStyle;
 };
 
 const getReferenceId = (item: ReferenceItem): string =>
@@ -29,14 +34,15 @@ export const InlineCitationModal = ({
   onClose,
   onAddReference,
   onInsert,
+  onStyleChange,
+  style,
 }: Props) => {
-  const [style, setStyle] = useState<ReferenceStyle>("APA");
   const [selected, setSelected] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [displayedReferences, setDisplayedReferences] = useState<string[]>(
-    references.map((item) => item.formattedText),
+    references.map((item) => item.formattedText ?? ""),
   );
 
   useEffect(() => {
@@ -50,7 +56,9 @@ export const InlineCitationModal = ({
         );
 
         if (!items.length) {
-          setDisplayedReferences(references.map((item) => item.formattedText));
+          setDisplayedReferences(
+            references.map((item) => item.formattedText ?? ""),
+          );
           return;
         }
 
@@ -67,12 +75,16 @@ export const InlineCitationModal = ({
         let index = 0;
         setDisplayedReferences(
           references.map((item) =>
-            "reference" in item ? formatted[index++] : item.formattedText,
+            "reference" in item
+              ? formatted[index++]
+              : (item.formattedText ?? ""),
           ),
         );
       } catch {
         if (active) {
-          setDisplayedReferences(references.map((item) => item.formattedText));
+          setDisplayedReferences(
+            references.map((item) => item.formattedText ?? ""),
+          );
         }
       }
     };
@@ -104,6 +116,7 @@ export const InlineCitationModal = ({
       const citation = await referenceApi.formatInlineCitation({
         reference: item.reference,
         style,
+        referenceIndex: selected + 1,
       });
 
       onInsert(citation, item.reference);
@@ -149,7 +162,9 @@ export const InlineCitationModal = ({
           <select
             className="modern-select citation-modal-select"
             value={style}
-            onChange={(event) => setStyle(event.target.value as ReferenceStyle)}
+            onChange={(event) =>
+              onStyleChange(event.target.value as ReferenceStyle)
+            }
           >
             {referenceStyles.map((item) => (
               <option key={item.value} value={item.value}>
