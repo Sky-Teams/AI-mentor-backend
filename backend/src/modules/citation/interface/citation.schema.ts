@@ -16,4 +16,5 @@ export const citationSchema = z.object({
     datePublished: z.string().min(1).nullable().optional(),
     journalNameAbbrev: z.string().min(1).nullable().optional(),
   }),
+  referenceIndex: z.number().min(1),
 });

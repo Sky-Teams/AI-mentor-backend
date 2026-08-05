@@ -16,14 +16,16 @@ export class CitationController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const { style, reference } = request.body as {
+    const { style, reference, referenceIndex } = request.body as {
       style: ReferenceStyle;
       reference: Reference;
+      referenceIndex: number;
     };
 
     const result = await this.citationFormatterService.generateCitation({
       style: style,
       reference: reference,
+      referenceIndex: referenceIndex,
     });
 
     response.status(StatusCodes.OK).json(successResponse(result));
