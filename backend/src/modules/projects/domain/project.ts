@@ -25,7 +25,7 @@ export type SectionContent = {
     style: ReferenceStyle;
     items: Array<
       | (CreateReferenceInput & { formattedText: string })
-      | { referenceId: string; formattedText: string }
+      | { referenceId: string; formattedText?: string; footnote?: string }
     >;
   };
 };
