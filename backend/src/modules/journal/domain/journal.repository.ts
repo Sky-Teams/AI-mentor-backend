@@ -37,19 +37,8 @@ export type OpenAlexJournalResponse = {
     display_name?: string;
     publisher?: string | null;
     homepage_url?: string | null;
-    issn_l?: string[];
+    issn_l?: string;
   }>;
-};
-
-export type CrossRefJournalResponse = {
-  message: {
-    items: Array<{
-      title?: string[];
-      publisher?: string;
-      URL?: string;
-      ISSN?: string[];
-    }>;
-  };
 };
 
 // Update journal interface

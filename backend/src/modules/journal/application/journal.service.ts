@@ -38,10 +38,13 @@ export class JournalService {
     );
   }
 
-  public async generateJournalFromName(input: { journalName: string }) {
-    return this.journalGenerator.generateJournalTemplate({
-      journalName: input.journalName,
-    });
+  public async extractJournalFromSource(input: {
+    journalName: string;
+    publisher?: string;
+    url: string;
+    issn?: string | null;
+  }) {
+    return this.journalGenerator.generateJournalTemplate(input);
   }
 
   public async findJournalByName(name: string) {
