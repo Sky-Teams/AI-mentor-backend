@@ -8,48 +8,38 @@ import { ChicagoFullNoteCitationFormatter } from "../infrastructure/formatters/c
 import { ChicagoAuthorDateCitationFormatter } from "../infrastructure/formatters/chicago.author.date.formatter";
 import { MLACitationFormatter } from "../infrastructure/formatters/mla.formatter";
 import { HarvardCitationFormatter } from "../infrastructure/formatters/harvard.formatter";
+import { OSCOLACitationFormatter } from "../infrastructure/formatters/OSCOLA.formatter";
 
 export class CitationFormatterService {
   constructor(
     private readonly apa: APACitationFormatter,
-    private readonly ieeeCitationFormat: IEEECitationFormatter,
-    private readonly amaCitationFormat: AMACitationFormatter,
-    private chicagoFullNoteCitationFormat: ChicagoFullNoteCitationFormatter,
     private readonly chicagoAuthorDate: ChicagoAuthorDateCitationFormatter,
     private readonly harvard: HarvardCitationFormatter,
     private readonly mla: MLACitationFormatter,
+    private readonly ieeeCitationFormat: IEEECitationFormatter,
+    private readonly amaCitationFormat: AMACitationFormatter,
+    private chicagoFullNoteCitationFormat: ChicagoFullNoteCitationFormatter,
+    private oscolaCitationFormat: OSCOLACitationFormatter,
   ) {}
 
   public async generateCitation(
     input: Citation,
-    sectionId: string,
-  ): Promise<string> {
+  ): Promise<{ formattedText?: string; footnote?: string }> {
     switch (input.style) {
       case "APA":
         return this.apa.formatCitation(input.reference);
       case "IEEE":
       case "VANCOUVER":
-        if (!input.citationNumber)
-          throw new AppError(
-            "Citation number is required",
-            StatusCodes.BAD_REQUEST,
-            `CITATION_NUMBER_REQUIRED`,
-          );
-        return this.ieeeCitationFormat.formatCitation(input.citationNumber);
+        return this.ieeeCitationFormat.formatCitation(input.referenceIndex);
       case "AMERICAN_CHEMICAL_SOCIETY":
       case "AMA":
-        if (!input.citationNumber)
-          throw new AppError(
-            "Citation number is required",
-            StatusCodes.BAD_REQUEST,
-            `CITATION_NUMBER_REQUIRED`,
-          );
-        return this.amaCitationFormat.formatCitation(input.citationNumber);
+        return this.amaCitationFormat.formatCitation(input.referenceIndex);
       case "CHICAGO_FULL_NOTE":
         return this.chicagoFullNoteCitationFormat.formatCitation(
           input.reference,
-          sectionId,
         );
+      case "OSCOLA":
+        return this.oscolaCitationFormat.formatCitation(input.reference);
       case "CHICAGO_AUTHOR_DATE":
         return this.chicagoAuthorDate.formatCitation(input.reference);
       case "MLA":
