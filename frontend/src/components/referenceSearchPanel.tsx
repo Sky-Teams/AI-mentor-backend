@@ -56,16 +56,7 @@ export const ReferenceSearchPanel = ({
       setSelectedReference(null);
       setErrorMessage("");
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message ||
-            "Error to handle save reference",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -103,16 +94,7 @@ export const ReferenceSearchPanel = ({
       }
     } catch (error: any) {
       setReferences([]);
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message ||
-            "Error to handle search references",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
       setSearchInput("");

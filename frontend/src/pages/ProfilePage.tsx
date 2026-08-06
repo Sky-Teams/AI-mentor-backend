@@ -18,15 +18,7 @@ export function ProfilePage() {
       const result = await userApi.updateProfile(fullName);
       setUpdateProfile(result);
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "An error occurred.",
-        );
-      }
+      setErrorMessage(error.message);
     }
   };
 

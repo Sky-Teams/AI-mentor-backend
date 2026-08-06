@@ -24,13 +24,7 @@ export const RegisterPage = () => {
       });
       setIsRegistered(true);
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setError(`${field}: ${message}`);
-      } else {
-        setError(error?.response?.data?.error?.message || "Unexpected error");
-      }
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }

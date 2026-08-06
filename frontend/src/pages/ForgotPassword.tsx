@@ -17,15 +17,7 @@ export function ForgotPassword() {
       await authApi.forgotPassword(String(formData.get("email")));
       setIsSubmitted(true);
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "An error occurred",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }

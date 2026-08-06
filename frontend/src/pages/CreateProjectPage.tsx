@@ -105,15 +105,7 @@ export const CreateProjectPage = () => {
 
       navigate(`/projects/${project.id}`);
     } catch (err: any) {
-      if (err?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = err?.response?.data?.error?.details[0].field;
-        const message = err?.response?.data?.error?.details[0].message;
-        setSubmitError(`${field}: ${message}`);
-      } else {
-        setSubmitError(
-          err?.response?.data?.error?.message || "Unexpected error",
-        );
-      }
+      setSubmitError(err.message);
     } finally {
       setIsSubmitting(false);
     }

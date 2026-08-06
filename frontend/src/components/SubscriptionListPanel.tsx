@@ -30,9 +30,7 @@ export function SubscriptionListPanel() {
         setRequestedPlan(requestedPlan);
         if (activePlan) setIsActivePlan(true);
       } catch (error: any) {
-        setErrorMessage(
-          error.response?.data?.error?.message || "An error occurred",
-        );
+        setErrorMessage(error.message);
       } finally {
         setIsLoading(false);
       }
@@ -50,15 +48,7 @@ export function SubscriptionListPanel() {
       setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "An error occurred",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setSelectedId(null);
     }
@@ -72,15 +62,7 @@ export function SubscriptionListPanel() {
       setRequestedPlan(null);
       alert("Your requested cancelled.");
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "An error occurred",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setSelectedId(null);
     }
@@ -95,15 +77,7 @@ export function SubscriptionListPanel() {
       setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "An error occurred",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setBuyingId(null);
     }

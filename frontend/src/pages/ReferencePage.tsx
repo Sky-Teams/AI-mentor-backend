@@ -57,15 +57,7 @@ export const ReferencePage = () => {
       setSaveReferences(getReferences());
       setIsSearchBoxOpen(false);
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "Failed to add reference",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -93,15 +85,7 @@ export const ReferencePage = () => {
       });
       setSaveReferences(updateFormatStyles);
     } catch (error: any) {
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "Failed to format reference",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -176,16 +160,7 @@ export const ReferencePage = () => {
       setMessage("Reference add successfully");
       setIsOpenProjectModal(false);
     } catch (error: any) {
-      console.log(error);
-      if (error?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = error?.response?.data?.error?.details[0].field;
-        const message = error?.response?.data?.error?.details[0].message;
-        setErrorMessage(`${field}: ${message}`);
-      } else {
-        setErrorMessage(
-          error?.response?.data?.error?.message || "Unexpected error",
-        );
-      }
+      setErrorMessage(error.message);
     } finally {
       setIsOpenProjectModal(false);
     }

@@ -39,10 +39,7 @@ export const EditJournalPage = () => {
         journalForm.updateBasicInfo("guidelinePack", formState.guidelinePack);
         journalForm.updateBasicInfo("specialtyId", formState.specialtyId);
       } catch (err: any) {
-        setLoadError(
-          err?.response?.data?.error?.message ||
-            "Could not load journal. Please try again.",
-        );
+        setLoadError(err.message);
       } finally {
         setLoading(false);
       }
@@ -90,9 +87,7 @@ export const EditJournalPage = () => {
       setIsOrderModalOpen(false);
       setSaveSuccess("Section order updated successfully.");
     } catch (e: any) {
-      setOrderError(
-        e?.response?.data?.error?.message || "Could not update section order",
-      );
+      setOrderError(e.message);
     } finally {
       setIsSavingOrder(false);
     }
@@ -113,15 +108,7 @@ export const EditJournalPage = () => {
       await adminApi.updateJournal(id, payload);
       setSaveSuccess("Journal updated successfully.");
     } catch (err: any) {
-      if (err?.response?.data?.error?.code === "VALIDATION_ERROR") {
-        const field = err?.response?.data?.error?.details[0].field;
-        const message = err?.response?.data?.error?.details[0].message;
-        setSaveError(`${field}: ${message}`);
-      } else {
-        setSaveError(
-          err?.response?.data?.error?.message || "Could not update journal",
-        );
-      }
+      setSaveError(err.message);
     }
   };
 
