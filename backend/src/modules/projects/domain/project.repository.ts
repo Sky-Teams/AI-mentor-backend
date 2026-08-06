@@ -50,6 +50,7 @@ export interface ProjectRepository {
   ): Promise<Project | null>;
   updateProject(input: UpdateProjectInput): Promise<Project>;
   archiveProject(projectId: string, ownerId: string): Promise<void>;
+  unArchiveProject(projectId: string, ownerId: string): Promise<void>;
   updateSectionContent(input: UpdateSectionInput): Promise<{
     section: ProjectSection;
     version: SectionVersion;
