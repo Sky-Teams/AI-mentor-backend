@@ -1,8 +1,4 @@
-import {
-  LengthStrategy,
-  ParaphraseRun,
-  ToneType,
-} from "../types/api";
+import { LengthStrategy, ParaphraseRun, ToneType } from "../types/api";
 import { paraphraseApi } from "../services/api/paraphrase";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -47,6 +43,7 @@ export const ParaphrasePanel = ({
     if (!projectId) return;
 
     try {
+      //  Commented out because we need to paraphrase the content without saving it first.
       // await projectsApi.updateSection(projectId, sectionKey, {
       //   content,
       //   changeSummary: "Saved before AI paraphrase",
