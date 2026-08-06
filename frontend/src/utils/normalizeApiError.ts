@@ -17,8 +17,10 @@ export function normalizeApiError(error: any): ApiError {
 
   if (apiError.code === "VALIDATION_ERROR" && apiError.details?.length) {
     const details = apiError?.details[0];
+    const field =
+      details.field.charAt(0).toUpperCase() + details.field.slice(1);
     return {
-      message: `${details.field}: ${details.message}`,
+      message: `${field}: ${details.message}`,
       status: apiError?.status,
       code: apiError?.code,
       details: apiError?.details,
