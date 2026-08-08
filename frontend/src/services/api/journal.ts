@@ -1,5 +1,18 @@
 import { apiClient, unwrap } from "./client";
-import type { ApiSuccessResponse, Journal, Specialty } from "../../types/api";
+import type {
+  ApiSuccessResponse,
+  CreateJournalInput,
+  Journal,
+  Specialty,
+} from "../../types/api";
+
+export interface JournalSearchResult {
+  id: string;
+  title: string;
+  publisher: string;
+  url: string;
+  issn: string | null;
+}
 
 export const journalsApi = {
   async list() {
@@ -29,11 +42,27 @@ export const journalsApi = {
     return unwrap(response.data);
   },
 
-  async generateFromName(input: { journalName: string }) {
-    const response = await apiClient.post<ApiSuccessResponse<Journal>>(
-      "/admin/journals/generate-from-name",
+  async findByName(input: { journalName: string }) {
+    const response = await apiClient.get<
+      ApiSuccessResponse<JournalSearchResult[]>
+    >("/admin/journals/findByName", {
+      params: input,
+    });
+
+    return unwrap(response.data);
+  },
+
+  async extractFromSource(input: {
+    journalName: string;
+    publisher?: string;
+    url: string;
+    issn?: string | null;
+  }) {
+    const response = await apiClient.post<ApiSuccessResponse<CreateJournalInput>>(
+      "/admin/journals/extract-from-source",
       input,
     );
+
     return unwrap(response.data);
   },
 };

@@ -60,7 +60,22 @@ const isSchemaValidationError = (error: unknown): boolean => {
 
 export const buildJournalGenerationContext = (
   journalName: string,
+  extra?: { publisher?: string; url?: string; issn?: string | null },
 ): JournalGenerationContext => {
+  const extraInfoLines = [
+    extra?.publisher ? `- Publisher: ${extra.publisher}` : "",
+    extra?.url ? `- URL: ${extra.url}` : "",
+    extra?.issn ? `- ISSN: ${extra.issn}` : "",
+  ].filter(Boolean);
+
+  const extraInfoBlock = extraInfoLines.length
+    ? `
+Known metadata (use as truth, do not contradict it):
+${extraInfoLines.join("\n")}
+${extra?.url ? "- Do not fetch or inspect the URL. Just use it as a reference label." : ""}
+`
+    : "";
+
   return {
     journalName,
     userPrompt: `
@@ -68,7 +83,7 @@ You are generating a journal template for a medical case report workflow.
 
 Task:
 Create a JSON object matching the journal schema for the journal named "${journalName}".
-
+${extraInfoBlock}
 Rules:
 - Sections can have subsections, but subsections must NOT contain their own subsections.
 - Do not add a "subsections" field inside any subsection object.
@@ -104,6 +119,9 @@ export class OpenAiJournalGenerator {
 
   public async generateJournalTemplate(input: {
     journalName: string;
+    publisher?: string;
+    url?: string;
+    issn?: string | null;
   }): Promise<CreateJournalInput> {
     if (!env.OPENAI_API_KEY) {
       throw new AppError(
@@ -113,7 +131,11 @@ export class OpenAiJournalGenerator {
       );
     }
 
-    const context = buildJournalGenerationContext(input.journalName);
+    const context = buildJournalGenerationContext(input.journalName, {
+      publisher: input.publisher,
+      url: input.url,
+      issn: input.issn,
+    });
 
     let response;
 
@@ -172,6 +194,8 @@ export class OpenAiJournalGenerator {
 
     return {
       ...parsed,
+      name: input.journalName || parsed.name,
+      publisher: input.publisher || parsed.publisher,
       specialtyId: "",
       sections: parsed.sections.map((section, index) => ({
         ...section,
