@@ -383,7 +383,119 @@ export const SectionEditorPage = () => {
     }
   };
 
- 
+  const updateCitationStyle = async (style: ReferenceStyle) => {
+    const updatedSections = [];
+    for (const section of allSections) {
+      if (
+        !section.content.references?.items?.length ||
+        section.key === "REFERENCES"
+      ) {
+        updatedSections.push(section);
+        continue;
+      }
+
+      const items = section.content.references.items.filter(
+        (
+          item,
+        ): item is Extract<
+          ReferenceItem,
+          { referenceId: string; formattedText?: string; footnote?: string }
+        > => "referenceId" in item,
+      );
+
+      let sectionReferences: {
+        reference: Reference;
+        referenceIndex: number;
+      }[] = [];
+
+      for (const item of items) {
+        const reference = projectReferences.find(
+          (reference) => reference.reference.id === item.referenceId,
+        );
+
+        if (!reference) continue;
+        const index =
+          projectReferences.findIndex(
+            (reference) => reference.reference.id === item.referenceId,
+          ) + 1;
+
+        sectionReferences.push({
+          reference: reference.reference,
+          referenceIndex: index,
+        });
+      }
+
+      if (!sectionReferences.length) {
+        updatedSections.push(section);
+        continue;
+      }
+
+      const formattedCitations = await referenceApi.formatInlineCitation({
+        references: sectionReferences,
+        style,
+      });
+
+      const updatedItems = items.map((item) => {
+        const formatted = formattedCitations.find(
+          (citation) => citation.referenceId === item.referenceId,
+        );
+
+        return {
+          ...item,
+          formattedText: formatted?.formattedText ?? item.formattedText,
+          footnote: formatted?.footnote ?? item.footnote,
+        };
+      });
+
+      const updatedContent: SectionContent =
+        section.key === sectionKey
+          ? {
+              ...content,
+              references: {
+                ...section.content.references,
+                style,
+                items: updatedItems,
+              },
+            }
+          : {
+              text: section.content.text,
+              references: {
+                ...section.content.references,
+                style,
+                items: updatedItems,
+              },
+            };
+
+      await projectsApi.updateSection(projectId, section.key, {
+        content: updatedContent,
+      });
+
+      updatedSections.push({ ...section, content: updatedContent });
+    }
+
+    setAllSections(updatedSections);
+
+    const currentSection = updatedSections.find(
+      (section) => section.key === sectionKey,
+    );
+    if (currentSection) setContent(currentSection.content);
+  };
+
+  const handleStyleChange = async (newStyle: ReferenceStyle) => {
+    const references = projectReferences.filter(
+      (ref): ref is CreateReferenceInput & { formattedText: string } =>
+        "reference" in ref && "type" in ref,
+    );
+
+    await saveReferences(
+      references.map(({ formattedText, ...item }) => item),
+      newStyle,
+    );
+
+    await updateCitationStyle(newStyle);
+
+    setNewStyle(newStyle);
+  };
 
   return (
     <div className="page-shell">
