@@ -52,6 +52,9 @@ export const ProjectDetailsPage = () => {
         <div>
           <p className="eyebrow">Project</p>
           <h1>{project?.title ?? "Loading project..."}</h1>
+          <button onClick={() => projectsApi.exportProject(projectId)}>
+            Export Project
+          </button>
           <p className="muted-text">
             Status: {project?.status ?? "-"} · Target journal:{" "}
             {project?.targetJournal ?? "Not set"}
