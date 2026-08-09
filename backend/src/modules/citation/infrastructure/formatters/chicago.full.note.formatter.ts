@@ -2,7 +2,7 @@ import { Reference } from "src/modules/references/domain/reference";
 import { formatPage, getYear } from "src/shared/utils/format-citation-helper";
 
 export class ChicagoFullNoteCitationFormatter {
-  public formatCitation(reference: Reference): { footnote: string } {
+  public formatCitation(reference: Reference) {
     let footNotes = "";
     if (reference.authors && reference.authors.length !== 0)
       footNotes += `${this.formatAuthors(reference.authors)},`;
@@ -20,6 +20,7 @@ export class ChicagoFullNoteCitationFormatter {
     if (footNotes) footNotes += ".";
 
     return {
+      referenceId: reference.id,
       footnote: footNotes,
     };
   }

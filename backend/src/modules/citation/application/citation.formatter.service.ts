@@ -30,10 +30,16 @@ export class CitationFormatterService {
         return this.apa.formatCitation(input.reference);
       case "IEEE":
       case "VANCOUVER":
-        return this.ieeeCitationFormat.formatCitation(input.referenceIndex);
+        return this.ieeeCitationFormat.formatCitation(
+          input.reference,
+          input.referenceIndex,
+        );
       case "AMERICAN_CHEMICAL_SOCIETY":
       case "AMA":
-        return this.amaCitationFormat.formatCitation(input.referenceIndex);
+        return this.amaCitationFormat.formatCitation(
+          input.reference,
+          input.referenceIndex,
+        );
       case "CHICAGO_FULL_NOTE":
         return this.chicagoFullNoteCitationFormat.formatCitation(
           input.reference,

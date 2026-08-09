@@ -5,6 +5,7 @@ export class MLACitationFormatter {
   public formatCitation(reference: Reference) {
     const result = this.parentheticalCitationFormat(reference);
     return {
+      referenceId: reference.id,
       formattedText: result,
     };
   }

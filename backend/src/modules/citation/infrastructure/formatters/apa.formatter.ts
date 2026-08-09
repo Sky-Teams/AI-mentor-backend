@@ -5,6 +5,7 @@ export class APACitationFormatter {
   public async formatCitation(reference: Reference) {
     const result = await this.parentheticalCitationFormat(reference);
     return {
+      referenceId: reference.id,
       formattedText: result,
     };
   }

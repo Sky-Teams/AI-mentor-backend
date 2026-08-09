@@ -2,7 +2,7 @@ import { Reference } from "src/modules/references/domain/reference";
 import { formatPage, getYear } from "src/shared/utils/format-citation-helper";
 
 export class OSCOLACitationFormatter {
-  public formatCitation(reference: Reference): { footnote: string } {
+  public formatCitation(reference: Reference) {
     let footnote = "";
 
     if (reference.authors && reference.authors.length !== 0) {
@@ -24,6 +24,7 @@ export class OSCOLACitationFormatter {
 
     footnote += ".";
     return {
+      referenceId: reference.id,
       footnote: footnote,
     };
   }

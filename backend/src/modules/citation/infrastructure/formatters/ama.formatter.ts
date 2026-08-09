@@ -1,7 +1,10 @@
+import { Reference } from "src/modules/references/domain/reference";
+
 export class AMACitationFormatter {
-  public formatCitation(referenceIndex: number) {
+  public formatCitation(reference: Reference, referenceIndex: number) {
     const result = this.toSuperscript(referenceIndex);
     return {
+      referenceId: reference.id,
       formattedText: result,
     };
   }
