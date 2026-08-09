@@ -114,12 +114,13 @@ export const InlineCitationModal = ({
       if (!("reference" in item)) return;
 
       const citation = await referenceApi.formatInlineCitation({
-        reference: item.reference,
+        references: [
+          { reference: item.reference, referenceIndex: selected + 1 },
+        ],
         style,
-        referenceIndex: selected + 1,
       });
 
-      onInsert(citation, item.reference);
+      onInsert(citation[0], item.reference);
       onClose();
     } catch (error: any) {
       setError(

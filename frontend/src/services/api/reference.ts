@@ -106,18 +106,17 @@ export const referenceApi = {
   },
 
   async formatInlineCitation(data: {
-    reference: Reference;
+    references: { reference: Reference; referenceIndex: number }[];
     style: ReferenceStyle;
-    referenceIndex: number;
   }) {
     const response = await apiClient.post<
-      ApiSuccessResponse<{ formattedText?: string; footnote?: string }>
+      ApiSuccessResponse<{referenceId: string, formattedText?: string; footnote?: string }[]>
     >("/citations/format-style", data);
     return unwrap(response.data);
   },
 };
 
-const superscriptMap: Record<string, string> = {
+export const superscriptMap: Record<string, string> = {
   "0": "⁰",
   "1": "¹",
   "2": "²",
