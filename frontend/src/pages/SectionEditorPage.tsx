@@ -56,6 +56,10 @@ export const SectionEditorPage = () => {
     }
     setAllSections(project.sections || []);
     setReviews(allReviews);
+    const referenceSection = project.sections?.find(
+      (section) => section.key === "REFERENCES",
+    );
+    setNewStyle(referenceSection?.content.references?.style ?? "APA");
   };
 
   useEffect(() => {
@@ -166,7 +170,12 @@ export const SectionEditorPage = () => {
   const referenceSection = allSections.find(
     (item) => item.key === "REFERENCES",
   );
-  const projectReferences = referenceSection?.content.references?.items || [];
+
+  const projectReferences =
+    referenceSection?.content.references?.items?.filter(
+      (item): item is CreateReferenceInput & { formattedText: string } =>
+        "reference" in item,
+    ) ?? [];
 
   const getItemReferenceId = (item: {
     referenceId?: string;
@@ -223,6 +232,7 @@ export const SectionEditorPage = () => {
       ),
     );
 
+    setNewStyle(style);
     return updatedReferences;
   };
 
@@ -242,7 +252,7 @@ export const SectionEditorPage = () => {
       )
       .map(({ formattedText, ...ref }) => ref);
 
-    await saveReferences([...references, item], style);
+    await saveReferences([...references, item], style!);
   };
 
   // citations are stored as {{cite:refId}} markers in content.text,
@@ -261,10 +271,10 @@ export const SectionEditorPage = () => {
         content.references?.style === "OSCOLA"
       ) {
         const number = toSuperscript(index);
-        text = text.replace(placeholder, `${number}`);
+        text = text.split(placeholder).join(number);
         index++;
       } else {
-        text = text.replace(placeholder, item.formattedText || "");
+        text = text.split(placeholder).join(item.formattedText);
       }
     }
 
@@ -281,14 +291,18 @@ export const SectionEditorPage = () => {
       content.references?.style === "CHICAGO_FULL_NOTE" ||
       content.references?.style === "OSCOLA"
     ) {
-      return text;
-    }
+      items.forEach((item, index) => {
+        const number = toSuperscript(index + 1);
+        const placeholder = `{{cite:${getItemReferenceId(item)}}}`;
 
-    for (const item of items) {
-      if (item.formattedText) {
-        text = text
-          .split(item.formattedText)
-          .join(`{{cite:${getItemReferenceId(item)}}}`);
+        text = text.split(number).join(placeholder);
+      });
+    } else {
+      for (const item of items) {
+        if (item.formattedText)
+          text = text
+            .split(item.formattedText)
+            .join(`{{cite:${getItemReferenceId(item)}}}`);
       }
     }
 
@@ -325,16 +339,17 @@ export const SectionEditorPage = () => {
 
     const shown = getShownText();
     const citationText =
-      style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
+      style === "OSCOLA" || style === "CHICAGO_FULL_NOTE"
         ? `{{cite:${reference.id}}}`
         : citation.formattedText;
+
     const newShown =
       shown.slice(0, selection.end) +
       " " +
       citationText +
       shown.slice(selection.end);
-    const newText = getRawText(newShown, updatedItems);
 
+    const newText = getRawText(newShown, updatedItems);
     // Insert citation text into the current section and store the reference
     const updatedContent: SectionContent = {
       ...content,
@@ -346,6 +361,11 @@ export const SectionEditorPage = () => {
     };
 
     setContent(updatedContent);
+    setAllSections((prev) =>
+      prev.map((s) =>
+        s.key === sectionKey ? { ...s, content: updatedContent } : s,
+      ),
+    );
     setSelection(null);
 
     // save the updated section to the database
@@ -363,18 +383,7 @@ export const SectionEditorPage = () => {
     }
   };
 
-  const handleStyleChange = async (newStyle: ReferenceStyle) => {
-    const references = projectReferences.filter(
-      (ref): ref is CreateReferenceInput & { formattedText: string } =>
-        "reference" in ref && "type" in ref,
-    );
-
-    await saveReferences(
-      references.map(({ formattedText, ...item }) => item),
-      newStyle,
-    );
-    setNewStyle(newStyle);
-  };
+ 
 
   return (
     <div className="page-shell">
@@ -525,7 +534,7 @@ export const SectionEditorPage = () => {
           onClose={() => setCitationOpen(false)}
           onInsert={insertCitation}
           onStyleChange={handleStyleChange}
-          style={style}
+          style={style!}
         />
       )}
       {/* Navigation buttons */}
