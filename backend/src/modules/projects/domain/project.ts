@@ -89,3 +89,6 @@ export interface Project {
   specialtyId: string;
   articleTypeId: string;
 }
+
+export const exportFormat = ["pdf", "word"] as const;
+export type ExportFormat = (typeof exportFormat)[number];
