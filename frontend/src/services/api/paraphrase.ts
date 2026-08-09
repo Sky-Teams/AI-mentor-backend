@@ -13,6 +13,7 @@ export const paraphraseApi = {
     tone?: ToneType;
     lengthStrategy?: LengthStrategy;
     preservedWords?: string[];
+    content: string;
   }): Promise<ParaphraseRun> {
     const response = await apiClient.post<ApiSuccessResponse<ParaphraseRun>>(
       `/projects/paraphrase/${input.projectId}`,

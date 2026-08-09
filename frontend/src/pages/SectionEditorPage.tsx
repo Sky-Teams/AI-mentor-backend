@@ -38,6 +38,7 @@ export const SectionEditorPage = () => {
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
+    setError("");
     const [project, currentSection, allReviews] = await Promise.all([
       projectsApi.get(projectId),
       projectsApi.getSection(projectId, sectionKey),
@@ -425,7 +426,7 @@ export const SectionEditorPage = () => {
       )}
       <ParaphrasePanel
         sectionId={sectionId}
-        content={content}
+        content={content.text}
         sectionKey={sectionKey}
         onSaveSuccess={loadData}
       />

@@ -19,6 +19,7 @@ export class ParaphraseController {
         tone: request.body.tone,
         preservedWords: request.body.preservedWords,
         lengthStrategy: request.body.lengthStrategy,
+        content: request.body.content,
       },
     );
     response.status(StatusCodes.ACCEPTED).json(successResponse(paraphraseRun));
