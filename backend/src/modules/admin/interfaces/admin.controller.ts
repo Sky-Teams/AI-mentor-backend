@@ -93,31 +93,33 @@ export class AdminController {
     res.status(StatusCodes.CREATED).json(successResponse(journal));
   }
 
-  public async generateJournalFromName(
+  public async extractJournalFromSource(
     req: Request,
     res: Response,
   ): Promise<void> {
-    const { journalName } = req.body as {
+    const { journalName, publisher, url, issn } = req.body as {
       journalName?: string;
+      publisher?: string;
+      url?: string;
+      issn?: string | null;
     };
 
-    if (
-      !journalName ||
-      typeof journalName !== "string" ||
-      !journalName.trim()
-    ) {
+    if (!journalName || !url) {
       throw new AppError(
-        "journalName is required",
+        "journalName and url are required",
         400,
-        "JOURNAL_NAME_REQUIRED",
+        "JOURNAL_SOURCE_REQUIRED",
       );
     }
 
-    const generatedJournal = await this.journalService.generateJournalFromName({
+    const journal = await this.journalService.extractJournalFromSource({
       journalName: journalName.trim(),
+      publisher: publisher?.trim() || undefined,
+      url: url.trim(),
+      issn: issn ?? null,
     });
 
-    res.status(StatusCodes.OK).json(successResponse(generatedJournal));
+    res.status(StatusCodes.OK).json(successResponse(journal));
   }
   public async updateJournal(req: Request, res: Response) {
     const journal = await this.journalService.updateJournal(
@@ -140,6 +142,16 @@ export class AdminController {
       id,
       sectionIds,
     );
+
+    res.status(StatusCodes.OK).json(successResponse(journal));
+  }
+
+  public async searchJournalByName(req: Request, res: Response) {
+    const journalName =
+      (req.query.journalName as string | undefined)?.trim() ||
+      req.body.journalName;
+
+    const journal = await this.journalService.findJournalByName(journalName);
 
     res.status(StatusCodes.OK).json(successResponse(journal));
   }

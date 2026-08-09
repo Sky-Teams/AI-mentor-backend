@@ -24,6 +24,23 @@ export interface CreateJournalInput {
   specialtyId: string;
 }
 
+export interface JournalSearchResult {
+  id: string;
+  title: string;
+  publisher: string;
+  url: string;
+  issn: string | null;
+}
+
+export type OpenAlexJournalResponse = {
+  results: Array<{
+    display_name?: string;
+    publisher?: string | null;
+    homepage_url?: string | null;
+    issn_l?: string;
+  }>;
+};
+
 // Update journal interface
 export interface UpdateSectionChecklistsGroup {
   id?: string;

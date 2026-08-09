@@ -340,6 +340,22 @@ export class PrismaProjectRepository implements ProjectRepository {
     });
   }
 
+  public async unArchiveProject(
+    projectId: string,
+    ownerId: string,
+  ): Promise<void> {
+    await this.prisma.project.update({
+      where: {
+        id: projectId,
+        ownerId,
+        status: "ARCHIVED",
+      },
+      data: {
+        status: "DRAFT",
+      },
+    });
+  }
+
   public async updateSectionContent(input: UpdateSectionInput): Promise<{
     section: ProjectSection;
     version: SectionVersion;

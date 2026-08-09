@@ -1,24 +1,99 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BasicInfoForm } from "../components/journal/BasicInfoForm";
 import { SectionForm } from "../components/journal/SectionForm";
 import { useJournalForm } from "../hooks/useJournalForm";
+import { journalsApi, type JournalSearchResult } from "../services/api/journal";
 
 export const JournalPage = () => {
   const journalForm = useJournalForm();
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [journalNameInput, setJournalNameInput] = useState("");
+  const [journalMatches, setJournalMatches] = useState<JournalSearchResult[]>([]);
+  const [isSearchingJournals, setIsSearchingJournals] = useState(false);
+  const [loadingJournalId, setLoadingJournalId] = useState<string | null>(null);
+  const [journalSearchError, setJournalSearchError] = useState<string | null>(
+    null,
+  );
 
-  const handleGenerateFromName = async () => {
-    const trimmedName = journalNameInput.trim();
+  const handleCloseSearchModal = () => {
+    setIsGenerateModalOpen(false);
+  };
 
-    if (!trimmedName) {
+  const handleUseJournal = async (journal: JournalSearchResult) => {
+    setLoadingJournalId(journal.id);
+    setJournalSearchError(null);
+
+    try {
+      const extracted = await journalsApi.extractFromSource({
+        journalName: journal.title,
+        publisher: journal.publisher?.trim() || undefined,
+        url: journal.url,
+        issn: journal.issn,
+      });
+      journalForm.applyExtractedJournal(extracted);
+      setIsGenerateModalOpen(false);
+      setJournalNameInput("");
+      setJournalMatches([]);
+    } catch (error: any) {
+      setJournalSearchError(
+        error?.response?.data?.error?.message ??
+          "Could not extract journal data from that source.",
+      );
+    } finally {
+      setLoadingJournalId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!isGenerateModalOpen) {
+      setJournalMatches([]);
+      setIsSearchingJournals(false);
+      setJournalSearchError(null);
       return;
     }
 
-    await journalForm.generateFromName(trimmedName);
-    setJournalNameInput("");
-    setIsGenerateModalOpen(false);
-  };
+    const trimmedName = journalNameInput.trim();
+
+    if (trimmedName.length < 2) {
+      setJournalMatches([]);
+      setJournalSearchError(null);
+      setIsSearchingJournals(false);
+      return;
+    }
+
+    let isActive = true;
+    setIsSearchingJournals(true);
+    setJournalSearchError(null);
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const results = await journalsApi.findByName({
+          journalName: trimmedName,
+        });
+
+        if (!isActive) return;
+
+        setJournalMatches(results);
+      } catch (error: any) {
+        if (!isActive) return;
+
+        setJournalMatches([]);
+        setJournalSearchError(
+          error?.response?.data?.error?.message ??
+            "Could not search journals right now.",
+        );
+      } finally {
+        if (isActive) {
+          setIsSearchingJournals(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [isGenerateModalOpen, journalNameInput]);
 
   const handleAddSection = () => {
     journalForm.addSection();
@@ -48,19 +123,16 @@ export const JournalPage = () => {
         <div className="button-row">
           <button
             className="secondary-button"
-            disabled={journalForm.isGenerating || journalForm.isSubmitting}
+            disabled={journalForm.isSubmitting}
             onClick={() => setIsGenerateModalOpen(true)}
             type="button"
           >
-            {journalForm.isGenerating
-              ? "Generating..."
-              : "Create Journal with AI"}
+            Find Journal
           </button>
           <button
             className="primary-button"
             disabled={
               journalForm.isSubmitting ||
-              journalForm.isGenerating ||
               journalForm.isLoadingSpecialties ||
               journalForm.specialties.length === 0
             }
@@ -80,9 +152,9 @@ export const JournalPage = () => {
             className="journal-ai-modal"
             onClick={(event) => event.stopPropagation()}
           >
-            <h3 className="journal-ai-modal-title">Create Journal with AI</h3>
+            <h3 className="journal-ai-modal-title">Find Journal</h3>
             <p className="muted-text journal-ai-modal-description">
-              Enter a journal name and generate the structure from it.
+              Type a journal name, pick the source, and load its real data.
             </p>
             <input
               className="modern-input journal-ai-modal-input"
@@ -90,22 +162,77 @@ export const JournalPage = () => {
               placeholder="Type journal name"
               value={journalNameInput}
             />
+
+            <div className="journal-search-results">
+              {isSearchingJournals ? (
+                <p className="muted-text">Searching journals...</p>
+              ) : null}
+
+              {journalSearchError ? (
+                <p className="error-text">{journalSearchError}</p>
+              ) : null}
+
+              {!isSearchingJournals &&
+              !journalSearchError &&
+              journalNameInput.trim().length >= 2 &&
+              journalMatches.length === 0 ? (
+                <p className="muted-text">No journal matches found yet.</p>
+              ) : null}
+
+              {journalMatches.map((journal) => (
+                <div className="journal-search-result" key={journal.id}>
+                  <div className="journal-search-result-top">
+                    <button
+                      className="secondary-button journal-search-use-button"
+                      disabled={loadingJournalId !== null}
+                      onClick={() => handleUseJournal(journal)}
+                      type="button"
+                    >
+                      {loadingJournalId === journal.id
+                        ? "Loading..."
+                        : "Use this journal"}
+                    </button>
+                    <a
+                      className="journal-search-result-title"
+                      href={journal.url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {journal.title}
+                    </a>
+                  </div>
+                  <a
+                    className="journal-search-result-url"
+                    href={journal.url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {journal.url}
+                  </a>
+                  <p className="journal-search-result-meta">
+                    {journal.publisher}
+                    {journal.issn ? ` - ISSN ${journal.issn}` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+
             <div className="button-row journal-ai-modal-actions">
               <button
                 className="secondary-button"
-                disabled={journalForm.isGenerating}
-                onClick={() => setIsGenerateModalOpen(false)}
+                disabled={isSearchingJournals}
+                onClick={handleCloseSearchModal}
                 type="button"
               >
                 Cancel
               </button>
               <button
                 className="primary-button"
-                disabled={!journalNameInput.trim() || journalForm.isGenerating}
-                onClick={handleGenerateFromName}
+                disabled={isSearchingJournals}
+                onClick={handleCloseSearchModal}
                 type="button"
               >
-                {journalForm.isGenerating ? "Generating..." : "Generate"}
+                Done
               </button>
             </div>
           </div>

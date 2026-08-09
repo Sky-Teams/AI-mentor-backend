@@ -10,16 +10,17 @@ import {
   createEmptyJournalForm,
   createItem,
   createSection,
+  mapCreateJournalInputToFormState,
   journalPayloadHasEmptyNestedFields,
   type ChecklistDraft,
   type JournalFormState,
   type SectionDraft,
 } from "../utils/journalForm";
+import type { CreateJournalInput } from "../types/api";
 
 export const useJournalForm = () => {
   const [form, setForm] = useState<JournalFormState>(createEmptyJournalForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingSpecialties, setIsLoadingSpecialties] = useState(true);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [message, setMessage] = useState<string | null>(null);
@@ -81,50 +82,16 @@ export const useJournalForm = () => {
     }));
   };
 
-  const generateFromName = async (journalName: string) => {
+  const applyExtractedJournal = (journal: CreateJournalInput) => {
+    setForm(
+      mapCreateJournalInputToFormState({
+        ...journal,
+        specialtyId: journal.specialtyId || specialties[0]?.id || "",
+      }),
+    );
+    setMessage(`Loaded journal data for "${journal.name}".`);
     setError(null);
-    setMessage(null);
-    setIsGenerating(true);
-
-    try {
-      const generated = await journalsApi.generateFromName({ journalName });
-
-      setForm((current) => ({
-        ...current,
-        name: generated.name || current.name,
-        publisher: generated.publisher || current.publisher,
-        description: generated.description || current.description,
-        guidelinePack: generated.guidelinePack || current.guidelinePack,
-        sections: generated.sections?.length
-          ? generated.sections.map((section, index) => ({
-              id: current.sections[index]?.id || createSection().id,
-              title: section.title || "",
-              sectionPrompt: section.sectionPrompt || "",
-              isOptional: section.isOptional ?? false,
-              maxWords: String(section.maxWords ?? 250),
-              checklists: (section.checklists || []).map((checklist) => ({
-                id: createChecklist().id,
-                title: checklist.title || "",
-                items: (checklist.items || []).map((item) => ({
-                  id: createItem().id,
-                  text: item,
-                })),
-              })),
-              subsections: [],
-            }))
-          : current.sections,
-      }));
-
-      setMessage(`Generated journal structure for "${journalName}".`);
-    } catch (generateError: any) {
-      setError(
-        generateError.message ??
-          "Could not generate a journal structure from that name.",
-      );
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  }
 
   const removeSection = (sectionId: string) => {
     setForm((current) => ({
@@ -222,8 +189,7 @@ export const useJournalForm = () => {
     addSection,
     error,
     form,
-    generateFromName,
-    isGenerating,
+    applyExtractedJournal,
     isLoadingSpecialties,
     isSubmitting,
     message,

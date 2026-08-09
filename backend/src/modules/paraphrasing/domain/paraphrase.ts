@@ -31,7 +31,7 @@ export type ParaphraseRunStatus = (typeof paraphraseRunStatuses)[number];
 
 export interface ParaphraseChange {
   originalPhrase: string;
-  replacedWith: string;
+  replacedWith?: string;
   reason: string;
   startIndex?: number;
   endIndex?: number;
