@@ -2,11 +2,9 @@ import { StatusCodes } from "http-status-codes";
 import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
-import type {
-  Project,
-  ProjectSection,
-} from "src/modules/projects/domain/project.js";
+import type { Project } from "src/modules/projects/domain/project.js";
 import PDFDocument from "pdfkit";
+import { getSectionExportText } from "src/shared/utils/project.helper.js";
 
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
