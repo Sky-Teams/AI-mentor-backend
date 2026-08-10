@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { ApiSuccessResponse } from "../../types/api";
+import { normalizeApiError } from "../../utils/normalizeApiError";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api/v1";
@@ -87,7 +88,7 @@ apiClient.interceptors.response.use(
       | null;
 
     if (!originalConfig || status !== 401) {
-      return Promise.reject(error);
+      return Promise.reject(normalizeApiError(error));
     }
 
     const url = (originalConfig.url ?? "").toString();

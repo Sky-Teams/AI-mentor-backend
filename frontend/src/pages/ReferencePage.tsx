@@ -57,10 +57,7 @@ export const ReferencePage = () => {
       setSaveReferences(getReferences());
       setIsSearchBoxOpen(false);
     } catch (error: any) {
-      console.log(error);
-      setErrorMessage(
-        error?.response?.data?.error?.message || "Failed to add reference",
-      );
+      setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +85,7 @@ export const ReferencePage = () => {
       });
       setSaveReferences(updateFormatStyles);
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "Failed to format reference",
-      );
+      setErrorMessage(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -166,8 +161,7 @@ export const ReferencePage = () => {
       setMessage("Reference add successfully");
       setIsOpenProjectModal(false);
     } catch (error: any) {
-      console.log(error);
-      setErrorMessage(error || "Unexpected error");
+      setErrorMessage(error.message);
     } finally {
       setIsOpenProjectModal(false);
     }

@@ -33,7 +33,7 @@ export function SubscriptionPage() {
       );
       alert("The Request approved successfully");
     } catch (error: any) {
-      setErrorMessage(error.response?.data?.error?.message);
+      setErrorMessage(error.message);
     } finally {
       setRequestId(null);
     }

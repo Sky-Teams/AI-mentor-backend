@@ -105,11 +105,7 @@ export const CreateProjectPage = () => {
 
       navigate(`/projects/${project.id}`);
     } catch (err: any) {
-      const backendMsg =
-        err?.response?.data?.error?.details[0].field ??
-        err?.message ??
-        "An unexpected error occurred.";
-      setSubmitError("validation error: " + backendMsg);
+      setSubmitError(err.message);
     } finally {
       setIsSubmitting(false);
     }

@@ -30,9 +30,7 @@ export function SubscriptionListPanel() {
         setRequestedPlan(requestedPlan);
         if (activePlan) setIsActivePlan(true);
       } catch (error: any) {
-        setErrorMessage(
-          error.response?.data?.error?.message || "An error occurred",
-        );
+        setErrorMessage(error.message);
       } finally {
         setIsLoading(false);
       }
@@ -50,9 +48,7 @@ export function SubscriptionListPanel() {
       setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "An error occurred",
-      );
+      setErrorMessage(error.message);
     } finally {
       setSelectedId(null);
     }
@@ -66,9 +62,7 @@ export function SubscriptionListPanel() {
       setRequestedPlan(null);
       alert("Your requested cancelled.");
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "An error occurred",
-      );
+      setErrorMessage(error.message);
     } finally {
       setSelectedId(null);
     }
@@ -83,9 +77,7 @@ export function SubscriptionListPanel() {
       setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
-      setErrorMessage(
-        error.response?.data?.error?.message || "An error occurred",
-      );
+      setErrorMessage(error.message);
     } finally {
       setBuyingId(null);
     }

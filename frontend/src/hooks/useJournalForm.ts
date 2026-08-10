@@ -91,7 +91,7 @@ export const useJournalForm = () => {
     );
     setMessage(`Loaded journal data for "${journal.name}".`);
     setError(null);
-  };
+  }
 
   const removeSection = (sectionId: string) => {
     setForm((current) => ({
@@ -175,7 +175,7 @@ export const useJournalForm = () => {
       resetForm();
     } catch (createError: any) {
       setError(
-        createError?.response?.data?.error?.message ??
+        createError.message ??
           "Could not create journal. Please check the fields and try again.",
       );
     } finally {

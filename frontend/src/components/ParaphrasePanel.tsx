@@ -75,7 +75,7 @@ export const ParaphrasePanel = ({
       //   setRefreshTrigger((prev) => prev + 1);
       // }
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      setError(error.message);
     } finally {
       setIsParaphrasing(false);
     }
@@ -110,7 +110,7 @@ export const ParaphrasePanel = ({
       }
       setMessage("Section content updated successfully.");
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      setError(error.message);
     } finally {
       setIsSavedContent(false);
     }

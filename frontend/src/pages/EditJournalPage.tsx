@@ -11,7 +11,7 @@ import {
   type JournalFormState,
   SectionDraft,
 } from "../utils/journalForm";
-import { SectionOrderModal } from '../components/journal/SectionOrderModal.js';
+import { SectionOrderModal } from "../components/journal/SectionOrderModal.js";
 
 export const EditJournalPage = () => {
   const { id = "" } = useParams();
@@ -39,10 +39,7 @@ export const EditJournalPage = () => {
         journalForm.updateBasicInfo("guidelinePack", formState.guidelinePack);
         journalForm.updateBasicInfo("specialtyId", formState.specialtyId);
       } catch (err: any) {
-        setLoadError(
-          err?.response?.data?.error?.message ||
-            "Could not load journal. Please try again.",
-        );
+        setLoadError(err.message);
       } finally {
         setLoading(false);
       }
@@ -90,9 +87,7 @@ export const EditJournalPage = () => {
       setIsOrderModalOpen(false);
       setSaveSuccess("Section order updated successfully.");
     } catch (e: any) {
-      setOrderError(
-        e?.response?.data?.error?.message || "Could not update section order",
-      );
+      setOrderError(e.message);
     } finally {
       setIsSavingOrder(false);
     }
@@ -112,10 +107,8 @@ export const EditJournalPage = () => {
       const payload = buildUpdatePayload(journalForm.form);
       await adminApi.updateJournal(id, payload);
       setSaveSuccess("Journal updated successfully.");
-    } catch (e: any) {
-      setSaveError(
-        e?.response?.data?.error?.message || "Could not update journal",
-      );
+    } catch (err: any) {
+      setSaveError(err.message);
     }
   };
 

@@ -101,7 +101,7 @@ export const SectionEditorPage = () => {
       setStatusMessage("Section saved and versioned.");
       await loadData();
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      setError(error.message);
     } finally {
       setIsSaving(false);
     }
@@ -120,7 +120,7 @@ export const SectionEditorPage = () => {
       setStatusMessage("Review triggered. Refreshing review state...");
       await loadData();
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      setError(error.message);
     } finally {
       setIsReviewing(false);
     }
@@ -145,7 +145,7 @@ export const SectionEditorPage = () => {
       navigate(`/projects/${projectId}/sections/${targetKey}`);
       window.scrollTo(0, 0);
     } catch (error: any) {
-      setError(error?.response?.data?.error?.message || "An error occurred.");
+      setError(error.message);
     }
   };
 

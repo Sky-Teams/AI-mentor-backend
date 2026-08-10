@@ -23,8 +23,8 @@ export const RegisterPage = () => {
         password: String(formData.get("password")),
       });
       setIsRegistered(true);
-    } catch {
-      setError("Registration failed. The email may already exist.");
+    } catch (error: any) {
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -33,7 +33,7 @@ export const RegisterPage = () => {
   return (
     <div className="auth-shell">
       {isRegistered && (
-        <div style={{ color: "green" , textAlign:'center'}}>
+        <div style={{ color: "green", textAlign: "center" }}>
           <h5>You registered successfully</h5>
           <p>Please check your email and verify account.</p>
         </div>
