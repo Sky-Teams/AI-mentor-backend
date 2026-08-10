@@ -95,4 +95,8 @@ export class SubscriptionService {
 
     return await this.subscriptionRepository.getUserRequestedPlan(userId);
   }
+
+  public async expirePlans(): Promise<{ message: string }> {
+    return await this.subscriptionRepository.expirePlans();
+  }
 }
