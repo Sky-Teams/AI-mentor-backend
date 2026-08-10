@@ -333,4 +333,44 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     if (!result) return null;
     return mapRequestedPlan(result);
   }
+
+  public async expirePlans(): Promise<{ message: string }> {
+    const userSubscriptions = await this.prisma.userSubscription.findMany({
+      where: {
+        status: "ACTIVE",
+        currentPeriodEnd: {
+          lte: new Date(),
+        },
+      },
+    });
+
+    let count = 0;
+
+    for (const userSubscription of userSubscriptions) {
+      console.log("User", userSubscription);
+      await this.prisma.$transaction(async (tsx) => {
+        await tsx.userSubscription.update({
+          where: {
+            id: userSubscription.id,
+          },
+          data: {
+            status: "EXPIRED",
+          },
+        });
+
+        await tsx.creditWallet.update({
+          where: { userId: userSubscription.userId },
+          data: {
+            balance: 0,
+          },
+        });
+
+        count++;
+      });
+    }
+
+    return {
+      message: `Expired plans: ${count}`,
+    };
+  }
 }
