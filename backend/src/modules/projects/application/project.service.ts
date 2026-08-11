@@ -237,18 +237,22 @@ export class ProjectService {
   }
   private writePageNumber(doc: any) {
     const range = doc.bufferedPageRange();
+
     for (let i = range.start; i < range.start + range.count; i++) {
       doc.switchToPage(i);
+
+      const bottomMargin = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
+
       doc
         .font("Times-Roman")
         .fontSize(9)
         .fillColor("#666666")
-        .text(
-          `${i + 1} / ${range.count}`,
-          0,
-          doc.page.height - doc.page.margins.bottom + 20,
-          { align: "center" },
-        );
+        .text(`${i + 1} / ${range.count}`, 0, doc.page.height - 40, {
+          align: "center",
+        });
+
+      doc.page.margins.bottom = bottomMargin;
     }
   }
 
