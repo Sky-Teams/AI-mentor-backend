@@ -3,8 +3,6 @@ import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
 import type { Project } from "src/modules/projects/domain/project.js";
-import PDFDocument from "pdfkit";
-import { getSectionExportText } from "src/shared/utils/project.helper.js";
 
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
@@ -135,116 +133,19 @@ export class ProjectController {
       req.auth!.userId,
     );
 
-    if (format === "pdf") await this.exportAsPdf(project, res);
-
-    // If need in the future we will implement this too
-    // else if (format === "word") await this.exportAsWord(project, res);
-  }
-
-  private async exportAsPdf(project: Project, res: Response): Promise<void> {
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=${project.title.replace(/[^a-z0-9-_]/gi, "_")}.pdf`,
-    );
-
-    const doc = new PDFDocument({
-      margin: 72,
-      bufferPages: true,
-    });
-    doc.pipe(res);
-
-    const sections = project.sections ?? [];
-    const titleSection = sections.find((sec) => sec.key === "TITLE");
-    const rootSections = sections.filter(
-      (sec: any) => !sec.parentSectionId && sec.key !== "TITLE",
-    );
-
-    // title
-    doc
-      .font("Times-Bold")
-      .fontSize(20)
-      .text(titleSection ? getSectionExportText(titleSection) : "", {
-        align: "center",
-      });
-
-    doc.moveDown(0.5);
-
-    // line under the title
-    doc
-      .moveTo(doc.page.margins.left, doc.y)
-      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
-      .lineWidth(1)
-      .strokeColor("#333333")
-      .stroke();
-
-    doc.moveDown(1.5);
-
-    // Sections
-    let sectionNumber = 0;
-
-    for (const section of rootSections) {
-      sectionNumber++;
-
-      doc
-        .font("Times-Bold")
-        .fontSize(14)
-        .fillColor("#000000")
-        .text(`${sectionNumber}. ${section.title}`, { align: "left" });
-
-      doc.moveDown(0.3);
-
-      doc.font("Times-Roman").fontSize(11).text(getSectionExportText(section), {
-        align: "justify",
-        lineGap: 3,
-      });
-
-      doc.moveDown(0.8);
-
-      const subsections = sections.filter(
-        (sec: any) => sec.parentSectionId === section.id,
+    if (format === "pdf") {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${project.title.replace(/[^a-z0-9-_]/gi, "_")}.pdf`,
       );
 
-      let subNumber = 0;
-      for (const sub of subsections) {
-        subNumber++;
-
-        doc
-          .font("Times-Bold")
-          .fontSize(12)
-          .text(`${sectionNumber}.${subNumber} ${sub.title}`, {
-            align: "left",
-          });
-
-        doc.moveDown(0.2);
-
-        doc.font("Times-Roman").fontSize(11).text(getSectionExportText(sub), {
-          align: "justify",
-          lineGap: 3,
-        });
-
-        doc.moveDown(0.8);
-      }
+      const doc = await this.projectService.exportAsPdf(project);
+      doc.pipe(res);
+      doc.end();
     }
 
-    // Page numbers
-    const range = doc.bufferedPageRange();
-    for (let i = range.start; i < range.start + range.count; i++) {
-      doc.switchToPage(i);
-      doc
-        .font("Times-Roman")
-        .fontSize(9)
-        .fillColor("#666666")
-        .text(
-          `${i + 1} / ${range.count}`,
-          0,
-          doc.page.height - doc.page.margins.bottom + 20,
-          { align: "center" },
-        );
-    }
-
-    doc.end();
+    // If need in the future we will implement this too
+    // else if (format === "word") await this.projectService.exportAsWord(project, res);
   }
-
-  // private async exportAsWord(project, res: Response): Promise<void> {}
 }
