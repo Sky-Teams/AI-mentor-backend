@@ -145,7 +145,7 @@ export class ProjectService {
     return await this.projectRepository.getAllArticleTypes();
   }
 
-  public exportAsPdf(project: Project): Promise<PDFKit.PDFDocument> {
+  public async exportAsPdf(project: Project): Promise<PDFKit.PDFDocument> {
     const doc = new PDFDocument({
       margin: 72,
       bufferPages: true,
