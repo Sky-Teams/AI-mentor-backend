@@ -386,11 +386,24 @@ export const SectionEditorPage = () => {
   const updateCitationStyle = async (style: ReferenceStyle) => {
     const updatedSections = [];
     for (const section of allSections) {
+      const sourceContent =
+        section.key === sectionKey ? content : section.content;
+
       if (
         !section.content.references?.items?.length ||
         section.key === "REFERENCES"
       ) {
-        updatedSections.push(section);
+        updatedSections.push({
+          ...section,
+          content: {
+            ...sourceContent,
+            references: {
+              ...sourceContent.references,
+              style,
+              item: [],
+            },
+          },
+        });
         continue;
       }
 
@@ -447,24 +460,14 @@ export const SectionEditorPage = () => {
         };
       });
 
-      const updatedContent: SectionContent =
-        section.key === sectionKey
-          ? {
-              ...content,
-              references: {
-                ...section.content.references,
-                style,
-                items: updatedItems,
-              },
-            }
-          : {
-              text: section.content.text,
-              references: {
-                ...section.content.references,
-                style,
-                items: updatedItems,
-              },
-            };
+      const updatedContent: SectionContent = {
+        ...sourceContent,
+        references: {
+          ...sourceContent.references,
+          style,
+          items: updatedItems,
+        },
+      };
 
       await projectsApi.updateSection(projectId, section.key, {
         content: updatedContent,
