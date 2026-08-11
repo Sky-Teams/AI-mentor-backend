@@ -204,9 +204,14 @@ export const InlineCitationModal = ({
                   checked={selected === index}
                   onChange={() => setSelected(index)}
                 />
-                <span className="citation-modal-reference-text">
-                  {displayedReferences[index] ?? item.formattedText}
-                </span>
+                <li
+                  style={{ listStyle: "none" }}
+                  className="citation-modal-reference-text"
+                  dangerouslySetInnerHTML={{
+                    __html: displayedReferences[index] ?? item.formattedText,
+                  }}
+                />
+                {}
               </label>
             ))}
           </div>
