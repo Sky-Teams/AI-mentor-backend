@@ -275,6 +275,24 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         `ALREADY_HAVE_PENDING_REQUEST`,
       );
 
+    const requestedFreePlan = await this.prisma.subscriptionPlan.findFirst({
+      where: { monthlyPriceCents: 0, status: "ACTIVE", id: subscriptionPlanId },
+    });
+
+    if (requestedFreePlan) {
+      const existingFreePlanSubscription =
+        await this.prisma.userSubscription.findFirst({
+          where: { subscriptionPlanId: subscriptionPlanId },
+        });
+
+      if (existingFreePlanSubscription)
+        throw new AppError(
+          "You have already used this free plan",
+          StatusCodes.BAD_REQUEST,
+          "FREE_PLAN_ALREADY_USED",
+        );
+    }
+
     return await this.prisma.subscriptionRequest.create({
       data: {
         userId: userId,
