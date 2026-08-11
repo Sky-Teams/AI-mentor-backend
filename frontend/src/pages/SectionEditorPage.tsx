@@ -541,32 +541,45 @@ export const SectionEditorPage = () => {
                   <span className="badge warning">Unsaved</span>
                 )}
               </div>
-              <textarea
-                style={
-                  (section?.maxWords as number) < countWords(content.text || "")
-                    ? { border: "1px solid red", outline: "none" }
-                    : { outline: "none" }
-                }
-                className="editor-area"
-                onChange={(event) => {
-                  const value = event.target.value;
+              {sectionKey === "REFERENCES" ? (
+                referenceSection?.content.references?.items?.map((item) => (
+                  <li
+                    style={{ margin: "15px" }}
+                    dangerouslySetInnerHTML={{
+                      __html: item.formattedText ?? "",
+                    }}
+                  />
+                ))
+              ) : (
+                <textarea
+                  style={
+                    (section?.maxWords as number) <
+                    countWords(content.text || "")
+                      ? { border: "1px solid red", outline: "none" }
+                      : { outline: "none" }
+                  }
+                  className="editor-area"
+                  onChange={(event) => {
+                    const value = event.target.value;
 
-                  setContent((prev) => ({
-                    ...prev,
-                    text:
-                      style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
-                        ? value
-                        : getRawText(value),
-                  }));
-                }}
-                onSelect={(event) => {
-                  const { selectionStart: start, selectionEnd: end } =
-                    event.currentTarget;
-                  setSelection(start !== end ? { start, end } : null);
-                }}
-                rows={10}
-                value={getShownText()}
-              />
+                    setContent((prev) => ({
+                      ...prev,
+                      text:
+                        style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
+                          ? value
+                          : getRawText(value),
+                    }));
+                  }}
+                  onSelect={(event) => {
+                    const { selectionStart: start, selectionEnd: end } =
+                      event.currentTarget;
+                    setSelection(start !== end ? { start, end } : null);
+                  }}
+                  rows={10}
+                  value={getShownText()}
+                />
+              )}
+
               {selection && (
                 <button
                   className="secondary-button"
@@ -576,19 +589,23 @@ export const SectionEditorPage = () => {
                   Add citation
                 </button>
               )}
-              <span
-                style={{
-                  color: "green",
-                  fontSize: "12px",
-                  backgroundColor: "#f6f7fb",
-                }}
-                className="badge"
-              >
-                Max words {section?.maxWords}
-              </span>
-              <span className="badge" style={{ float: "right" }}>
-                {countWords(content.text || "")} Words
-              </span>
+              {sectionKey !== "REFERENCES" && (
+                <div>
+                  <span
+                    style={{
+                      color: "green",
+                      fontSize: "12px",
+                      backgroundColor: "#f6f7fb",
+                    }}
+                    className="badge"
+                  >
+                    Max words {section?.maxWords}
+                  </span>
+                  <span className="badge" style={{ float: "right" }}>
+                    {countWords(content.text || "")} Words
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="section-editor__checklist-divider">
