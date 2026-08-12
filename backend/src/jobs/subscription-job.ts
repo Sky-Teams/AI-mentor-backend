@@ -14,7 +14,7 @@ const subscriptionService = new SubscriptionService(
 );
 
 export function startExpirePlansJob() {
-  cron.schedule("*/60 * * * *", async () => {
+  cron.schedule("0 0 * * *", async () => {
     try {
       console.log("Subscription job is running...");
       const result = await subscriptionService.expirePlans();
