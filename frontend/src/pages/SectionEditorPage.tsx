@@ -10,9 +10,13 @@ import type { ProjectSection, ReviewRun, SectionContent } from "../types/api";
 import type {
   CreateReferenceInput,
   Reference,
+  ReferenceStyle,
 } from "../services/api/reference";
-import { referenceApi } from "../services/api/reference";
-import { InlineCitationModal } from "../components/InlineCitationModal";
+import { referenceApi, toSuperscript } from "../services/api/reference";
+import {
+  InlineCitationModal,
+  ReferenceItem,
+} from "../components/InlineCitationModal";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -35,6 +39,7 @@ export const SectionEditorPage = () => {
     end: number;
   } | null>(null);
   const [citationOpen, setCitationOpen] = useState(false);
+  const [style, setNewStyle] = useState<ReferenceStyle>("APA");
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
@@ -52,6 +57,10 @@ export const SectionEditorPage = () => {
     }
     setAllSections(project.sections || []);
     setReviews(allReviews);
+    const referenceSection = project.sections?.find(
+      (section) => section.key === "REFERENCES",
+    );
+    setNewStyle(referenceSection?.content.references?.style ?? "APA");
   };
 
   useEffect(() => {
@@ -162,38 +171,50 @@ export const SectionEditorPage = () => {
   const referenceSection = allSections.find(
     (item) => item.key === "REFERENCES",
   );
-  const projectReferences = referenceSection?.content.references?.items || [];
+
+  const projectReferences =
+    referenceSection?.content.references?.items?.filter(
+      (item): item is CreateReferenceInput & { formattedText: string } =>
+        "reference" in item,
+    ) ?? [];
 
   const getItemReferenceId = (item: {
     referenceId?: string;
     reference?: { id?: string };
   }): string => item.referenceId ?? item.reference?.id ?? "";
 
-  const addProjectReference = async (item: CreateReferenceInput) => {
+  // function to save new reference or if style changed save new references format with new style
+  const saveReferences = async (
+    items: CreateReferenceInput[],
+    style: ReferenceStyle,
+  ) => {
     if (!referenceSection)
       throw new Error("References section does not exist.");
-    if (
-      projectReferences.some(
-        (reference) => (reference as any).reference?.doi === item.reference.doi,
-      )
-    ) {
-      alert("This reference already exists in the project.");
-      return;
-    }
-    const [formattedText] = await referenceApi.formatReference({
-      references: [item],
-      style: "APA",
+
+    const itemsToFormat = items.filter(
+      (item): item is Extract<ReferenceItem, { reference: Reference }> =>
+        "reference" in item,
+    );
+    const formattedTexts = await referenceApi.formatReference({
+      references: itemsToFormat.map((item) => ({
+        reference: item.reference,
+        type: item.type,
+      })),
+      style,
     });
-    const newReferences = [...projectReferences, { ...item, formattedText }];
+    const updatedReferences = items.map((item, index) => ({
+      ...item,
+      formattedText: formattedTexts[index],
+    }));
     await projectsApi.updateSection(projectId, "REFERENCES", {
       content: {
         ...referenceSection.content,
         references: {
-          ...referenceSection.content.references,
-          items: newReferences,
+          style: style,
+          items: updatedReferences,
         },
       },
-      changeSummary: "Added reference for inline citation",
+      changeSummary: "Update reference style",
     });
     setAllSections((items) =>
       items.map((section) =>
@@ -203,25 +224,59 @@ export const SectionEditorPage = () => {
               content: {
                 ...section.content,
                 references: {
-                  ...section.content.references,
-                  items: newReferences,
+                  style: style,
+                  items: updatedReferences,
                 },
               },
             }
           : section,
       ),
     );
+
+    setNewStyle(style);
+    return updatedReferences;
+  };
+
+  const addProjectReference = async (item: CreateReferenceInput) => {
+    if (
+      projectReferences.some(
+        (reference) => (reference as any).reference?.doi === item.reference.doi,
+      )
+    ) {
+      alert("This reference already exists in the project.");
+      return;
+    }
+    const references = projectReferences
+      .filter(
+        (ref): ref is CreateReferenceInput & { formattedText: string } =>
+          "reference" in ref,
+      )
+      .map(({ formattedText, ...ref }) => ref);
+
+    await saveReferences([...references, item], style!);
   };
 
   // citations are stored as {{cite:refId}} markers in content.text,
   // and swapped for the real formatted text only when shown to the user
   const getShownText = () => {
+    let text = content.text;
     const items = content.references?.items || [];
-    let text = content.text || "";
+
+    let index = 1;
+
     for (const item of items) {
-      text = text
-        .split(`{{cite:${getItemReferenceId(item)}}}`)
-        .join(item.formattedText);
+      const placeholder = `{{cite:${getItemReferenceId(item)}}}`;
+
+      if (
+        content.references?.style === "CHICAGO_FULL_NOTE" ||
+        content.references?.style === "OSCOLA"
+      ) {
+        const number = toSuperscript(index);
+        text = text.split(placeholder).join(number);
+        index++;
+      } else {
+        text = text.split(placeholder).join(item.formattedText);
+      }
     }
 
     return text;
@@ -232,15 +287,33 @@ export const SectionEditorPage = () => {
     items = content.references?.items || [],
   ) => {
     let text = shownText;
-    for (const item of items) {
-      text = text
-        .split(item.formattedText)
-        .join(`{{cite:${getItemReferenceId(item)}}}`);
+
+    if (
+      content.references?.style === "CHICAGO_FULL_NOTE" ||
+      content.references?.style === "OSCOLA"
+    ) {
+      items.forEach((item, index) => {
+        const number = toSuperscript(index + 1);
+        const placeholder = `{{cite:${getItemReferenceId(item)}}}`;
+
+        text = text.split(number).join(placeholder);
+      });
+    } else {
+      for (const item of items) {
+        if (item.formattedText)
+          text = text
+            .split(item.formattedText)
+            .join(`{{cite:${getItemReferenceId(item)}}}`);
+      }
     }
+
     return text;
   };
 
-  const insertCitation = async (citation: string, reference: Reference) => {
+  const insertCitation = async (
+    citation: { formattedText?: string; footnote?: string },
+    reference: Reference,
+  ) => {
     if (!selection) return;
 
     const alreadyUsed = projectReferences.some(
@@ -256,27 +329,44 @@ export const SectionEditorPage = () => {
     );
     const updatedItems = alreadyInSection
       ? items
-      : [...items, { referenceId: reference.id, formattedText: citation }];
+      : [
+          ...items,
+          {
+            referenceId: reference.id,
+            formattedText: citation.formattedText,
+            footnote: citation.footnote,
+          },
+        ];
 
     const shown = getShownText();
+    const citationText =
+      style === "OSCOLA" || style === "CHICAGO_FULL_NOTE"
+        ? `{{cite:${reference.id}}}`
+        : citation.formattedText;
+
     const newShown =
       shown.slice(0, selection.end) +
       " " +
-      citation +
+      citationText +
       shown.slice(selection.end);
-    const newText = getRawText(newShown, updatedItems);
 
+    const newText = getRawText(newShown, updatedItems);
     // Insert citation text into the current section and store the reference
     const updatedContent: SectionContent = {
       ...content,
       text: newText,
       references: {
-        style: content.references?.style || "APA",
+        style,
         items: updatedItems,
       },
     };
 
     setContent(updatedContent);
+    setAllSections((prev) =>
+      prev.map((s) =>
+        s.key === sectionKey ? { ...s, content: updatedContent } : s,
+      ),
+    );
     setSelection(null);
 
     // save the updated section to the database
@@ -292,6 +382,123 @@ export const SectionEditorPage = () => {
         err?.response?.data?.error?.message || "Failed to save citation.",
       );
     }
+  };
+
+  const updateCitationStyle = async (style: ReferenceStyle) => {
+    const updatedSections = [];
+    for (const section of allSections) {
+      const sourceContent =
+        section.key === sectionKey ? content : section.content;
+
+      if (
+        !section.content.references?.items?.length ||
+        section.key === "REFERENCES"
+      ) {
+        updatedSections.push({
+          ...section,
+          content: {
+            ...sourceContent,
+            references: {
+              ...sourceContent.references,
+              style,
+              item: [],
+            },
+          },
+        });
+        continue;
+      }
+
+      const items = section.content.references.items.filter(
+        (
+          item,
+        ): item is Extract<
+          ReferenceItem,
+          { referenceId: string; formattedText?: string; footnote?: string }
+        > => "referenceId" in item,
+      );
+
+      let sectionReferences: {
+        reference: Reference;
+        referenceIndex: number;
+      }[] = [];
+
+      for (const item of items) {
+        const reference = projectReferences.find(
+          (reference) => reference.reference.id === item.referenceId,
+        );
+
+        if (!reference) continue;
+        const index =
+          projectReferences.findIndex(
+            (reference) => reference.reference.id === item.referenceId,
+          ) + 1;
+
+        sectionReferences.push({
+          reference: reference.reference,
+          referenceIndex: index,
+        });
+      }
+
+      if (!sectionReferences.length) {
+        updatedSections.push(section);
+        continue;
+      }
+
+      const formattedCitations = await referenceApi.formatInlineCitation({
+        references: sectionReferences,
+        style,
+      });
+
+      const updatedItems = items.map((item) => {
+        const formatted = formattedCitations.find(
+          (citation) => citation.referenceId === item.referenceId,
+        );
+
+        return {
+          ...item,
+          formattedText: formatted?.formattedText ?? item.formattedText,
+          footnote: formatted?.footnote ?? item.footnote,
+        };
+      });
+
+      const updatedContent: SectionContent = {
+        ...sourceContent,
+        references: {
+          ...sourceContent.references,
+          style,
+          items: updatedItems,
+        },
+      };
+
+      await projectsApi.updateSection(projectId, section.key, {
+        content: updatedContent,
+      });
+
+      updatedSections.push({ ...section, content: updatedContent });
+    }
+
+    setAllSections(updatedSections);
+
+    const currentSection = updatedSections.find(
+      (section) => section.key === sectionKey,
+    );
+    if (currentSection) setContent(currentSection.content);
+  };
+
+  const handleStyleChange = async (newStyle: ReferenceStyle) => {
+    const references = projectReferences.filter(
+      (ref): ref is CreateReferenceInput & { formattedText: string } =>
+        "reference" in ref && "type" in ref,
+    );
+
+    await saveReferences(
+      references.map(({ formattedText, ...item }) => item),
+      newStyle,
+    );
+
+    await updateCitationStyle(newStyle);
+
+    setNewStyle(newStyle);
   };
 
   return (
@@ -335,27 +542,45 @@ export const SectionEditorPage = () => {
                   <span className="badge warning">Unsaved</span>
                 )}
               </div>
-              <textarea
-                style={
-                  (section?.maxWords as number) < countWords(content.text || "")
-                    ? { border: "1px solid red", outline: "none" }
-                    : { outline: "none" }
-                }
-                className="editor-area"
-                onChange={(event) => {
-                  setContent((prev) => ({
-                    ...prev,
-                    text: getRawText(event.target.value),
-                  }));
-                }}
-                onSelect={(event) => {
-                  const { selectionStart: start, selectionEnd: end } =
-                    event.currentTarget;
-                  setSelection(start !== end ? { start, end } : null);
-                }}
-                rows={10}
-                value={getShownText()}
-              />
+              {sectionKey === "REFERENCES" ? (
+                referenceSection?.content.references?.items?.map((item) => (
+                  <li
+                    style={{ margin: "15px" }}
+                    dangerouslySetInnerHTML={{
+                      __html: item.formattedText ?? "",
+                    }}
+                  />
+                ))
+              ) : (
+                <textarea
+                  style={
+                    (section?.maxWords as number) <
+                    countWords(content.text || "")
+                      ? { border: "1px solid red", outline: "none" }
+                      : { outline: "none" }
+                  }
+                  className="editor-area"
+                  onChange={(event) => {
+                    const value = event.target.value;
+
+                    setContent((prev) => ({
+                      ...prev,
+                      text:
+                        style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
+                          ? value
+                          : getRawText(value),
+                    }));
+                  }}
+                  onSelect={(event) => {
+                    const { selectionStart: start, selectionEnd: end } =
+                      event.currentTarget;
+                    setSelection(start !== end ? { start, end } : null);
+                  }}
+                  rows={10}
+                  value={getShownText()}
+                />
+              )}
+
               {selection && (
                 <button
                   className="secondary-button"
@@ -365,19 +590,23 @@ export const SectionEditorPage = () => {
                   Add citation
                 </button>
               )}
-              <span
-                style={{
-                  color: "green",
-                  fontSize: "12px",
-                  backgroundColor: "#f6f7fb",
-                }}
-                className="badge"
-              >
-                Max words {section?.maxWords}
-              </span>
-              <span className="badge" style={{ float: "right" }}>
-                {countWords(content.text || "")} Words
-              </span>
+              {sectionKey !== "REFERENCES" && (
+                <div>
+                  <span
+                    style={{
+                      color: "green",
+                      fontSize: "12px",
+                      backgroundColor: "#f6f7fb",
+                    }}
+                    className="badge"
+                  >
+                    Max words {section?.maxWords}
+                  </span>
+                  <span className="badge" style={{ float: "right" }}>
+                    {countWords(content.text || "")} Words
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="section-editor__checklist-divider">
@@ -437,6 +666,8 @@ export const SectionEditorPage = () => {
           onAddReference={addProjectReference}
           onClose={() => setCitationOpen(false)}
           onInsert={insertCitation}
+          onStyleChange={handleStyleChange}
+          style={style!}
         />
       )}
       {/* Navigation buttons */}

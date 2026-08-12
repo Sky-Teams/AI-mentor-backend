@@ -106,15 +106,34 @@ export const referenceApi = {
   },
 
   async formatInlineCitation(data: {
-    reference: Reference;
+    references: { reference: Reference; referenceIndex: number }[];
     style: ReferenceStyle;
   }) {
-    const response = await apiClient.post<ApiSuccessResponse<string>>(
-      "/citations/format-style",
-      data,
-    );
+    const response = await apiClient.post<
+      ApiSuccessResponse<{referenceId: string, formattedText?: string; footnote?: string }[]>
+    >("/citations/format-style", data);
     return unwrap(response.data);
   },
+};
+
+export const superscriptMap: Record<string, string> = {
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+};
+export const toSuperscript = (value: number) => {
+  return value
+    .toString()
+    .split("")
+    .map((digit) => superscriptMap[digit] ?? digit)
+    .join("");
 };
 
 /** Functions for save references to local storage */

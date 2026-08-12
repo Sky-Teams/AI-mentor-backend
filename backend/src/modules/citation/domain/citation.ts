@@ -6,4 +6,5 @@ import {
 export interface Citation {
   style: ReferenceStyle;
   reference: Reference;
+  referenceIndex: number;
 }

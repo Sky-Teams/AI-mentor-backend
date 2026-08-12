@@ -1,9 +1,13 @@
 import { Reference } from "src/modules/references/domain/reference";
-import { getYear } from "src/shared/utils/format-citation-helper";
+import { formatPage, getYear } from "src/shared/utils/format-citation-helper";
 
 export class ChicagoAuthorDateCitationFormatter {
   public formatCitation(reference: Reference) {
-    return this.parentheticalCitationFormat(reference);
+    const result = this.parentheticalCitationFormat(reference);
+    return {
+      referenceId: reference.id,
+      formattedText: result,
+    };
   }
 
   private parentheticalCitationFormat(reference: Reference): string {
@@ -18,7 +22,7 @@ export class ChicagoAuthorDateCitationFormatter {
           ? `"${reference.title}"`
           : "";
 
-    const page = reference.page ? reference.page : "";
+    const page = reference.page ? formatPage(reference.page) : "";
 
     let publicationPart = "";
 
