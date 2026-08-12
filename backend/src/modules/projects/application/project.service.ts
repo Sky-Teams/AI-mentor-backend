@@ -193,6 +193,7 @@ export class ProjectService {
 
     doc.moveDown(1.5);
   }
+
   private writeSections(
     doc: PDFKit.PDFDocument,
     rootSections: any,
@@ -244,6 +245,7 @@ export class ProjectService {
       }
     }
   }
+
   private writePageNumber(doc: any) {
     const range = doc.bufferedPageRange();
 
