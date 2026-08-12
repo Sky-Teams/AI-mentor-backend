@@ -7,6 +7,7 @@ export const paraphraseSchema = z.object({
   tone: z.enum(TONE_VALUES).default("SIMPLE"),
   lengthStrategy: z.enum(LENGTH_VALUES).default("SHORTEN"),
   preservedWords: z.array(z.string()).optional(),
+  content: z.string().min(1),
 });
 
 export const paraphraseRunIdSchema = z.object({

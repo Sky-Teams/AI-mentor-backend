@@ -18,9 +18,7 @@ export function ProfilePage() {
       const result = await userApi.updateProfile(fullName);
       setUpdateProfile(result);
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "An error occurred.",
-      );
+      setErrorMessage(error.message);
     }
   };
 

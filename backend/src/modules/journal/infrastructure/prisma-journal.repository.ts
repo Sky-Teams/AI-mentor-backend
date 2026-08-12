@@ -1,6 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
-import { promises } from "node:dns";
 import {
   CreatedJournal,
   CreateJournalInput,

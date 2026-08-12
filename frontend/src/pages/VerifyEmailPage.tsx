@@ -30,7 +30,7 @@ export function VerifyEmailPage() {
         }, 100);
       } catch (error: any) {
         setStatus("error");
-        setErrorMessage(error?.response?.data?.error?.message);
+        setErrorMessage(error.message);
       }
     };
     handleVerifyEmail();

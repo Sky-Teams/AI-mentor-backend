@@ -206,6 +206,49 @@ export const mapJournalToFormState = (journal: any): JournalFormState => ({
   })) ?? [createSection()],
 });
 
+export const mapCreateJournalInputToFormState = (
+  journal: CreateJournalInput,
+): JournalFormState => ({
+  name: journal.name,
+  publisher: journal.publisher || "",
+  description: journal.description || "",
+  guidelinePack: journal.guidelinePack || "",
+  specialtyId: journal.specialtyId || "",
+  sections: journal.sections?.length
+    ? journal.sections.map((section) => ({
+        id: createSection().id,
+        title: section.title || "",
+        sectionPrompt: section.sectionPrompt || "",
+        isOptional: section.isOptional ?? false,
+        maxWords: String(section.maxWords ?? ""),
+        checklists: (section.checklists || []).map((checklist) => ({
+          id: createChecklist().id,
+          title: checklist.title || "",
+          items: (checklist.items || []).map((item) => ({
+            id: createItem().id,
+            text: item,
+          })),
+        })),
+        subsections: (section.subsections || []).map((subsection) => ({
+          id: createSection().id,
+          title: subsection.title || "",
+          sectionPrompt: subsection.sectionPrompt || "",
+          isOptional: subsection.isOptional ?? false,
+          maxWords: String(subsection.maxWords ?? ""),
+          checklists: (subsection.checklists || []).map((checklist) => ({
+            id: createChecklist().id,
+            title: checklist.title || "",
+            items: (checklist.items || []).map((item) => ({
+              id: createItem().id,
+              text: item,
+            })),
+          })),
+          subsections: [],
+        })),
+      }))
+    : [createSection()],
+});
+
 // counters
 export const countJournalChecklists = (sections: SectionDraft[]) =>
   sections.reduce((sum, section) => sum + section.checklists.length, 0);

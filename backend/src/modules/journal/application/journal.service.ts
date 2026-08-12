@@ -3,11 +3,13 @@ import {
   JournalRepository,
   UpdateJournalInput,
 } from "src/modules/journal/domain/journal.repository.js";
+import { JournalSearchRepository } from "src/modules/journal/infrastructure/journal-search.repository.js";
 import { OpenAiJournalGenerator } from "src/modules/journal/infrastructure/openai-journal-generator";
 
 export class JournalService {
   public constructor(
     private readonly journalRepository: JournalRepository,
+    private readonly journalSearchRepository: JournalSearchRepository,
     private readonly journalGenerator: OpenAiJournalGenerator = new OpenAiJournalGenerator(),
   ) {}
 
@@ -36,9 +38,16 @@ export class JournalService {
     );
   }
 
-  public async generateJournalFromName(input: { journalName: string }) {
-    return this.journalGenerator.generateJournalTemplate({
-      journalName: input.journalName,
-    });
+  public async extractJournalFromSource(input: {
+    journalName: string;
+    publisher?: string;
+    url: string;
+    issn?: string | null;
+  }) {
+    return this.journalGenerator.generateJournalTemplate(input);
+  }
+
+  public async findJournalByName(name: string) {
+    return this.journalSearchRepository.findJournalByName(name);
   }
 }

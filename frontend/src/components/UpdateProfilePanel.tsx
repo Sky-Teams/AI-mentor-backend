@@ -32,9 +32,7 @@ export function UpdateProfilePane({ isOpen, onClose, onSavedProfile }: Props) {
       window.location.reload();
       onClose();
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "An error occurred.",
-      );
+      setErrorMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }

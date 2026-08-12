@@ -71,6 +71,14 @@ export const createProjectRouter = (
     ),
   );
 
+  router.post(
+    "/:projectId",
+    validate(projectIdParamsSchema, "params"),
+    asyncHandler((request, response) =>
+      controller.unArchiveProject(request, response),
+    ),
+  );
+
   router.get(
     "/:projectId/sections/:sectionKey",
     validate(sectionParamsSchema, "params"),

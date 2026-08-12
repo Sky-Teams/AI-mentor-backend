@@ -16,7 +16,7 @@ import {
 
 const changesSchema = z.object({
   originalPhrase: z.string().min(1),
-  replacedWith: z.string().min(1),
+  replacedWith: z.string().optional(),
   reason: z.string().min(1),
   startIndex: z.number().optional(),
   endIndex: z.number().optional(),
@@ -76,13 +76,16 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
       lengthStrategy === "MAINTAIN"
         ? "CRITICAL: Maintain a similar word count and level of detail as the original text. Do not summarize, do not omit facts, and do not delete or merge sentences."
         : "Rewrite the text to be significantly more concise. If a sentence doesn't add new value, merge or delete it.";
+    const wordLimitInstruction = content.maxWords
+      ? `CRITICAL: The final text must not exceed ${content.maxWords} words under any circumstances.`
+      : "";
 
     const systemPrompt = [
       `Return only structured JSON that matches the schema.`,
       `TASK: Paraphrase the text based on these specific constraints:`,
       `1. Tone requirement: ${toneTypeDescriptions[tone]}.`,
       `2. Length strategy: ${lengthStrategyDescriptions[lengthStrategy]}.`,
-      `3. Length Instruction: ${lengthInstruction}`,
+      `3. Length Instruction: ${lengthInstruction} and ${wordLimitInstruction}`,
       `4. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
       `5. Preserved Words Rule: ${preservedWordsRule}`,
       `Limit the 'changes' array to a maximum of 2 essential items.`,

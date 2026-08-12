@@ -17,9 +17,7 @@ export function ForgotPassword() {
       await authApi.forgotPassword(String(formData.get("email")));
       setIsSubmitted(true);
     } catch (error: any) {
-      setErrorMessage(
-        error?.response?.data?.error?.message || "An error occurred",
-      );
+      setErrorMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }

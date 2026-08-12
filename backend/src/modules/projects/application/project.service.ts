@@ -56,6 +56,15 @@ export class ProjectService {
     await this.projectRepository.archiveProject(projectId, ownerId);
   }
 
+  public async unArchiveProject(
+    projectId: string,
+    ownerId: string,
+  ): Promise<void> {
+    await this.getProject(projectId, ownerId);
+
+    await this.projectRepository.unArchiveProject(projectId, ownerId);
+  }
+
   public async updateSection(input: UpdateSectionInput): Promise<{
     section: ProjectSection;
     versionNumber: number;

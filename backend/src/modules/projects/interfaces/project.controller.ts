@@ -62,6 +62,17 @@ export class ProjectController {
     response.status(StatusCodes.OK).json(successResponse({ archived: true }));
   }
 
+  public async unArchiveProject(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    const { projectId } = request.params as { projectId: string };
+
+    await this.projectService.unArchiveProject(projectId, request.auth!.userId);
+
+    response.status(StatusCodes.OK).json(successResponse({ archived: false }));
+  }
+
   public async getSection(request: Request, response: Response): Promise<void> {
     const { projectId, sectionKey } = request.params as {
       projectId: string;

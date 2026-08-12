@@ -39,6 +39,7 @@ export class ParaphraseService {
     tone: ToneType;
     preservedWords?: string[];
     lengthStrategy?: LengthStrategy;
+    content: string;
   }): Promise<ParaphraseRun> {
     await this.userRepository.getUserById(input.ownerId);
     const project = await this.projectService.getProject(
@@ -58,7 +59,7 @@ export class ParaphraseService {
       input.ownerId,
       input.projectId,
     );
-    if (!section.content.text.trim()) {
+    if (!input.content.trim()) {
       throw new AppError(
         "Section content is required before paraphrasing.",
         StatusCodes.BAD_REQUEST,
@@ -72,10 +73,10 @@ export class ParaphraseService {
     const promptTemplate = activePrompt?.templateText
       ? activePrompt.templateText
           .replace("{{tone}}", toneText)
-          .replace("{{content}}", section.content.text)
+          .replace("{{content}}", input.content)
       : PROMPT_TEMPLATE.PARAPHRASE.replace("{{tone}}", toneText).replace(
           "{{content}}",
-          section.content.text,
+          input.content,
         );
 
     const GuidelinePack =
@@ -132,12 +133,13 @@ export class ParaphraseService {
       const execution = await this.sectionParaphrase.paraphraseSection({
         project,
         sectionId: section.id,
-        originalText: section.content.text,
+        originalText: input.content,
         tone: input.tone,
         preservedWords: input.preservedWords,
         lengthStrategy: input.lengthStrategy,
         promptTemplate,
         guidelineRules,
+        maxWords: section.maxWords,
       });
 
       const actualCredits = this.CreditEstimator.calculateActualCredit(
@@ -174,7 +176,7 @@ export class ParaphraseService {
         projectId: input.projectId,
         sectionId: section.id,
         initiatedById: input.ownerId,
-        originalText: section.content.text,
+        originalText: input.content,
         paraphrasedText: execution.result.paraphrasedText,
         grammarTips: execution.result.grammarTips ?? [],
         tone: execution.result.tone ?? input.tone,

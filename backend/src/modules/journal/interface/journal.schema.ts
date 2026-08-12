@@ -123,3 +123,10 @@ export const updateSectionsOrderSchema = z.object({
 export const journalNameSchema = z.object({
   journalName: z.string().min(1),
 });
+
+export const journalSourceSchema = z.object({
+  journalName: z.string().min(1),
+  publisher: z.string().optional(),
+  url: z.string().url(),
+  issn: z.string().nullable().optional(),
+});

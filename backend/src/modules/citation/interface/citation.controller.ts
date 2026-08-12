@@ -16,15 +16,20 @@ export class CitationController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const { style, reference } = request.body as {
+    const { style, references } = request.body as {
       style: ReferenceStyle;
-      reference: Reference;
+      references: { reference: Reference; referenceIndex: number }[];
     };
 
-    const result = await this.citationFormatterService.generateCitation({
-      style: style,
-      reference: reference,
-    });
+    const result = await Promise.all(
+      references.map((item) =>
+        this.citationFormatterService.generateCitation({
+          reference: item.reference,
+          style: style,
+          referenceIndex: item.referenceIndex,
+        }),
+      ),
+    );
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }

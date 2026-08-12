@@ -31,13 +31,12 @@ export function ChangePasswordPanel({ isOpen, onClose }: Props) {
       alert("Your password changed successfully");
       onClose();
     } catch (error: any) {
-      setErrorMessage(
-        error.response?.data?.error?.message || "An error occurred.",
-      );
+      setErrorMessage(error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <>
       <div className="modal-reference" onClick={onClose}>
