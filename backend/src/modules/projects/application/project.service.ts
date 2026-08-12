@@ -8,7 +8,10 @@ import type {
 } from "../domain/project.repository";
 import type { Project, ProjectSection } from "../domain/project";
 import PDFDocument from "pdfkit";
-import { getSectionExportText } from "src/shared/utils/project.helper.js";
+import {
+  getSectionExportLines,
+  renderFormattedText,
+} from "src/shared/utils/project.helper.js";
 
 export class ProjectService {
   public constructor(private readonly projectRepository: ProjectRepository) {}
@@ -174,12 +177,13 @@ export class ProjectService {
   }
 
   private writeTitle(doc: PDFKit.PDFDocument, titleSection?: ProjectSection) {
-    doc
-      .font("Times-Bold")
-      .fontSize(20)
-      .text(titleSection ? getSectionExportText(titleSection) : "", {
-        align: "center",
-      });
+    const titleText = titleSection
+      ? getSectionExportLines(titleSection).join(" ")
+      : "";
+
+    doc.font("Times-Bold").fontSize(20).text(titleText, {
+      align: "center",
+    });
 
     doc.moveDown(0.5);
 
@@ -212,10 +216,11 @@ export class ProjectService {
 
       doc.moveDown(0.3);
 
-      doc.font("Times-Roman").fontSize(11).text(getSectionExportText(section), {
-        align: "justify",
-        lineGap: 3,
-      });
+      doc.font("Times-Roman").fontSize(11);
+      const lines = getSectionExportLines(section);
+      for (const line of lines) {
+        renderFormattedText(doc, line);
+      }
 
       doc.moveDown(0.8);
 
@@ -236,10 +241,11 @@ export class ProjectService {
 
         doc.moveDown(0.2);
 
-        doc.font("Times-Roman").fontSize(11).text(getSectionExportText(sub), {
-          align: "justify",
-          lineGap: 3,
-        });
+        doc.font("Times-Roman").fontSize(11);
+        const subLines = getSectionExportLines(sub);
+        for (const line of subLines) {
+          renderFormattedText(doc, line);
+        }
 
         doc.moveDown(0.8);
       }
