@@ -11,7 +11,10 @@ import PDFDocument from "pdfkit";
 import {
   getSectionExportLines,
   renderFormattedText,
+  renderReferenceText,
 } from "src/shared/utils/project.helper.js";
+
+type PdfDocument = InstanceType<typeof PDFDocument>;
 
 export class ProjectService {
   public constructor(private readonly projectRepository: ProjectRepository) {}
@@ -157,7 +160,7 @@ export class ProjectService {
     return await this.projectRepository.getAllArticleTypes();
   }
 
-  public async exportAsPdf(project: Project): Promise<PDFKit.PDFDocument> {
+  public async exportAsPdf(project: Project): Promise<PdfDocument> {
     const doc = new PDFDocument({
       margin: 72,
       bufferPages: true,
@@ -165,9 +168,9 @@ export class ProjectService {
 
     const allSections = project.sections ?? [];
     const titleSection = allSections.find((sec) => sec.key === "TITLE");
-    const rootSections = allSections.filter(
-      (sec: any) => !sec.parentSectionId && sec.key !== "TITLE",
-    );
+    const rootSections = allSections
+      .filter((sec) => !sec.parentSectionId && sec.key !== "TITLE")
+      .sort((a, b) => a.sectionOrder - b.sectionOrder);
 
     this.writeTitle(doc, titleSection);
     this.writeSections(doc, rootSections, allSections);
@@ -176,7 +179,7 @@ export class ProjectService {
     return doc;
   }
 
-  private writeTitle(doc: PDFKit.PDFDocument, titleSection?: ProjectSection) {
+  private writeTitle(doc: PdfDocument, titleSection?: ProjectSection) {
     const titleText = titleSection
       ? getSectionExportLines(titleSection).join(" ")
       : "";
@@ -199,9 +202,9 @@ export class ProjectService {
   }
 
   private writeSections(
-    doc: PDFKit.PDFDocument,
-    rootSections: any,
-    allSections: any,
+    doc: PdfDocument,
+    rootSections: ProjectSection[],
+    allSections: ProjectSection[],
   ) {
     let sectionNumber = 0;
 
@@ -218,15 +221,24 @@ export class ProjectService {
 
       doc.font("Times-Roman").fontSize(11);
       const lines = getSectionExportLines(section);
+      const isReferenceOnlySection =
+        !section.content?.text?.trim() &&
+        (section.content?.references?.items?.length ?? 0) > 0;
       for (const line of lines) {
+        if (isReferenceOnlySection) {
+          renderReferenceText(doc, line);
+          doc.moveDown(0.35);
+          continue;
+        }
+
         renderFormattedText(doc, line);
       }
 
       doc.moveDown(0.8);
 
-      const subsections = allSections.filter(
-        (sec: any) => sec.parentSectionId === section.id,
-      );
+      const subsections = allSections
+        .filter((sec) => sec.parentSectionId === section.id)
+        .sort((a, b) => a.sectionOrder - b.sectionOrder);
 
       let subNumber = 0;
       for (const sub of subsections) {
@@ -243,7 +255,16 @@ export class ProjectService {
 
         doc.font("Times-Roman").fontSize(11);
         const subLines = getSectionExportLines(sub);
+        const isReferenceOnlySection =
+          !sub.content?.text?.trim() &&
+          (sub.content?.references?.items?.length ?? 0) > 0;
         for (const line of subLines) {
+          if (isReferenceOnlySection) {
+            renderReferenceText(doc, line);
+            doc.moveDown(0.35);
+            continue;
+          }
+
           renderFormattedText(doc, line);
         }
 
@@ -252,7 +273,7 @@ export class ProjectService {
     }
   }
 
-  private writePageNumber(doc: any) {
+  private writePageNumber(doc: PdfDocument) {
     const range = doc.bufferedPageRange();
 
     for (let i = range.start; i < range.start + range.count; i++) {

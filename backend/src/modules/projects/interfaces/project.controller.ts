@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
 import type { Project } from "src/modules/projects/domain/project.js";
+import { AppError } from "../../../shared/errors/app-error";
 
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
@@ -145,18 +146,25 @@ export class ProjectController {
     );
 
     if (format === "pdf") {
+      const safeFilename = project.title.replace(/[^a-z0-9-_]/gi, "_");
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename=${project.title.replace(/[^a-z0-9-_]/gi, "_")}.pdf`,
+        `attachment; filename="${safeFilename}.pdf"`,
       );
 
       const doc = await this.projectService.exportAsPdf(project);
       doc.pipe(res);
       doc.end();
+      return;
     }
 
-    // If need in the future we will implement this too
-    // else if (format === "word") await this.projectService.exportAsWord(project, res);
+    if (format === "word") {
+      throw new AppError(
+        "Word export is not implemented yet.",
+        StatusCodes.NOT_IMPLEMENTED,
+        "EXPORT_WORD_NOT_IMPLEMENTED",
+      );
+    }
   }
 }

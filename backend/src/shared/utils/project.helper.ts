@@ -3,50 +3,112 @@ import { ProjectSection } from "src/modules/projects/domain/project.js";
 const citationMarkerRegex = /{{cite:([^}]+)}}/g;
 
 export const getSectionExportLines = (section: ProjectSection): string[] => {
-  const rawText = section.content?.text ?? "";
-  const references = section.content?.references?.items ?? [];
+  const content = section.content;
+  const text = content?.text ?? "";
+  const references = content?.references?.items ?? [];
 
-  if (rawText.length > 0) {
-    const citationMap = new Map<string, string>();
-    for (const item of references) {
+  if (text) {
+    const citationMap = references.reduce((map, item) => {
       const referenceId =
         "referenceId" in item ? item.referenceId : item.reference?.id;
-      if (referenceId) {
-        citationMap.set(referenceId, item.formattedText || "");
-      }
-    }
+      if (referenceId) map.set(referenceId, item.formattedText ?? "");
+      return map;
+    }, new Map<string, string>());
 
-    const replacedText = rawText
+    return text
       .replace(citationMarkerRegex, (_, referenceId: string) => {
         return citationMap.get(referenceId) ?? "";
       })
-      .replace(/[ \t]{2,}/g, " ");
-
-    // split into separate lines , so PDFKit renders them correctly
-    return replacedText.split("\n");
+      .replace(/[ \t]{2,}/g, " ")
+      .split("\n");
   }
 
-  if (references.length > 0) {
-    return references.map((item) => item.formattedText || "").filter(Boolean);
-  }
-
-  return [];
+  return references.length
+    ? references.map((item) => item.formattedText ?? "").filter(Boolean)
+    : [];
 };
 
 export function renderFormattedText(
   doc: PDFKit.PDFDocument,
   text: string,
 ): void {
-  const parts = text.split(/(<i>.*?<\/i>)/g);
+  for (const part of text.split(/(<i>.*?<\/i>)/g)) {
+    if (!part) continue;
 
-  for (const part of parts) {
-    if (part.startsWith("<i>") && part.endsWith("</i>")) {
-      const clean = part.replace(/<\/?i>/g, "");
-      doc.font("Times-Italic").text(clean, { continued: true });
-    } else if (part.length > 0) {
-      doc.font("Times-Roman").text(part, { continued: true });
-    }
+    const italic = part.startsWith("<i>") && part.endsWith("</i>");
+    doc
+      .font(italic ? "Times-Italic" : "Times-Roman")
+      .text(italic ? part.replace(/<\/?i>/g, "") : part, {
+        continued: true,
+      });
   }
 
   doc.text("");
+}
+
+export function renderReferenceText(
+  doc: PDFKit.PDFDocument,
+  text: string,
+): void {
+  const left = doc.x;
+  const right = doc.page.width - doc.page.margins.right;
+  const lineHeight = doc.currentLineHeight(true);
+  let cursorX = left;
+  let cursorY = doc.y;
+
+  for (const part of text.split(/(<i>.*?<\/i>)/g)) {
+    if (!part) continue;
+
+    const italic = part.startsWith("<i>") && part.endsWith("</i>");
+    const chunk = italic ? part.replace(/<\/?i>/g, "") : part;
+
+    for (const token of chunk.split(/(\s+)/)) {
+      if (!token) continue;
+
+      if (token.includes("\n")) {
+        for (const segment of token.split("\n")) {
+          if (segment) {
+            const width = doc.widthOfString(segment);
+            if (cursorX > left && cursorX + width > right) {
+              cursorX = left;
+              cursorY += lineHeight;
+            }
+
+            doc.font(italic ? "Times-Italic" : "Times-Roman").text(
+              segment,
+              cursorX,
+              cursorY,
+              { lineBreak: false },
+            );
+            cursorX += width;
+          }
+
+          cursorX = left;
+          cursorY += lineHeight;
+        }
+        continue;
+      }
+
+      if (/^\s+$/.test(token)) {
+        if (cursorX !== left) {
+          cursorX += doc.widthOfString(token);
+        }
+        continue;
+      }
+
+      const width = doc.widthOfString(token);
+      if (cursorX > left && cursorX + width > right) {
+        cursorX = left;
+        cursorY += lineHeight;
+      }
+
+      doc
+        .font(italic ? "Times-Italic" : "Times-Roman")
+        .text(token, cursorX, cursorY, { lineBreak: false });
+      cursorX += width;
+    }
+  }
+
+  doc.x = left;
+  doc.y = cursorY + lineHeight;
 }
