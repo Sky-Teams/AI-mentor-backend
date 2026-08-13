@@ -27,7 +27,7 @@ export const getSectionExportLines = (section: ProjectSection): string[] => {
   }
 
   if (references.length > 0) {
-    return references.map((item) => item.formattedText).filter(Boolean);
+    return references.map((item) => item.formattedText || "").filter(Boolean);
   }
 
   return [];
