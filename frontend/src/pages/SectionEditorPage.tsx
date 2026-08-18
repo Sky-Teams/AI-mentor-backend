@@ -632,6 +632,47 @@ export const SectionEditorPage = () => {
     setNewStyle(newStyle);
   };
 
+  const insertFigure = async (
+    figure: NonNullable<SectionContent["media"]>[number],
+  ) => {
+    if (!selection) return;
+
+    const shown = getShownText();
+    const figurePlaceholder = `{{figure:${figure.id}}}`;
+
+    const newShown =
+      shown.slice(0, selection.start) +
+      figurePlaceholder +
+      shown.slice(selection.end);
+
+    const newText = getRawText(newShown);
+
+    const updatedContent: SectionContent = {
+      ...content,
+      text: newText,
+    };
+
+    setContent(updatedContent);
+    setAllSections((prev) =>
+      prev.map((s) =>
+        s.key === sectionKey ? { ...s, content: updatedContent } : s,
+      ),
+    );
+    setFigureOpen(false);
+    setSelection(null);
+
+    try {
+      setError("");
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content: updatedContent,
+        changeSummary: "Added figure reference",
+      });
+      setStatusMessage("Figure inserted and saved.");
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message || "Failed to save figure.");
+    }
+  };
+
   return (
     <div className="page-shell">
       <div className="page-header">
