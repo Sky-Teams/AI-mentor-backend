@@ -764,31 +764,17 @@ export const SectionEditorPage = () => {
                           className="card"
                           style={{ padding: "1rem" }}
                         >
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "160px 1fr",
-                              gap: "1rem",
-                              alignItems: "start",
-                            }}
-                          >
+                          <div className="figure-card">
                             <img
+                              className="figure-card__img"
                               src={item.src}
                               alt={item.caption}
-                              style={{
-                                width: "160px",
-                                height: "120px",
-                                objectFit: "cover",
-                                borderRadius: "12px",
-                                border: "1px solid #e5e7eb",
-                              }}
                             />
-                            <div>
-                              <strong>{item.label}</strong>
-                              <p
-                                className="muted-text"
-                                style={{ marginTop: "0.35rem" }}
-                              >
+                            <div className="figure-card__meta">
+                              <strong className="figure-card__label">
+                                {item.label}
+                              </strong>
+                              <p className="figure-card__caption">
                                 {item.caption}
                               </p>
                             </div>

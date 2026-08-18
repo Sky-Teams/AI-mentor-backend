@@ -1045,6 +1045,39 @@ ul.reference-list {
   margin-top: 0.2rem;
 }
 
+/* Figure card in section editor */
+.figure-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.figure-card__img {
+  width: 100%;
+  max-width: 480px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  display: block;
+}
+
+.figure-card__meta {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.figure-card__label {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.figure-card__caption {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
 /* FigureModal */
 .fm-overlay {
   position: fixed;
