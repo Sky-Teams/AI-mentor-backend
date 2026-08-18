@@ -393,8 +393,18 @@ export const SectionEditorPage = () => {
     // Replace figure placeholders with their labels
     for (const figure of mediaItems) {
       const figurePlaceholder = `{{figure:${figure.id}}}`;
-      // New format: {{figure:id}}
-      text = text.split(figurePlaceholder).join(figure.label);
+
+      if (sectionKey === "CASE REPORTS") {
+        // Render as clickable link that navigates to the figure
+        text = text
+          .split(figurePlaceholder)
+          .join(
+            `<a href="#figure-${figure.id}" class="figure-inline-link" data-figure-id="${figure.id}">${figure.label}</a>`,
+          );
+      } else {
+        // New format: {{figure:id}}
+        text = text.split(figurePlaceholder).join(figure.label);
+      }
 
       // Old format stored in DB: [text](#figure-id)
       const oldFigurePattern = new RegExp(
@@ -411,7 +421,8 @@ export const SectionEditorPage = () => {
     shownText: string,
     items = content.references?.items || [],
   ) => {
-    let text = shownText;
+    // Strip HTML tags from contentEditable content (CASE REPORTS)
+    let text = shownText.replace(/<[^>]*>/g, "");
 
     if (
       content.references?.style === "CHICAGO_FULL_NOTE" ||
@@ -772,7 +783,7 @@ export const SectionEditorPage = () => {
                             />
                             <div className="figure-card__meta">
                               <strong className="figure-card__label">
-                                {item.label}
+                                {item.label}.
                               </strong>
                               <p className="figure-card__caption">
                                 {item.caption}
@@ -788,33 +799,78 @@ export const SectionEditorPage = () => {
                 </div>
               ) : (
                 <>
-                  <textarea
-                    style={
-                      (section?.maxWords as number) <
-                      countWords(content.text || "")
-                        ? { border: "1px solid red", outline: "none" }
-                        : { outline: "none" }
-                    }
-                    className="editor-area"
-                    onChange={(event) => {
-                      const value = event.target.value;
+                  {sectionKey === "CASE REPORTS" ? (
+                    <div
+                      className="editor-area editor-area--rich"
+                      contentEditable
+                      suppressContentEditableWarning
+                      dangerouslySetInnerHTML={{ __html: getShownText() }}
+                      onInput={(event) => {
+                        const value = event.currentTarget.innerText;
+                        setContent((prev) => ({
+                          ...prev,
+                          text: getRawText(value),
+                        }));
+                      }}
+                      onSelect={(event) => {
+                        const selection = window.getSelection();
+                        if (selection && !selection.isCollapsed) {
+                          setSelection({
+                            start: selection.anchorOffset,
+                            end: selection.focusOffset,
+                          });
+                        } else {
+                          setSelection(null);
+                        }
+                      }}
+                      onClick={(event) => {
+                        const target = event.target as HTMLElement;
+                        const link = target.closest("a[data-figure-id]");
+                        if (link) {
+                          event.preventDefault();
+                          const figureId = link.getAttribute("data-figure-id");
+                          if (figureId) {
+                            navigate(
+                              `/projects/${projectId}/sections/FIGURES%20AND%20TABLES`,
+                            );
+                            setTimeout(() => {
+                              document
+                                .getElementById(`figure-${figureId}`)
+                                ?.scrollIntoView({ behavior: "smooth" });
+                            }, 300);
+                          }
+                        }
+                      }}
+                    />
+                  ) : (
+                    <textarea
+                      style={
+                        (section?.maxWords as number) <
+                        countWords(content.text || "")
+                          ? { border: "1px solid red", outline: "none" }
+                          : { outline: "none" }
+                      }
+                      className="editor-area"
+                      onChange={(event) => {
+                        const value = event.target.value;
 
-                      setContent((prev) => ({
-                        ...prev,
-                        text:
-                          style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
-                            ? value
-                            : getRawText(value),
-                      }));
-                    }}
-                    onSelect={(event) => {
-                      const { selectionStart: start, selectionEnd: end } =
-                        event.currentTarget;
-                      setSelection(start !== end ? { start, end } : null);
-                    }}
-                    rows={10}
-                    value={getShownText()}
-                  />
+                        setContent((prev) => ({
+                          ...prev,
+                          text:
+                            style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
+                              ? value
+                              : getRawText(value),
+                        }));
+                      }}
+                      onSelect={(event) => {
+                        const { selectionStart: start, selectionEnd: end } =
+                          event.currentTarget;
+                        setSelection(start !== end ? { start, end } : null);
+                      }}
+                      rows={10}
+                      value={getShownText()}
+                    />
+                  )}
 
                   <div className="stack" style={{ marginTop: "0.75rem" }}>
                     {selection && (

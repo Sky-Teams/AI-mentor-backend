@@ -404,6 +404,29 @@ td {
   width: 100%;
 }
 
+.editor-area--rich {
+  min-height: 200px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: var(--surface-strong);
+  color: var(--text);
+  outline: none;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+.editor-area--rich:focus {
+  border-color: var(--accent);
+}
+
+.editor-area--rich a {
+  color: #1d4ed8;
+  text-decoration: underline;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .latest-review {
   background-color: #eef0f6;
   border-radius: 10px;
@@ -1064,7 +1087,8 @@ ul.reference-list {
 
 .figure-card__meta {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .figure-card__label {
