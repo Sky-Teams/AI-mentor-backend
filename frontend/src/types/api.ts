@@ -53,6 +53,13 @@ export type SectionContent = {
       | { referenceId: string; formattedText?: string; footnote?: string }
     >;
   };
+  media?: Array<{
+    id: string;
+    label: string; // like fig. 1, fig. 2,...
+    caption: string;
+    src: string;
+    createdAt: string;
+  }>;
 };
 export interface ProjectSection {
   id: string;
