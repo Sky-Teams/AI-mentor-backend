@@ -101,7 +101,35 @@ export const SectionEditorPage = () => {
   );
 
   // Check if user made changes
-  const hasUnsavedChanges = section && section.content.text !== content?.text;
+  const hasUnsavedChanges =
+    section &&
+    (section.content.text !== content?.text ||
+      JSON.stringify(section.content.media ?? []) !==
+        JSON.stringify(content.media ?? []));
+
+  const isMediaSection = sectionKey === "FIGURES AND TABLES";
+
+  const mediaSection = allSections.find(
+    (item) => item.key === "FIGURES AND TABLES",
+  );
+
+  const mediaItems = content.media ?? mediaSection?.content.media ?? [];
+
+  const escapeHtml = (value: string) =>
+    value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+
+  const renderFigureLinks = (value: string) => {
+    const safe = escapeHtml(value);
+    return safe.replace(
+      /\[([^\]]+)\]\(#figure-([^)]+)\)/g,
+      '<a href="#figure-$2" class="figure-inline-link">$1</a>',
+    );
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
