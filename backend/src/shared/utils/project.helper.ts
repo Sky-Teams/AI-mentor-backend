@@ -43,7 +43,7 @@ export function renderFormattedText(
       });
   }
 
-  doc.text("");
+  doc.moveDown();
 }
 
 export function renderReferenceText(
@@ -74,12 +74,9 @@ export function renderReferenceText(
               cursorY += lineHeight;
             }
 
-            doc.font(italic ? "Times-Italic" : "Times-Roman").text(
-              segment,
-              cursorX,
-              cursorY,
-              { lineBreak: false },
-            );
+            doc
+              .font(italic ? "Times-Italic" : "Times-Roman")
+              .text(segment, cursorX, cursorY, { lineBreak: false });
             cursorX += width;
           }
 
