@@ -1,26 +1,48 @@
 import { ProjectSection } from "src/modules/projects/domain/project.js";
 
 const citationMarkerRegex = /{{cite:([^}]+)}}/g;
+const formattedPartRegex = /(<i>.*?<\/i>)/g;
+const italicTagRegex = /<\/?i>/g;
+
+type ExportReferenceItem = {
+  referenceId?: string;
+  reference?: {
+    id?: string;
+  };
+  formattedText?: string;
+};
+
+const getFormattedParts = (
+  text: string,
+): Array<{ text: string; italic: boolean }> =>
+  text.split(formattedPartRegex).filter(Boolean).map((part) => ({
+    text: part.replace(italicTagRegex, ""),
+    italic: part.startsWith("<i>") && part.endsWith("</i>"),
+  }));
+
+const buildCitationMap = (references: ExportReferenceItem[]) =>
+  references.reduce<Map<string, string>>((map, item) => {
+    const referenceId = item.referenceId ?? item.reference?.id;
+    if (referenceId) {
+      map.set(referenceId, item.formattedText ?? "");
+    }
+    return map;
+  }, new Map<string, string>());
 
 export const getSectionExportLines = (section: ProjectSection): string[] => {
-  const content = section.content;
-  const text = content?.text ?? "";
-  const references = content?.references?.items ?? [];
+  const text = section.content?.text?.trim() ?? "";
+  const references = (section.content?.references?.items ?? []) as ExportReferenceItem[];
 
   if (text) {
-    const citationMap = references.reduce((map, item) => {
-      const referenceId =
-        "referenceId" in item ? item.referenceId : item.reference?.id;
-      if (referenceId) map.set(referenceId, item.formattedText ?? "");
-      return map;
-    }, new Map<string, string>());
+    const citationMap = buildCitationMap(references);
 
     return text
       .replace(citationMarkerRegex, (_, referenceId: string) => {
         return citationMap.get(referenceId) ?? "";
       })
       .replace(/[ \t]{2,}/g, " ")
-      .split("\n");
+      .split(/\r?\n/)
+      .filter((line) => line.trim());
   }
 
   return references.length
@@ -32,17 +54,17 @@ export function renderFormattedText(
   doc: PDFKit.PDFDocument,
   text: string,
 ): void {
-  for (const part of text.split(/(<i>.*?<\/i>)/g)) {
-    if (!part) continue;
+  const parts = getFormattedParts(text);
 
-    const italic = part.startsWith("<i>") && part.endsWith("</i>");
+  for (const [index, part] of parts.entries()) {
     doc
-      .font(italic ? "Times-Italic" : "Times-Roman")
-      .text(italic ? part.replace(/<\/?i>/g, "") : part, {
-        continued: true,
+      .font(part.italic ? "Times-Italic" : "Times-Roman")
+      .text(part.text, {
+        continued: index < parts.length - 1,
       });
   }
 
+  doc.x = doc.page.margins.left;
   doc.moveDown();
 }
 
@@ -56,17 +78,16 @@ export function renderReferenceText(
   let cursorX = left;
   let cursorY = doc.y;
 
-  for (const part of text.split(/(<i>.*?<\/i>)/g)) {
-    if (!part) continue;
+  for (const part of getFormattedParts(text)) {
+    const style = part.italic ? "Times-Italic" : "Times-Roman";
 
-    const italic = part.startsWith("<i>") && part.endsWith("</i>");
-    const chunk = italic ? part.replace(/<\/?i>/g, "") : part;
-
-    for (const token of chunk.split(/(\s+)/)) {
+    for (const token of part.text.split(/(\s+)/)) {
       if (!token) continue;
 
       if (token.includes("\n")) {
-        for (const segment of token.split("\n")) {
+        const segments = token.split(/\r?\n/);
+
+        for (const [index, segment] of segments.entries()) {
           if (segment) {
             const width = doc.widthOfString(segment);
             if (cursorX > left && cursorX + width > right) {
@@ -74,14 +95,16 @@ export function renderReferenceText(
               cursorY += lineHeight;
             }
 
-            doc
-              .font(italic ? "Times-Italic" : "Times-Roman")
-              .text(segment, cursorX, cursorY, { lineBreak: false });
+            doc.font(style).text(segment, cursorX, cursorY, {
+              lineBreak: false,
+            });
             cursorX += width;
           }
 
-          cursorX = left;
-          cursorY += lineHeight;
+          if (index < segments.length - 1) {
+            cursorX = left;
+            cursorY += lineHeight;
+          }
         }
         continue;
       }
@@ -99,9 +122,7 @@ export function renderReferenceText(
         cursorY += lineHeight;
       }
 
-      doc
-        .font(italic ? "Times-Italic" : "Times-Roman")
-        .text(token, cursorX, cursorY, { lineBreak: false });
+      doc.font(style).text(token, cursorX, cursorY, { lineBreak: false });
       cursorX += width;
     }
   }

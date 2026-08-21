@@ -181,8 +181,12 @@ export class ProjectService {
 
   private writeTitle(doc: PdfDocument, titleSection?: ProjectSection) {
     const titleText = titleSection
-      ? getSectionExportLines(titleSection).join(" ")
+      ? getSectionExportLines(titleSection).join(" ").trim()
       : "";
+
+    if (!titleText) {
+      return;
+    }
 
     doc.font("Times-Bold").fontSize(20).text(titleText, {
       align: "center",
@@ -201,6 +205,25 @@ export class ProjectService {
     doc.moveDown(1.5);
   }
 
+  private writeSectionBody(doc: PdfDocument, section: ProjectSection) {
+    const lines = getSectionExportLines(section);
+    const referenceOnly =
+      !section.content?.text?.trim() &&
+      (section.content?.references?.items?.length ?? 0) > 0;
+
+    for (const line of lines) {
+      doc.x = doc.page.margins.left;
+
+      if (referenceOnly) {
+        renderReferenceText(doc, line);
+        doc.moveDown(0.35);
+        continue;
+      }
+
+      renderFormattedText(doc, line);
+    }
+  }
+
   private writeSections(
     doc: PdfDocument,
     rootSections: ProjectSection[],
@@ -211,6 +234,7 @@ export class ProjectService {
     for (const section of rootSections) {
       sectionNumber++;
 
+      doc.x = doc.page.margins.left;
       doc
         .font("Times-Bold")
         .fontSize(14)
@@ -220,19 +244,7 @@ export class ProjectService {
       doc.moveDown(0.3);
 
       doc.font("Times-Roman").fontSize(11);
-      const lines = getSectionExportLines(section);
-      const isReferenceOnlySection =
-        !section.content?.text?.trim() &&
-        (section.content?.references?.items?.length ?? 0) > 0;
-      for (const line of lines) {
-        if (isReferenceOnlySection) {
-          renderReferenceText(doc, line);
-          doc.moveDown(0.35);
-          continue;
-        }
-
-        renderFormattedText(doc, line);
-      }
+      this.writeSectionBody(doc, section);
 
       doc.moveDown(0.8);
 
@@ -244,6 +256,7 @@ export class ProjectService {
       for (const sub of subsections) {
         subNumber++;
 
+        doc.x = doc.page.margins.left;
         doc
           .font("Times-Bold")
           .fontSize(12)
@@ -254,19 +267,7 @@ export class ProjectService {
         doc.moveDown(0.2);
 
         doc.font("Times-Roman").fontSize(11);
-        const subLines = getSectionExportLines(sub);
-        const isReferenceOnlySection =
-          !sub.content?.text?.trim() &&
-          (sub.content?.references?.items?.length ?? 0) > 0;
-        for (const line of subLines) {
-          if (isReferenceOnlySection) {
-            renderReferenceText(doc, line);
-            doc.moveDown(0.35);
-            continue;
-          }
-
-          renderFormattedText(doc, line);
-        }
+        this.writeSectionBody(doc, sub);
 
         doc.moveDown(0.8);
       }
