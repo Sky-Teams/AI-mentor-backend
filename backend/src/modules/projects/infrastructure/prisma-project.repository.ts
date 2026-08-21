@@ -379,6 +379,8 @@ export class PrismaProjectRepository implements ProjectRepository {
         }
 
         const text = input.content.text ?? "";
+        const hasContent =
+          text.trim().length > 0 || (input.content.media?.length ?? 0) > 0;
         const contentWords =
           text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 
@@ -414,7 +416,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           },
           data: {
             content: input.content as unknown as Prisma.InputJsonValue,
-            status: text.trim().length > 0 ? "DRAFT" : "NOT_STARTED",
+            status: hasContent ? "DRAFT" : "NOT_STARTED",
             lastEditedAt: new Date(),
           },
         });
