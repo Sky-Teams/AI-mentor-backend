@@ -22,7 +22,7 @@ export class SubscriptionService {
   public async buyPlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<SubscriptionRequest> {
+  ): Promise<SubscriptionRequest | UserSubscription> {
     await this.userRepository.getUserById(userId);
 
     const plan =
@@ -54,7 +54,7 @@ export class SubscriptionService {
   public async upgradePlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<SubscriptionRequest> {
+  ): Promise<SubscriptionRequest | UserSubscription> {
     await this.userRepository.getUserById(userId);
 
     const plan =

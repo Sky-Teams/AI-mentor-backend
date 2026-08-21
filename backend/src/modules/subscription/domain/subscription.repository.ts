@@ -11,13 +11,13 @@ export interface SubscriptionRepository {
   buyPlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<SubscriptionRequest>;
+  ): Promise<SubscriptionRequest | UserSubscription>;
   getRequestedPlans(): Promise<RequestedPlans[]>;
   approveRequestedPlan(userId: string, id: string): Promise<RequestedPlans>;
   upgradePlan(
     subscriptionPlanId: string,
     userId: string,
-  ): Promise<SubscriptionRequest>;
+  ): Promise<SubscriptionRequest | UserSubscription>;
   getActivePlan(userId: string): Promise<UserSubscription | null>;
   cancelRequestedPlan(id: string, userId: string): Promise<RequestedPlans>;
   getUserRequestedPlan(userId: string): Promise<RequestedPlans | null>;
