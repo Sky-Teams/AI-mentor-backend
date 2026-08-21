@@ -6,13 +6,13 @@ import { SubscriptionListPanel } from "../components/SubscriptionListPanel";
 export const BillingPage = () => {
   const [overview, setOverview] = useState<BillingOverview | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      const data = await billingApi.getOverview();
-      setOverview(data);
-    };
+  const loadOverview = async () => {
+    const data = await billingApi.getOverview();
+    setOverview(data);
+  };
 
-    void load();
+  useEffect(() => {
+    void loadOverview();
   }, []);
 
   return (
@@ -109,7 +109,7 @@ export const BillingPage = () => {
         </div>
       </div>
 
-      <SubscriptionListPanel />
+      <SubscriptionListPanel onPlanActivated={loadOverview} />
     </div>
   );
 };

@@ -5,7 +5,13 @@ import {
   SubscriptionPlan,
 } from "../services/api/subscription";
 
-export function SubscriptionListPanel() {
+type SubscriptionListPanelProps = {
+  onPlanActivated: () => Promise<void>;
+};
+
+export function SubscriptionListPanel({
+  onPlanActivated,
+}: SubscriptionListPanelProps) {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -45,6 +51,7 @@ export function SubscriptionListPanel() {
 
       await subscriptionApi.buyPlan(planId);
       const requestedPlan = await subscriptionApi.getUserRequestedPlan();
+      await onPlanActivated();
       setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
@@ -74,6 +81,7 @@ export function SubscriptionListPanel() {
       setErrorMessage("");
       await subscriptionApi.upgradePlan(planId);
       const requestedPlan = await subscriptionApi.getUserRequestedPlan();
+      await onPlanActivated();
       setRequestedPlan(requestedPlan);
       alert("The plan was successfully registered.");
     } catch (error: any) {
