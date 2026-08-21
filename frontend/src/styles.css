@@ -1115,7 +1115,7 @@ ul.reference-list {
 }
 .fm-panel {
   width: 100%;
-  max-width: 800px;
+  max-width: 400px;
   max-height: 80vh;
   background: #fff;
   border-radius: 16px;
@@ -1171,9 +1171,10 @@ ul.reference-list {
   padding: 10px;
   background: #fff;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: center;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -1185,11 +1186,12 @@ ul.reference-list {
   transform: translateY(-1px);
 }
 .fm-thumb {
-  width: 100%;
-  height: 210px;
+  width: 56px;
+  height: 56px;
   border-radius: 8px;
   overflow: hidden;
   background: #f4f5f7;
+  flex-shrink: 0;
 }
 .fm-thumb img {
   width: 100%;
@@ -1201,6 +1203,7 @@ ul.reference-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 .fm-label {
   font-size: 13px;
@@ -1211,10 +1214,9 @@ ul.reference-list {
   margin: 0;
   font-size: 12px;
   color: #8b8f98;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .fm-empty {
   display: flex;

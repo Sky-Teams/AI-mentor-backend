@@ -50,7 +50,6 @@ export const FigureModal = ({ figures, onClose, onSelect }: Props) => {
                 </div>
                 <div className="fm-meta">
                   <span className="fm-label">{figure.label}</span>
-                  <p className="fm-caption">{figure.caption}</p>
                 </div>
               </button>
             ))}
