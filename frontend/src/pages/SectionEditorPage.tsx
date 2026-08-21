@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ParaphrasePanel } from "../components/ParaphrasePanel";
 import { ReviewLayout } from "../components/ReviewLayout";
@@ -45,6 +45,8 @@ export const SectionEditorPage = () => {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [style, setNewStyle] = useState<ReferenceStyle>("APA");
+  const caseReportEditorRef = useRef<HTMLDivElement | null>(null);
+  const caseReportRangeRef = useRef<Range | null>(null);
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
@@ -114,6 +116,144 @@ export const SectionEditorPage = () => {
   );
 
   const mediaItems = content.media ?? mediaSection?.content.media ?? [];
+
+  const escapeHtml = (value: string) =>
+    value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+
+  const renderCaseReportHtml = (value: SectionContent = content) => {
+    let html = escapeHtml(value.text);
+    html = html.replace(/\n/g, "<br />");
+    const items = value.references?.items || [];
+
+    let index = 1;
+    for (const item of items) {
+      const placeholder = escapeHtml(`{{cite:${getItemReferenceId(item)}}}`);
+
+      if (
+        value.references?.style === "CHICAGO_FULL_NOTE" ||
+        value.references?.style === "OSCOLA"
+      ) {
+        html = html.split(placeholder).join(
+          `<sup class="citation-inline">${escapeHtml(toSuperscript(index))}</sup>`,
+        );
+        index++;
+      } else {
+        html = html.split(placeholder).join(
+          `<span class="citation-inline">${escapeHtml(item.formattedText ?? "")}</span>`,
+        );
+      }
+    }
+
+    for (const figure of mediaItems) {
+      const placeholder = escapeHtml(`{{figure:${figure.id}}}`);
+      html = html.split(placeholder).join(
+        `<a href="#figure-${figure.id}" class="figure-inline-link" data-figure-id="${figure.id}">${escapeHtml(figure.label)}</a>`,
+      );
+    }
+
+    return html;
+  };
+
+  const serializeCaseReportEditor = (editor: HTMLElement) => {
+    let raw = "";
+    const blockTags = new Set(["P", "DIV", "LI", "SECTION", "ARTICLE"]);
+
+    const walk = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        raw += node.textContent ?? "";
+        return;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+      }
+
+      const element = node as HTMLElement;
+      if (element.tagName === "BR") {
+        raw += "\n";
+        return;
+      }
+
+      const figureId = element.getAttribute("data-figure-id");
+      if (element.tagName === "A" && figureId) {
+        raw += `{{figure:${figureId}}}`;
+        return;
+      }
+
+      for (const child of Array.from(element.childNodes)) {
+        walk(child);
+      }
+
+      if (blockTags.has(element.tagName)) {
+        raw += "\n";
+      }
+    };
+
+    for (const child of Array.from(editor.childNodes)) {
+      walk(child);
+    }
+
+    return raw;
+  };
+
+  const syncCaseReportEditor = (value: SectionContent = content) => {
+    if (sectionKey !== "CASE REPORTS") return;
+    const editor = caseReportEditorRef.current;
+    if (!editor) return;
+    editor.innerHTML = renderCaseReportHtml(value);
+  };
+
+  const updateCaseReportSelection = () => {
+    const editor = caseReportEditorRef.current;
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      setSelection(null);
+      caseReportRangeRef.current = null;
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) {
+      setSelection(null);
+      caseReportRangeRef.current = null;
+      return;
+    }
+
+    const beforeRange = range.cloneRange();
+    beforeRange.selectNodeContents(editor);
+    beforeRange.setEnd(range.startContainer, range.startOffset);
+    const start = beforeRange.toString().length;
+
+    beforeRange.setEnd(range.endContainer, range.endOffset);
+    const end = beforeRange.toString().length;
+
+    if (start !== end) {
+      setSelection({ start, end });
+      caseReportRangeRef.current = range.cloneRange();
+    } else {
+      setSelection(null);
+      caseReportRangeRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (sectionKey === "CASE REPORTS") {
+      syncCaseReportEditor();
+    }
+  }, [
+    sectionKey,
+    section?.id,
+    mediaItems.length,
+    content.references?.style,
+    content.references?.items?.length,
+  ]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -422,12 +562,6 @@ export const SectionEditorPage = () => {
       }
     }
 
-    // Convert figure labels back to placeholders
-    for (const figure of mediaItems) {
-      const figurePlaceholder = `{{figure:${figure.id}}}`;
-      text = text.split(figure.label).join(figurePlaceholder);
-    }
-
     return text;
   };
 
@@ -627,6 +761,59 @@ export const SectionEditorPage = () => {
   ) => {
     if (!selection) return;
 
+    if (sectionKey === "CASE REPORTS") {
+      const editor = caseReportEditorRef.current;
+      const storedRange = caseReportRangeRef.current;
+      if (!editor || !storedRange) return;
+
+      const range = storedRange.cloneRange();
+      range.collapse(false);
+
+      const link = document.createElement("a");
+      link.className = "figure-inline-link";
+      link.href = `#figure-${figure.id}`;
+      link.setAttribute("data-figure-id", figure.id);
+      link.textContent = figure.label;
+
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(document.createTextNode(" "));
+      fragment.appendChild(link);
+
+      range.insertNode(fragment);
+
+      const updatedRawText = serializeCaseReportEditor(editor);
+      const updatedContent: SectionContent = {
+        ...content,
+        text: updatedRawText,
+      };
+
+      setContent(updatedContent);
+      setAllSections((prev) =>
+        prev.map((s) =>
+          s.key === sectionKey ? { ...s, content: updatedContent } : s,
+        ),
+      );
+      setFigureOpen(false);
+      setSelection(null);
+      caseReportRangeRef.current = null;
+      syncCaseReportEditor(updatedContent);
+
+      try {
+        setError("");
+        await projectsApi.updateSection(projectId, sectionKey, {
+          content: updatedContent,
+          changeSummary: "Added figure reference",
+        });
+        setStatusMessage("Figure inserted and saved.");
+      } catch (err: any) {
+        setError(
+          err?.response?.data?.error?.message || "Failed to save figure.",
+        );
+      }
+
+      return;
+    }
+
     const shown = getShownText();
     const figurePlaceholder = `{{figure:${figure.id}}}`;
 
@@ -650,6 +837,9 @@ export const SectionEditorPage = () => {
     );
     setFigureOpen(false);
     setSelection(null);
+    if (sectionKey === "CASE REPORTS") {
+      syncCaseReportEditor(updatedContent);
+    }
 
     try {
       setError("");
@@ -779,29 +969,43 @@ export const SectionEditorPage = () => {
               ) : (
                 <>
                   {sectionKey === "CASE REPORTS" ? (
-                    <textarea
-                      style={
-                        (section?.maxWords as number) <
-                        countWords(content.text || "")
-                          ? { border: "1px solid red", outline: "none" }
-                          : { outline: "none" }
-                      }
-                      className="editor-area"
-                      onChange={(event) => {
-                        const value = event.target.value;
-
+                    <div
+                      ref={caseReportEditorRef}
+                      className="editor-area editor-area--rich"
+                      contentEditable
+                      suppressContentEditableWarning
+                      onInput={(event) => {
+                        const value = serializeCaseReportEditor(
+                          event.currentTarget,
+                        );
                         setContent((prev) => ({
                           ...prev,
                           text: getRawText(value),
                         }));
                       }}
-                      onSelect={(event) => {
-                        const { selectionStart: start, selectionEnd: end } =
-                          event.currentTarget;
-                        setSelection(start !== end ? { start, end } : null);
+                      onMouseUp={updateCaseReportSelection}
+                      onKeyUp={updateCaseReportSelection}
+                      onClick={(event) => {
+                        const target = event.target as HTMLElement;
+                        const link = target.closest("a[data-figure-id]");
+                        if (!link) return;
+
+                        event.preventDefault();
+                        const figureId = link.getAttribute("data-figure-id");
+                        if (!figureId) return;
+
+                        navigate(
+                          `/projects/${projectId}/sections/FIGURES%20AND%20TABLES`,
+                        );
+                        setTimeout(() => {
+                          document
+                            .getElementById(`figure-${figureId}`)
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
+                        }, 300);
                       }}
-                      rows={10}
-                      value={getShownText()}
                     />
                   ) : (
                     <textarea

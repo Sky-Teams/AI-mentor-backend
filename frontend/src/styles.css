@@ -727,8 +727,30 @@ ul.reference-list {
 
 .figure-inline-link {
   color: #1d4ed8;
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.figure-inline-link:hover {
+  text-decoration: none;
+}
+
+.editor-area--rich {
+  min-height: 200px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: var(--surface-strong);
+  color: var(--text);
+  outline: none;
+  overflow-y: auto;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.editor-area--rich:focus {
+  border-color: var(--accent);
 }
 
 .journal-page {
