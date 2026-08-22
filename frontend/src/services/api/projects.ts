@@ -90,4 +90,20 @@ export const projectsApi = {
     );
     return unwrap(response.data);
   },
+
+  async exportProject(projectId: string): Promise<void> {
+    const res = await apiClient.get(`/projects/export/${projectId}`, {
+      responseType: "blob", // blob means: dont convert response as a json, return it as a raw binary file data
+    });
+
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `project-${projectId}.pdf`;
+    link.click();
+
+    window.URL.revokeObjectURL(url);
+  },
 };
