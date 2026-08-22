@@ -1,8 +1,7 @@
 import { ProjectSection } from "src/modules/projects/domain/project.js";
 
 const citationMarkerRegex = /{{cite:([^}]+)}}/g;
-const formattedPartRegex = /(<i>.*?<\/i>)/g;
-const italicTagRegex = /<\/?i>/g;
+const htmlTokenRegex = /(<[^>]+>|[^<]+)/g;
 
 type ExportReferenceItem = {
   referenceId?: string;
@@ -14,11 +13,23 @@ type ExportReferenceItem = {
 
 const getFormattedParts = (
   text: string,
-): Array<{ text: string; italic: boolean }> =>
-  text.split(formattedPartRegex).filter(Boolean).map((part) => ({
-    text: part.replace(italicTagRegex, ""),
-    italic: part.startsWith("<i>") && part.endsWith("</i>"),
-  }));
+): Array<{ text: string; italic: boolean }> => {
+  const parts: Array<{ text: string; italic: boolean }> = [];
+  let isItalic = false;
+
+  for (const token of text.match(htmlTokenRegex) ?? []) {
+    if (token.startsWith("<")) {
+      if (/^<(i|em)>$/i.test(token)) isItalic = true;
+      else if (/^<\/(i|em)>$/i.test(token)) isItalic = false;
+      else if (/^<br\s*\/?>$/i.test(token))
+        parts.push({ text: "\n", italic: false });
+      continue;
+    }
+    parts.push({ text: token, italic: isItalic });
+  }
+
+  return parts;
+};
 
 const buildCitationMap = (references: ExportReferenceItem[]) =>
   references.reduce<Map<string, string>>((map, item) => {
@@ -31,7 +42,8 @@ const buildCitationMap = (references: ExportReferenceItem[]) =>
 
 export const getSectionExportLines = (section: ProjectSection): string[] => {
   const text = section.content?.text?.trim() ?? "";
-  const references = (section.content?.references?.items ?? []) as ExportReferenceItem[];
+  const references = (section.content?.references?.items ??
+    []) as ExportReferenceItem[];
 
   if (text) {
     const citationMap = buildCitationMap(references);
@@ -57,11 +69,9 @@ export function renderFormattedText(
   const parts = getFormattedParts(text);
 
   for (const [index, part] of parts.entries()) {
-    doc
-      .font(part.italic ? "Times-Italic" : "Times-Roman")
-      .text(part.text, {
-        continued: index < parts.length - 1,
-      });
+    doc.font(part.italic ? "Times-Italic" : "Times-Roman").text(part.text, {
+      continued: index < parts.length - 1,
+    });
   }
 
   doc.x = doc.page.margins.left;
