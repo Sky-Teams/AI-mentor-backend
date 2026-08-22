@@ -287,9 +287,16 @@ export class ProjectService {
         .font("Times-Roman")
         .fontSize(9)
         .fillColor("#666666")
-        .text(`${i + 1} / ${range.count}`, 0, doc.page.height - 40, {
-          align: "center",
-        });
+        .text(
+          `${i + 1} / ${range.count}`,
+          doc.page.margins.left,
+          doc.page.height - 40,
+          {
+            width:
+              doc.page.width - doc.page.margins.left - doc.page.margins.right,
+            align: "center",
+          },
+        );
 
       doc.page.margins.bottom = bottomMargin;
     }
