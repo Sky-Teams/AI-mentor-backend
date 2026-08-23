@@ -18,6 +18,11 @@ import {
   ReferenceItem,
 } from "../components/InlineCitationModal";
 
+export const countWords = (text: string) => {
+  const trimmed = text.trim();
+  return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+};
+
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
   const navigate = useNavigate();
@@ -167,11 +172,6 @@ export const SectionEditorPage = () => {
     () => reviews.find((r) => r.sectionKey === sectionKey) || null,
     [reviews, sectionKey],
   );
-
-  const countWords = (text: string) => {
-    const trimmed = text.trim();
-    return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
-  };
 
   const referenceSection = allSections.find(
     (item) => item.key === "REFERENCES",
