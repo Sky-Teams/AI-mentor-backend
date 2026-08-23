@@ -354,7 +354,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     if (requestedFreePlan) {
       const existingFreePlanSubscription =
         await this.prisma.userSubscription.findFirst({
-          where: { subscriptionPlanId: subscriptionPlanId },
+          where: { userId, subscriptionPlanId: subscriptionPlanId },
         });
 
       if (existingFreePlanSubscription)
