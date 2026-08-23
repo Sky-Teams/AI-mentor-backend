@@ -106,6 +106,13 @@ Requirements:
 - Use concise but useful checklists and section prompts.
 - Prefer evidence-based structure, but do not invent unsupported facts.
 - Keep the output valid JSON only.
+
+- A section titled "References" is mandatory.
+- Always include exactly one References section.
+- The References section must be a root section, not a subsection.
+- It must be non-optional.
+- It must include a sectionPrompt explaining that it contains all cited sources.
+- If the journal guidelines do not mention references, still add the References section at the end.
     `.trim(),
   };
 };
