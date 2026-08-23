@@ -67,6 +67,11 @@ export const SectionEditorPage = () => {
     loadData();
   }, [projectId, sectionKey]);
 
+  useEffect(() => {
+    setSelection(null);
+    setCitationOpen(false);
+  }, [sectionKey]);
+
   // Determine navigation list: if viewing a subsection, navigate among siblings;
   // otherwise navigate among root sections.
   const navigationSections = (() => {
