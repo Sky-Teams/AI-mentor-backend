@@ -377,10 +377,14 @@ export const SectionEditorPage = () => {
     // save the updated section to the database
     try {
       setError("");
-      await projectsApi.updateSection(projectId, sectionKey, {
+      const saved = await projectsApi.updateSection(projectId, sectionKey, {
         content: updatedContent,
         changeSummary: "Added inline citation",
       });
+
+      setSection(saved.section);
+      setContent(saved.section.content);
+
       setStatusMessage("Citation inserted and saved.");
     } catch (err: any) {
       setError(
