@@ -7,6 +7,14 @@ import type {
   UpdateSectionInput,
 } from "../domain/project.repository";
 import type { Project, ProjectSection } from "../domain/project";
+import PDFDocument from "pdfkit";
+import {
+  getSectionExportLines,
+  renderFormattedText,
+  renderReferenceText,
+} from "src/shared/utils/project.helper.js";
+
+type PdfDocument = InstanceType<typeof PDFDocument>;
 
 export class ProjectService {
   public constructor(private readonly projectRepository: ProjectRepository) {}
@@ -151,4 +159,148 @@ export class ProjectService {
   public async getAllArticleTypes() {
     return await this.projectRepository.getAllArticleTypes();
   }
+
+  public async exportAsPdf(project: Project): Promise<PdfDocument> {
+    const doc = new PDFDocument({
+      margin: 72,
+      bufferPages: true,
+    });
+
+    const allSections = project.sections ?? [];
+    const titleSection = allSections.find((sec) => sec.key === "TITLE");
+    const rootSections = allSections
+      .filter((sec) => !sec.parentSectionId && sec.key !== "TITLE")
+      .sort((a, b) => a.sectionOrder - b.sectionOrder);
+
+    this.writeTitle(doc, titleSection);
+    this.writeSections(doc, rootSections, allSections);
+    this.writePageNumber(doc);
+
+    return doc;
+  }
+
+  private writeTitle(doc: PdfDocument, titleSection?: ProjectSection) {
+    const titleText = titleSection
+      ? getSectionExportLines(titleSection).join(" ").trim()
+      : "";
+
+    if (!titleText) {
+      return;
+    }
+
+    doc.font("Times-Bold").fontSize(20).text(titleText, {
+      align: "center",
+    });
+
+    doc.moveDown(0.5);
+
+    // line under the title
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .lineWidth(1)
+      .strokeColor("#333333")
+      .stroke();
+
+    doc.moveDown(1.5);
+  }
+
+  private writeSectionBody(doc: PdfDocument, section: ProjectSection) {
+    const lines = getSectionExportLines(section);
+    const referenceOnly =
+      !section.content?.text?.trim() &&
+      (section.content?.references?.items?.length ?? 0) > 0;
+
+    for (const line of lines) {
+      doc.x = doc.page.margins.left;
+
+      if (referenceOnly) {
+        renderReferenceText(doc, line);
+        doc.moveDown(0.35);
+        continue;
+      }
+
+      renderFormattedText(doc, line);
+    }
+  }
+
+  private writeSections(
+    doc: PdfDocument,
+    rootSections: ProjectSection[],
+    allSections: ProjectSection[],
+  ) {
+    let sectionNumber = 0;
+
+    for (const section of rootSections) {
+      sectionNumber++;
+
+      doc.x = doc.page.margins.left;
+      doc
+        .font("Times-Bold")
+        .fontSize(14)
+        .fillColor("#000000")
+        .text(`${sectionNumber}. ${section.title}`, { align: "left" });
+
+      doc.moveDown(0.3);
+
+      doc.font("Times-Roman").fontSize(11);
+      this.writeSectionBody(doc, section);
+
+      doc.moveDown(0.8);
+
+      const subsections = allSections
+        .filter((sec) => sec.parentSectionId === section.id)
+        .sort((a, b) => a.sectionOrder - b.sectionOrder);
+
+      let subNumber = 0;
+      for (const sub of subsections) {
+        subNumber++;
+
+        doc.x = doc.page.margins.left;
+        doc
+          .font("Times-Bold")
+          .fontSize(12)
+          .text(`${sectionNumber}.${subNumber} ${sub.title}`, {
+            align: "left",
+          });
+
+        doc.moveDown(0.2);
+
+        doc.font("Times-Roman").fontSize(11);
+        this.writeSectionBody(doc, sub);
+
+        doc.moveDown(0.8);
+      }
+    }
+  }
+
+  private writePageNumber(doc: PdfDocument) {
+    const range = doc.bufferedPageRange();
+
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i);
+
+      const bottomMargin = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
+
+      doc
+        .font("Times-Roman")
+        .fontSize(9)
+        .fillColor("#666666")
+        .text(
+          `${i + 1} / ${range.count}`,
+          doc.page.margins.left,
+          doc.page.height - 40,
+          {
+            width:
+              doc.page.width - doc.page.margins.left - doc.page.margins.right,
+            align: "center",
+          },
+        );
+
+      doc.page.margins.bottom = bottomMargin;
+    }
+  }
+
+  // public async exportAsWord(project, res: Response): Promise<void> {}
 }

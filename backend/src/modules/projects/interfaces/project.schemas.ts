@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { projectStatuses } from "../domain/project";
+import { exportFormat, projectStatuses } from "../domain/project";
 import { ReferenceStyles } from "src/modules/references/domain/reference";
-import { ProjectStatus } from "@prisma/client";
 
 export const projectIdParamsSchema = z.object({
   projectId: z.string().min(1),
@@ -48,4 +47,8 @@ export const toggleSectionChecklistItemSchema = z.object({
 
 export const projectStatusQuerySchema = z.object({
   status: z.enum(projectStatuses).optional(),
+});
+
+export const exportFormatQuerySchema = z.object({
+  format: z.enum(exportFormat).default("pdf"),
 });
