@@ -1,10 +1,11 @@
 import multer from "multer";
+import { mkdirSync } from "node:fs";
+import { unlink } from "node:fs/promises";
 import path from "node:path";
-import fs from "node:fs";
 import crypto from "node:crypto";
 
 const uploadDirectory = path.resolve(process.cwd(), "uploads");
-fs.mkdirSync(uploadDirectory, { recursive: true });
+mkdirSync(uploadDirectory, { recursive: true });
 
 export const imageUpload = multer({
   storage: multer.diskStorage({
@@ -14,9 +15,7 @@ export const imageUpload = multer({
       callback(null, `${crypto.randomUUID()}.${extension}`);
     },
   }),
-
   limits: { fileSize: 5 * 1024 * 1024 },
-
   fileFilter: (_request, file, callback) => {
     callback(
       null,
@@ -24,3 +23,6 @@ export const imageUpload = multer({
     );
   },
 });
+
+export const removeUploadedFile = (filePath: string) =>
+  unlink(filePath).catch(() => undefined);
