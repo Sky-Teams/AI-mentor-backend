@@ -138,22 +138,28 @@ export const SectionEditorPage = () => {
         value.references?.style === "CHICAGO_FULL_NOTE" ||
         value.references?.style === "OSCOLA"
       ) {
-        html = html.split(placeholder).join(
-          `<sup class="citation-inline">${escapeHtml(toSuperscript(index))}</sup>`,
-        );
+        html = html
+          .split(placeholder)
+          .join(
+            `<sup class="citation-inline">${escapeHtml(toSuperscript(index))}</sup>`,
+          );
         index++;
       } else {
-        html = html.split(placeholder).join(
-          `<span class="citation-inline">${escapeHtml(item.formattedText ?? "")}</span>`,
-        );
+        html = html
+          .split(placeholder)
+          .join(
+            `<span class="citation-inline">${escapeHtml(item.formattedText ?? "")}</span>`,
+          );
       }
     }
 
     for (const figure of mediaItems) {
       const placeholder = escapeHtml(`{{figure:${figure.id}}}`);
-      html = html.split(placeholder).join(
-        `<a href="#figure-${figure.id}" class="figure-inline-link" data-figure-id="${figure.id}">${escapeHtml(figure.label)}</a>`,
-      );
+      html = html
+        .split(placeholder)
+        .join(
+          `<a href="#figure-${figure.id}" class="figure-inline-link" data-figure-id="${figure.id}">${escapeHtml(figure.label)}</a>`,
+        );
     }
 
     return html;
@@ -220,7 +226,10 @@ export const SectionEditorPage = () => {
     }
 
     const range = selection.getRangeAt(0);
-    if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) {
+    if (
+      !editor.contains(range.startContainer) ||
+      !editor.contains(range.endContainer)
+    ) {
       setSelection(null);
       caseReportRangeRef.current = null;
       return;
@@ -413,14 +422,6 @@ export const SectionEditorPage = () => {
     await saveReferences([...references, item], style!);
   };
 
-  const readFileAsDataUrl = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ""));
-      reader.onerror = () => reject(new Error("Could not read the image."));
-      reader.readAsDataURL(file);
-    });
-
   const saveMediaSection = async (
     items: NonNullable<SectionContent["media"]>,
   ) => {
@@ -471,16 +472,8 @@ export const SectionEditorPage = () => {
     setMediaLoading(true);
     setError("");
     try {
-      const src = await readFileAsDataUrl(mediaFile);
-      const nextItem = {
-        id: crypto.randomUUID(),
-        label: `Fig. ${mediaItems.length + 1}`,
-        caption: mediaCaption.trim(),
-        src,
-        createdAt: new Date().toISOString(),
-      };
-
-      await saveMediaSection([...mediaItems, nextItem]);
+      await projectsApi.uploadMedia(projectId, mediaFile, mediaCaption.trim());
+      await loadData();
       setMediaCaption("");
       setMediaFile(null);
       setStatusMessage("Figure uploaded successfully.");
