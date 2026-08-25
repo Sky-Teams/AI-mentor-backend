@@ -128,30 +128,6 @@ export const SectionEditorPage = () => {
   const renderCaseReportHtml = (value: SectionContent = content) => {
     let html = escapeHtml(value.text);
     html = html.replace(/\n/g, "<br />");
-    const items = value.references?.items || [];
-
-    let index = 1;
-    for (const item of items) {
-      const placeholder = escapeHtml(`{{cite:${getItemReferenceId(item)}}}`);
-
-      if (
-        value.references?.style === "CHICAGO_FULL_NOTE" ||
-        value.references?.style === "OSCOLA"
-      ) {
-        html = html
-          .split(placeholder)
-          .join(
-            `<sup class="citation-inline">${escapeHtml(toSuperscript(index))}</sup>`,
-          );
-        index++;
-      } else {
-        html = html
-          .split(placeholder)
-          .join(
-            `<span class="citation-inline">${escapeHtml(item.formattedText ?? "")}</span>`,
-          );
-      }
-    }
 
     for (const figure of mediaItems) {
       const placeholder = escapeHtml(`{{figure:${figure.id}}}`);
