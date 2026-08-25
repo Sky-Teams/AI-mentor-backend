@@ -111,24 +111,21 @@ export class ProjectController {
     const file = req.file;
     const caption = String(req.body.caption ?? "").trim();
 
-    if (!file) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        error: { code: "IMAGE_REQUIRED", message: "An image is required." },
-      });
-      return;
-    }
+    if (!file)
+      throw new AppError(
+        "An image is required.",
+        StatusCodes.BAD_REQUEST,
+        "IMAGE_REQUIRED",
+      );
 
     if (!caption) {
       await removeUploadedFile(file.path);
-      res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        error: {
-          code: "CAPTION_REQUIRED",
-          message: "A caption is required.",
-        },
-      });
-      return;
+
+      throw new AppError(
+        "A caption is required.",
+        StatusCodes.BAD_REQUEST,
+        "CAPTION_REQUIRED",
+      );
     }
 
     try {
