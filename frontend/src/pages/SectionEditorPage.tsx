@@ -422,42 +422,6 @@ export const SectionEditorPage = () => {
     await saveReferences([...references, item], style!);
   };
 
-  const saveMediaSection = async (
-    items: NonNullable<SectionContent["media"]>,
-  ) => {
-    if (!mediaSection) {
-      throw new Error("Figures section does not exist.");
-    }
-
-    const sourceContent = isMediaSection ? content : mediaSection.content;
-    const updatedContent: SectionContent = {
-      ...sourceContent,
-      media: items,
-    };
-
-    await projectsApi.updateSection(projectId, "FIGURES AND TABLES", {
-      content: updatedContent,
-      changeSummary: "Updated figures",
-    });
-
-    setAllSections((sections) =>
-      sections.map((item) =>
-        item.key === "FIGURES AND TABLES"
-          ? { ...item, content: updatedContent }
-          : item,
-      ),
-    );
-    setSection((current) =>
-      current?.key === "FIGURES AND TABLES"
-        ? { ...current, content: updatedContent }
-        : current,
-    );
-
-    if (isMediaSection) {
-      setContent(updatedContent);
-    }
-  };
-
   const handleMediaUpload = async () => {
     if (!mediaSection) {
       setError("Figures section does not exist.");
