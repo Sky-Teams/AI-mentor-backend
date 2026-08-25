@@ -79,6 +79,7 @@ import { IEEECitationFormatter } from "./modules/citation/infrastructure/formatt
 import { AMACitationFormatter } from "./modules/citation/infrastructure/formatters/ama.formatter";
 import { ChicagoFullNoteCitationFormatter } from "./modules/citation/infrastructure/formatters/chicago.full.note.formatter";
 import { OSCOLACitationFormatter } from "./modules/citation/infrastructure/formatters/OSCOLA.formatter";
+import path from "node:path";
 
 export const createApp = (): express.Express => {
   const prisma = new PrismaClient();
@@ -206,7 +207,11 @@ export const createApp = (): express.Express => {
 
   const app = express();
   app.disable("x-powered-by");
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    }),
+  );
   app.use(
     cors({
       origin: "*",
