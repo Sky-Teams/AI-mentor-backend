@@ -13,6 +13,7 @@ import {
   updateProjectSchema,
   updateSectionSchema,
 } from "./project.schemas";
+import { imageUpload } from "src/shared/utils/uploadImage.js";
 
 export const createProjectRouter = (
   controller: ProjectController,
@@ -92,6 +93,13 @@ export const createProjectRouter = (
     asyncHandler((request, response) =>
       controller.updateSection(request, response),
     ),
+  );
+
+  router.post(
+    "/:projectId/media",
+    validate(projectIdParamsSchema, "params"),
+    imageUpload.single("file"),
+    asyncHandler((req, res) => controller.uploadMedia(req, res)),
   );
 
   router.patch(
