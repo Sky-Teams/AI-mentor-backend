@@ -4,6 +4,7 @@ import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
 import { Project } from "src/modules/projects/domain/project.js";
 import { removeUploadedFile } from "src/shared/utils/uploadImage.js";
+import { AppError } from "../../../shared/errors/app-error";
 
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
@@ -196,5 +197,37 @@ export class ProjectController {
   public async getAllArticleTypes(req: Request, res: Response) {
     const specialties = await this.projectService.getAllArticleTypes();
     res.status(StatusCodes.OK).json(successResponse(specialties));
+  }
+
+  public async exportProject(req: Request, res: Response) {
+    const { projectId } = req.params as { projectId: string };
+    const format = req.query.format;
+
+    const project = await this.projectService.getProject(
+      projectId,
+      req.auth!.userId,
+    );
+
+    if (format === "pdf") {
+      const safeFilename = project.title.replace(/[^a-z0-9-_]/gi, "_");
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${safeFilename}.pdf"`,
+      );
+
+      const doc = await this.projectService.exportAsPdf(project);
+      doc.pipe(res);
+      doc.end();
+      return;
+    }
+
+    if (format === "word") {
+      throw new AppError(
+        "Word export is not implemented yet.",
+        StatusCodes.NOT_IMPLEMENTED,
+        "EXPORT_WORD_NOT_IMPLEMENTED",
+      );
+    }
   }
 }

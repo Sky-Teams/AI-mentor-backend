@@ -21,4 +21,5 @@ export interface SubscriptionRepository {
   getActivePlan(userId: string): Promise<UserSubscription | null>;
   cancelRequestedPlan(id: string, userId: string): Promise<RequestedPlans>;
   getUserRequestedPlan(userId: string): Promise<RequestedPlans | null>;
+  expirePlans(): Promise<{ message: string }>;
 }

@@ -6,6 +6,7 @@ import type { TokenService } from "../../auth/domain/token-service";
 import type { ProjectController } from "./project.controller";
 import {
   createProjectSchema,
+  exportFormatQuerySchema,
   projectIdParamsSchema,
   projectStatusQuerySchema,
   sectionParamsSchema,
@@ -106,6 +107,13 @@ export const createProjectRouter = (
     "/:projectId/sections/:sectionKey/checklist/:checklistId/items/:itemIndex/toggle",
     validate(toggleSectionChecklistItemSchema, "params"),
     asyncHandler((req, res) => controller.toggleSectionChecklistItem(req, res)),
+  );
+
+  router.get(
+    "/export/:projectId",
+    validate(projectIdParamsSchema, "params"),
+    validate(exportFormatQuerySchema, "query"),
+    asyncHandler((req, res) => controller.exportProject(req, res)),
   );
 
   return router;
