@@ -228,14 +228,6 @@ export const JournalPage = () => {
               >
                 Cancel
               </button>
-              {/* <button
-                className="primary-button"
-                disabled={isSearchingJournals}
-                onClick={handleCloseSearchModal}
-                type="button"
-              >
-                Done
-              </button> */}
             </div>
           </div>
         </div>

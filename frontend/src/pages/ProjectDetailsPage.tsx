@@ -89,7 +89,6 @@ export const ProjectDetailsPage = () => {
                       </p>
                     </div>
                     <span>
-                      {/* {section.content.text.trim().length} */}
                       {countWords(section.content.text) + " "}
                       Words
                     </span>
@@ -112,7 +111,7 @@ export const ProjectDetailsPage = () => {
                           {sub.status} {sub.isOptional ? "· Optional" : ""}
                         </p>
                       </div>
-                      <span>{sub.content.text.trim().length} Words</span>
+                      <span>{countWords(sub.content.text)} Words</span>
                     </Link>
                   ))}
                 </div>
