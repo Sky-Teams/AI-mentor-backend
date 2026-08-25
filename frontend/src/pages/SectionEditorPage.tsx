@@ -474,11 +474,7 @@ export const SectionEditorPage = () => {
     // Replace figure placeholders with their labels
     for (const figure of mediaItems) {
       const figurePlaceholder = `{{figure:${figure.id}}}`;
-
       if (sectionKey === "CASE REPORTS") {
-        text = text.split(figurePlaceholder).join(figure.label);
-      } else {
-        // New format: {{figure:id}}
         text = text.split(figurePlaceholder).join(figure.label);
       }
 
