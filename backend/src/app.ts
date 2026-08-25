@@ -227,6 +227,8 @@ export const createApp = (): express.Express => {
   );
   app.use(pinoHttp({ logger: logger as never }));
 
+  app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
+
   if (env.SWAGGER_ENABLED) {
     app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
   }
