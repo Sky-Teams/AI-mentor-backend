@@ -586,9 +586,7 @@ export const SectionEditorPage = () => {
       });
       setStatusMessage("Citation inserted and saved.");
     } catch (err: any) {
-      setError(
-        err?.response?.data?.error?.message || "Failed to save citation.",
-      );
+      setError(err.message || "Failed to save citation.");
     }
   };
 
@@ -759,9 +757,7 @@ export const SectionEditorPage = () => {
         });
         setStatusMessage("Figure inserted and saved.");
       } catch (err: any) {
-        setError(
-          err?.response?.data?.error?.message || "Failed to save figure.",
-        );
+        setError(err.message || "Failed to save figure.");
       }
 
       return;
@@ -802,7 +798,7 @@ export const SectionEditorPage = () => {
       });
       setStatusMessage("Figure inserted and saved.");
     } catch (err: any) {
-      setError(err?.response?.data?.error?.message || "Failed to save figure.");
+      setError(err.message || "Failed to save figure.");
     }
   };
 
