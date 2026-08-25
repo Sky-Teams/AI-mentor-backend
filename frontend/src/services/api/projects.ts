@@ -70,6 +70,26 @@ export const projectsApi = {
     return unwrap(response.data);
   },
 
+  async uploadMedia(
+    projectId: string,
+    file: File,
+    caption: string,
+  ): Promise<{ figure: NonNullable<SectionContent["media"]>[number] }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("caption", caption);
+
+    const response = await apiClient.post<
+      ApiSuccessResponse<{
+        figure: NonNullable<SectionContent["media"]>[number];
+      }>
+    >(`/projects/${projectId}/media`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return unwrap(response.data);
+  },
+
   async archive(projectId: string): Promise<{ archived: boolean }> {
     const response = await apiClient.delete<
       ApiSuccessResponse<{ archived: boolean }>
