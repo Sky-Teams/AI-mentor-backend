@@ -988,23 +988,24 @@ export const SectionEditorPage = () => {
                 </>
               )}
 
-              {sectionKey !== "REFERENCES" && (
-                <div>
-                  <span
-                    style={{
-                      color: "green",
-                      fontSize: "12px",
-                      backgroundColor: "#f6f7fb",
-                    }}
-                    className="badge"
-                  >
-                    Max words {section?.maxWords}
-                  </span>
-                  <span className="badge" style={{ float: "right" }}>
-                    {countWords(content.text || "")} Words
-                  </span>
-                </div>
-              )}
+              {sectionKey !== "REFERENCES" &&
+                sectionKey !== "FIGURES AND TABLES" && (
+                  <div>
+                    <span
+                      style={{
+                        color: "green",
+                        fontSize: "12px",
+                        backgroundColor: "#f6f7fb",
+                      }}
+                      className="badge"
+                    >
+                      Max words {section?.maxWords}
+                    </span>
+                    <span className="badge" style={{ float: "right" }}>
+                      {countWords(content.text || "")} Words
+                    </span>
+                  </div>
+                )}
             </div>
 
             <div className="section-editor__checklist-divider">
