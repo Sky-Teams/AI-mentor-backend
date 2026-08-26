@@ -10,6 +10,7 @@ import type {
   ReviewIssue,
   ReviewRun,
 } from "../types/api";
+import { countWords } from "./SectionEditorPage.js";
 
 export const ProjectDetailsPage = () => {
   const { projectId = "" } = useParams();
@@ -91,7 +92,7 @@ export const ProjectDetailsPage = () => {
                       </p>
                     </div>
                     <span>
-                      {section.content.text.trim().length}
+                      {countWords(section.content.text) + " "}
                       Words
                     </span>
                   </Link>
@@ -113,7 +114,7 @@ export const ProjectDetailsPage = () => {
                           {sub.status} {sub.isOptional ? "· Optional" : ""}
                         </p>
                       </div>
-                      <span>{sub.content.text.trim().length} Words</span>
+                      <span>{countWords(sub.content.text)} Words</span>
                     </Link>
                   ))}
                 </div>

@@ -19,6 +19,11 @@ import {
 } from "../components/InlineCitationModal";
 import { FigureModal } from "../components/FigureModal";
 
+export const countWords = (text: string) => {
+  const trimmed = text.trim();
+  return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+};
+
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
   const navigate = useNavigate();
@@ -73,6 +78,11 @@ export const SectionEditorPage = () => {
   useEffect(() => {
     loadData();
   }, [projectId, sectionKey]);
+
+  useEffect(() => {
+    setSelection(null);
+    setCitationOpen(false);
+  }, [sectionKey]);
 
   // Determine navigation list: if viewing a subsection, navigate among siblings;
   // otherwise navigate among root sections.
@@ -304,11 +314,6 @@ export const SectionEditorPage = () => {
     () => reviews.find((r) => r.sectionKey === sectionKey) || null,
     [reviews, sectionKey],
   );
-
-  const countWords = (text: string) => {
-    const trimmed = text.trim();
-    return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
-  };
 
   const referenceSection = allSections.find(
     (item) => item.key === "REFERENCES",
@@ -556,10 +561,14 @@ export const SectionEditorPage = () => {
     // save the updated section to the database
     try {
       setError("");
-      await projectsApi.updateSection(projectId, sectionKey, {
+      const saved = await projectsApi.updateSection(projectId, sectionKey, {
         content: updatedContent,
         changeSummary: "Added inline citation",
       });
+
+      setSection(saved.section);
+      setContent(saved.section.content);
+
       setStatusMessage("Citation inserted and saved.");
     } catch (err: any) {
       setError(err.message || "Failed to save citation.");

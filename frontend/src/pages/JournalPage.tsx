@@ -8,7 +8,9 @@ export const JournalPage = () => {
   const journalForm = useJournalForm();
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [journalNameInput, setJournalNameInput] = useState("");
-  const [journalMatches, setJournalMatches] = useState<JournalSearchResult[]>([]);
+  const [journalMatches, setJournalMatches] = useState<JournalSearchResult[]>(
+    [],
+  );
   const [isSearchingJournals, setIsSearchingJournals] = useState(false);
   const [loadingJournalId, setLoadingJournalId] = useState<string | null>(null);
   const [journalSearchError, setJournalSearchError] = useState<string | null>(
@@ -225,14 +227,6 @@ export const JournalPage = () => {
                 type="button"
               >
                 Cancel
-              </button>
-              <button
-                className="primary-button"
-                disabled={isSearchingJournals}
-                onClick={handleCloseSearchModal}
-                type="button"
-              >
-                Done
               </button>
             </div>
           </div>
