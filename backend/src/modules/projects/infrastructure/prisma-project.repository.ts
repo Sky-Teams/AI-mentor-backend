@@ -38,6 +38,7 @@ const mapSection = (section: {
   content: {
     text: (section.content as unknown as SectionContent)?.text ?? "",
     references: (section.content as unknown as SectionContent)?.references,
+    media: (section.content as unknown as SectionContent)?.media,
   },
   sectionOrder: section.sectionOrder,
   isOptional: section.isOptional,
@@ -377,7 +378,11 @@ export class PrismaProjectRepository implements ProjectRepository {
           return null;
         }
 
-        let contentWords = input.content.text.trim().split(/\s+/).length;
+        const text = input.content.text ?? "";
+        const hasContent =
+          text.trim().length > 0 || (input.content.media?.length ?? 0) > 0;
+        const contentWords =
+          text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 
         if (section.maxWords < contentWords)
           throw new AppError(
@@ -399,7 +404,7 @@ export class PrismaProjectRepository implements ProjectRepository {
           data: {
             sectionId: section.id,
             versionNumber: (latestVersion?.versionNumber ?? 0) + 1,
-            content: input.content.text,
+            content: JSON.stringify(input.content),
             changeSummary: input.changeSummary,
             editedById: input.ownerId,
           },
@@ -410,12 +415,8 @@ export class PrismaProjectRepository implements ProjectRepository {
             id: section.id,
           },
           data: {
-            content: {
-              text: input.content.text ?? "",
-              references: input.content.references ?? {},
-            } as unknown as Prisma.InputJsonValue,
-            status:
-              input.content.text.trim().length > 0 ? "DRAFT" : "NOT_STARTED",
+            content: input.content as unknown as Prisma.InputJsonValue,
+            status: hasContent ? "DRAFT" : "NOT_STARTED",
             lastEditedAt: new Date(),
           },
         });

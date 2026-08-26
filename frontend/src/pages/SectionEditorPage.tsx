@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ParaphrasePanel } from "../components/ParaphrasePanel";
 import { ReviewLayout } from "../components/ReviewLayout";
@@ -17,6 +17,7 @@ import {
   InlineCitationModal,
   ReferenceItem,
 } from "../components/InlineCitationModal";
+import { FigureModal } from "../components/FigureModal";
 
 export const SectionEditorPage = () => {
   const { projectId = "", sectionKey = "" } = useParams();
@@ -39,7 +40,13 @@ export const SectionEditorPage = () => {
     end: number;
   } | null>(null);
   const [citationOpen, setCitationOpen] = useState(false);
+  const [figureOpen, setFigureOpen] = useState(false);
+  const [mediaCaption, setMediaCaption] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaLoading, setMediaLoading] = useState(false);
   const [style, setNewStyle] = useState<ReferenceStyle>("APA");
+  const caseReportEditorRef = useRef<HTMLDivElement | null>(null);
+  const caseReportRangeRef = useRef<Range | null>(null);
 
   // Load all data (project + current section + reviews)
   const loadData = async (options?: { preserveContent?: boolean }) => {
@@ -96,7 +103,142 @@ export const SectionEditorPage = () => {
   );
 
   // Check if user made changes
-  const hasUnsavedChanges = section && section.content.text !== content?.text;
+  const hasUnsavedChanges =
+    section &&
+    (section.content.text !== content?.text ||
+      JSON.stringify(section.content.media ?? []) !==
+        JSON.stringify(content.media ?? []));
+
+  const isMediaSection = sectionKey === "FIGURES AND TABLES";
+
+  const mediaSection = allSections.find(
+    (item) => item.key === "FIGURES AND TABLES",
+  );
+
+  const mediaItems = content.media ?? mediaSection?.content.media ?? [];
+
+  const escapeHtml = (value: string) =>
+    value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+
+  const renderCaseReportHtml = (value: SectionContent = content) => {
+    let html = escapeHtml(value.text);
+    html = html.replace(/\n/g, "<br />");
+
+    for (const figure of mediaItems) {
+      const placeholder = escapeHtml(`{{figure:${figure.id}}}`);
+      html = html
+        .split(placeholder)
+        .join(
+          `<a href="#figure-${figure.id}" class="figure-inline-link" data-figure-id="${figure.id}">${escapeHtml(figure.label)}</a>`,
+        );
+    }
+
+    return html;
+  };
+
+  const serializeCaseReportEditor = (editor: HTMLElement) => {
+    let raw = "";
+    const blockTags = new Set(["P", "DIV", "LI", "SECTION", "ARTICLE"]);
+
+    const walk = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        raw += node.textContent ?? "";
+        return;
+      }
+
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+      }
+
+      const element = node as HTMLElement;
+      if (element.tagName === "BR") {
+        raw += "\n";
+        return;
+      }
+
+      const figureId = element.getAttribute("data-figure-id");
+      if (element.tagName === "A" && figureId) {
+        raw += `{{figure:${figureId}}}`;
+        return;
+      }
+
+      for (const child of Array.from(element.childNodes)) {
+        walk(child);
+      }
+
+      if (blockTags.has(element.tagName)) {
+        raw += "\n";
+      }
+    };
+
+    for (const child of Array.from(editor.childNodes)) {
+      walk(child);
+    }
+
+    return raw;
+  };
+
+  const syncCaseReportEditor = (value: SectionContent = content) => {
+    if (sectionKey !== "CASE REPORTS") return;
+    const editor = caseReportEditorRef.current;
+    if (!editor) return;
+    editor.innerHTML = renderCaseReportHtml(value);
+  };
+
+  const updateCaseReportSelection = () => {
+    const editor = caseReportEditorRef.current;
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      setSelection(null);
+      caseReportRangeRef.current = null;
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (
+      !editor.contains(range.startContainer) ||
+      !editor.contains(range.endContainer)
+    ) {
+      setSelection(null);
+      caseReportRangeRef.current = null;
+      return;
+    }
+
+    const beforeRange = range.cloneRange();
+    beforeRange.selectNodeContents(editor);
+    beforeRange.setEnd(range.startContainer, range.startOffset);
+    const start = beforeRange.toString().length;
+
+    beforeRange.setEnd(range.endContainer, range.endOffset);
+    const end = beforeRange.toString().length;
+
+    if (start !== end) {
+      setSelection({ start, end });
+      caseReportRangeRef.current = range.cloneRange();
+    } else {
+      setSelection(null);
+      caseReportRangeRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (sectionKey === "CASE REPORTS") {
+      syncCaseReportEditor();
+    }
+  }, [
+    sectionKey,
+    section?.id,
+    mediaItems.length,
+    content.references?.style,
+    content.references?.items?.length,
+  ]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -256,6 +398,32 @@ export const SectionEditorPage = () => {
     await saveReferences([...references, item], style!);
   };
 
+  const handleMediaUpload = async () => {
+    if (!mediaSection) {
+      setError("Figures section does not exist.");
+      return;
+    }
+
+    if (!mediaFile || !mediaCaption.trim()) {
+      setError("Please choose an image and add a caption.");
+      return;
+    }
+
+    setMediaLoading(true);
+    setError("");
+    try {
+      await projectsApi.uploadMedia(projectId, mediaFile, mediaCaption.trim());
+      await loadData();
+      setMediaCaption("");
+      setMediaFile(null);
+      setStatusMessage("Figure uploaded successfully.");
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setMediaLoading(false);
+    }
+  };
+
   // citations are stored as {{cite:refId}} markers in content.text,
   // and swapped for the real formatted text only when shown to the user
   const getShownText = () => {
@@ -279,6 +447,21 @@ export const SectionEditorPage = () => {
       }
     }
 
+    // Replace figure placeholders with their labels
+    for (const figure of mediaItems) {
+      const figurePlaceholder = `{{figure:${figure.id}}}`;
+      if (sectionKey === "CASE REPORTS") {
+        text = text.split(figurePlaceholder).join(figure.label);
+      }
+
+      // Old format stored in DB: [text](#figure-id)
+      const oldFigurePattern = new RegExp(
+        `\\[[^\\]]*\\]\\(#figure-${figure.id}\\)`,
+        "g",
+      );
+      text = text.replace(oldFigurePattern, figure.label);
+    }
+
     return text;
   };
 
@@ -286,7 +469,8 @@ export const SectionEditorPage = () => {
     shownText: string,
     items = content.references?.items || [],
   ) => {
-    let text = shownText;
+    // Strip HTML tags from contentEditable content (CASE REPORTS)
+    let text = shownText.replace(/<[^>]*>/g, "");
 
     if (
       content.references?.style === "CHICAGO_FULL_NOTE" ||
@@ -378,9 +562,7 @@ export const SectionEditorPage = () => {
       });
       setStatusMessage("Citation inserted and saved.");
     } catch (err: any) {
-      setError(
-        err?.response?.data?.error?.message || "Failed to save citation.",
-      );
+      setError(err.message || "Failed to save citation.");
     }
   };
 
@@ -501,6 +683,101 @@ export const SectionEditorPage = () => {
     setNewStyle(newStyle);
   };
 
+  const insertFigure = async (
+    figure: NonNullable<SectionContent["media"]>[number],
+  ) => {
+    if (!selection) return;
+
+    if (sectionKey === "CASE REPORTS") {
+      const editor = caseReportEditorRef.current;
+      const storedRange = caseReportRangeRef.current;
+      if (!editor || !storedRange) return;
+
+      const range = storedRange.cloneRange();
+      range.collapse(false);
+
+      const link = document.createElement("a");
+      link.className = "figure-inline-link";
+      link.href = `#figure-${figure.id}`;
+      link.setAttribute("data-figure-id", figure.id);
+      link.textContent = figure.label;
+
+      const fragment = document.createDocumentFragment();
+      fragment.appendChild(document.createTextNode(" "));
+      fragment.appendChild(link);
+
+      range.insertNode(fragment);
+
+      const updatedRawText = serializeCaseReportEditor(editor);
+      const updatedContent: SectionContent = {
+        ...content,
+        text: updatedRawText,
+      };
+
+      setContent(updatedContent);
+      setAllSections((prev) =>
+        prev.map((s) =>
+          s.key === sectionKey ? { ...s, content: updatedContent } : s,
+        ),
+      );
+      setFigureOpen(false);
+      setSelection(null);
+      caseReportRangeRef.current = null;
+      syncCaseReportEditor(updatedContent);
+
+      try {
+        setError("");
+        await projectsApi.updateSection(projectId, sectionKey, {
+          content: updatedContent,
+          changeSummary: "Added figure reference",
+        });
+        setStatusMessage("Figure inserted and saved.");
+      } catch (err: any) {
+        setError(err.message || "Failed to save figure.");
+      }
+
+      return;
+    }
+
+    const shown = getShownText();
+    const figurePlaceholder = `{{figure:${figure.id}}}`;
+
+    const newShown =
+      shown.slice(0, selection.start) +
+      figurePlaceholder +
+      shown.slice(selection.end);
+
+    const newText = getRawText(newShown);
+
+    const updatedContent: SectionContent = {
+      ...content,
+      text: newText,
+    };
+
+    setContent(updatedContent);
+    setAllSections((prev) =>
+      prev.map((s) =>
+        s.key === sectionKey ? { ...s, content: updatedContent } : s,
+      ),
+    );
+    setFigureOpen(false);
+    setSelection(null);
+    if (sectionKey === "CASE REPORTS") {
+      syncCaseReportEditor(updatedContent);
+    }
+
+    try {
+      setError("");
+      await projectsApi.updateSection(projectId, sectionKey, {
+        content: updatedContent,
+        changeSummary: "Added figure reference",
+      });
+      setStatusMessage("Figure inserted and saved.");
+    } catch (err: any) {
+      setError(err.message || "Failed to save figure.");
+    }
+  };
+
   return (
     <div className="page-shell">
       <div className="page-header">
@@ -551,62 +828,184 @@ export const SectionEditorPage = () => {
                     }}
                   />
                 ))
-              ) : (
-                <textarea
-                  style={
-                    (section?.maxWords as number) <
-                    countWords(content.text || "")
-                      ? { border: "1px solid red", outline: "none" }
-                      : { outline: "none" }
-                  }
-                  className="editor-area"
-                  onChange={(event) => {
-                    const value = event.target.value;
+              ) : isMediaSection ? (
+                <div className="stack" style={{ gap: "1rem" }}>
+                  <div className="card" style={{ padding: "1rem" }}>
+                    <div className="stack" style={{ gap: "0.75rem" }}>
+                      <input
+                        className="modern-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) =>
+                          setMediaFile(event.target.files?.[0] ?? null)
+                        }
+                      />
+                      <input
+                        className="modern-input"
+                        type="text"
+                        value={mediaCaption}
+                        onChange={(event) =>
+                          setMediaCaption(event.target.value)
+                        }
+                        placeholder="Add a caption for this figure"
+                      />
+                      <button
+                        className="primary-button"
+                        disabled={mediaLoading}
+                        onClick={handleMediaUpload}
+                        type="button"
+                      >
+                        {mediaLoading ? "Uploading..." : "Add figure"}
+                      </button>
+                    </div>
+                  </div>
 
-                    setContent((prev) => ({
-                      ...prev,
-                      text:
-                        style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
-                          ? value
-                          : getRawText(value),
-                    }));
-                  }}
-                  onSelect={(event) => {
-                    const { selectionStart: start, selectionEnd: end } =
-                      event.currentTarget;
-                    setSelection(start !== end ? { start, end } : null);
-                  }}
-                  rows={10}
-                  value={getShownText()}
-                />
-              )}
-
-              {selection && (
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={() => setCitationOpen(true)}
-                >
-                  Add citation
-                </button>
-              )}
-              {sectionKey !== "REFERENCES" && (
-                <div>
-                  <span
-                    style={{
-                      color: "green",
-                      fontSize: "12px",
-                      backgroundColor: "#f6f7fb",
-                    }}
-                    className="badge"
-                  >
-                    Max words {section?.maxWords}
-                  </span>
-                  <span className="badge" style={{ float: "right" }}>
-                    {countWords(content.text || "")} Words
-                  </span>
+                  <div className="stack" style={{ gap: "0.75rem" }}>
+                    {mediaItems.length ? (
+                      mediaItems.map((item) => (
+                        <div
+                          key={item.id}
+                          id={`figure-${item.id}`}
+                          className="card"
+                          style={{ padding: "1rem" }}
+                        >
+                          <div className="figure-card">
+                            <img
+                              className="figure-card__img"
+                              src={item.src}
+                              alt={item.caption}
+                            />
+                            <div className="figure-card__meta">
+                              <strong className="figure-card__label">
+                                {item.label}.
+                              </strong>
+                              <p className="figure-card__caption">
+                                {item.caption}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="muted-text">No figures uploaded yet.</p>
+                    )}
+                  </div>
                 </div>
+              ) : (
+                <>
+                  {sectionKey === "CASE REPORTS" ? (
+                    <div
+                      ref={caseReportEditorRef}
+                      className="editor-area editor-area--rich"
+                      contentEditable
+                      suppressContentEditableWarning
+                      onInput={(event) => {
+                        const value = serializeCaseReportEditor(
+                          event.currentTarget,
+                        );
+                        setContent((prev) => ({
+                          ...prev,
+                          text: getRawText(value),
+                        }));
+                      }}
+                      onMouseUp={updateCaseReportSelection}
+                      onKeyUp={updateCaseReportSelection}
+                      onClick={(event) => {
+                        const target = event.target as HTMLElement;
+                        const link = target.closest("a[data-figure-id]");
+                        if (!link) return;
+
+                        event.preventDefault();
+                        const figureId = link.getAttribute("data-figure-id");
+                        if (!figureId) return;
+
+                        navigate(
+                          `/projects/${projectId}/sections/FIGURES%20AND%20TABLES`,
+                        );
+                        setTimeout(() => {
+                          document
+                            .getElementById(`figure-${figureId}`)
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            });
+                        }, 300);
+                      }}
+                    />
+                  ) : (
+                    <textarea
+                      style={
+                        (section?.maxWords as number) <
+                        countWords(content.text || "")
+                          ? { border: "1px solid red", outline: "none" }
+                          : { outline: "none" }
+                      }
+                      className="editor-area"
+                      onChange={(event) => {
+                        const value = event.target.value;
+
+                        setContent((prev) => ({
+                          ...prev,
+                          text:
+                            style === "CHICAGO_FULL_NOTE" || style === "OSCOLA"
+                              ? value
+                              : getRawText(value),
+                        }));
+                      }}
+                      onSelect={(event) => {
+                        const { selectionStart: start, selectionEnd: end } =
+                          event.currentTarget;
+                        setSelection(start !== end ? { start, end } : null);
+                      }}
+                      rows={10}
+                      value={getShownText()}
+                    />
+                  )}
+
+                  <div className="stack" style={{ marginTop: "0.75rem" }}>
+                    {selection && (
+                      <div className="button-row">
+                        {sectionKey === "CASE REPORTS" ? (
+                          <button
+                            className="secondary-button"
+                            type="button"
+                            onClick={() => setFigureOpen(true)}
+                          >
+                            Add figure
+                          </button>
+                        ) : (
+                          <button
+                            className="secondary-button"
+                            type="button"
+                            onClick={() => setCitationOpen(true)}
+                          >
+                            Add citation
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
+
+              {sectionKey !== "REFERENCES" &&
+                sectionKey !== "FIGURES AND TABLES" && (
+                  <div>
+                    <span
+                      style={{
+                        color: "green",
+                        fontSize: "12px",
+                        backgroundColor: "#f6f7fb",
+                      }}
+                      className="badge"
+                    >
+                      Max words {section?.maxWords}
+                    </span>
+                    <span className="badge" style={{ float: "right" }}>
+                      {countWords(content.text || "")} Words
+                    </span>
+                  </div>
+                )}
             </div>
 
             <div className="section-editor__checklist-divider">
@@ -668,6 +1067,13 @@ export const SectionEditorPage = () => {
           onInsert={insertCitation}
           onStyleChange={handleStyleChange}
           style={style!}
+        />
+      )}
+      {figureOpen && (
+        <FigureModal
+          figures={mediaItems}
+          onClose={() => setFigureOpen(false)}
+          onSelect={insertFigure}
         />
       )}
       {/* Navigation buttons */}

@@ -34,6 +34,17 @@ export const updateSectionSchema = z.object({
         items: z.array(z.any()).optional(),
       })
       .optional(),
+    media: z
+      .array(
+        z.object({
+          id: z.string(),
+          label: z.string(),
+          caption: z.string(),
+          src: z.string(),
+          createdAt: z.string(),
+        }),
+      )
+      .optional(),
   }),
   changeSummary: z.string().max(240).optional(),
 });

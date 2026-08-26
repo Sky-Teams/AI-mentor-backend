@@ -2,7 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import type { Request, Response } from "express";
 import { successResponse } from "../../../shared/http/api-response";
 import type { ProjectService } from "../application/project.service";
-import type { Project } from "src/modules/projects/domain/project.js";
+import { Project } from "src/modules/projects/domain/project.js";
+import { removeUploadedFile } from "src/shared/utils/uploadImage.js";
 import { AppError } from "../../../shared/errors/app-error";
 
 export class ProjectController {
@@ -102,6 +103,65 @@ export class ProjectController {
       ...request.body,
     });
     response.status(StatusCodes.OK).json(successResponse(result));
+  }
+
+  // Upload image for a project, need projectId, the sectionKey is choosed 'FIGURES AND TABLES'  by default
+  public async uploadMedia(req: Request, res: Response): Promise<void> {
+    const { projectId } = req.params as { projectId: string };
+    const file = req.file;
+    const caption = String(req.body.caption ?? "").trim();
+
+    if (!file)
+      throw new AppError(
+        "An image is required.",
+        StatusCodes.BAD_REQUEST,
+        "IMAGE_REQUIRED",
+      );
+
+    if (!caption) {
+      await removeUploadedFile(file.path);
+
+      throw new AppError(
+        "A caption is required.",
+        StatusCodes.BAD_REQUEST,
+        "CAPTION_REQUIRED",
+      );
+    }
+
+    try {
+      const section = await this.projectService.getSection(
+        projectId,
+        req.auth!.userId,
+        "FIGURES AND TABLES",
+      );
+
+      const media = section.content.media ?? [];
+      const figure = {
+        id: file.filename.slice(0, file.filename.lastIndexOf(".")),
+        label: `Fig. ${media.length + 1}`,
+        caption,
+        src: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+        createdAt: new Date().toISOString(),
+      };
+
+      const result = await this.projectService.updateSection({
+        projectId,
+        ownerId: req.auth!.userId,
+        sectionKey: "FIGURES AND TABLES",
+        content: { ...section.content, media: [...media, figure] },
+        changeSummary: "Uploaded figure",
+      });
+
+      res.status(StatusCodes.CREATED).json(
+        successResponse({
+          figure,
+          section: result.section,
+        }),
+      );
+    } catch (error) {
+      await removeUploadedFile(file.path);
+      throw error;
+    }
   }
 
   public async toggleSectionChecklistItem(

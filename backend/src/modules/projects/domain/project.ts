@@ -28,6 +28,13 @@ export type SectionContent = {
       | { referenceId: string; formattedText?: string; footnote?: string }
     >;
   };
+  media?: Array<{
+    id: string;
+    label: string;
+    caption: string;
+    src: string;
+    createdAt: string;
+  }>;
 };
 
 export interface ProjectSection {
