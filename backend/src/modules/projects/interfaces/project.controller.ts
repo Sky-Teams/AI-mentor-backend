@@ -230,9 +230,8 @@ export class ProjectController {
         `attachment; filename="${safeFilename}.docx"`,
       );
 
-      const doc = await this.projectService.exportAsWord(project);
-      doc.pipe(res);
-      doc.end();
+      const buffer = await this.projectService.exportAsWord(project);
+      res.send(buffer);
       return;
     }
   }
