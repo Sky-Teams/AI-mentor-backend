@@ -1,11 +1,6 @@
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import {
-  AlignmentType,
-  ImageRun,
-  Paragraph,
-  TextRun,
-} from "docx";
+import { AlignmentType, ImageRun, Paragraph, TextRun } from "docx";
 import { ProjectSection } from "src/modules/projects/domain/project.js";
 
 const citationMarkerRegex = /{{cite:([^}]+)}}/g;
@@ -63,9 +58,7 @@ const buildCitationMap = (references: ExportReferenceItem[]) =>
     return map;
   }, new Map<string, string>());
 
-const buildMediaMap = (
-  mediaItems: ExportMediaItem[],
-): Map<string, string> =>
+const buildMediaMap = (mediaItems: ExportMediaItem[]): Map<string, string> =>
   mediaItems.reduce<Map<string, string>>((map, item) => {
     map.set(item.id, item.label);
     return map;
@@ -121,6 +114,23 @@ export function readMediaBuffer(src: string): Buffer | null {
       return null;
     }
   }
+}
+
+function findImageType(src: string): "png" | "jpg" | "gif" | "bmp" {
+  const rawPath = (() => {
+    try {
+      return new URL(src).pathname;
+    } catch {
+      return src;
+    }
+  })();
+
+  const extension = path.extname(rawPath).toLowerCase();
+
+  if (extension === ".jpg" || extension === ".jpeg") return "jpg";
+  if (extension === ".gif") return "gif";
+  if (extension === ".bmp") return "bmp";
+  return "png";
 }
 
 export function renderFormattedText(
@@ -214,18 +224,35 @@ export function renderFigureMedia(
     const imageBuffer = readMediaBuffer(item.src);
     if (!imageBuffer) continue;
 
+    const imageWidth = Math.min(doc.page.width - 150, 420);
+    const imageHeight = 220;
+    const textWidth =
+      doc.page.width - doc.page.margins.left - doc.page.margins.right;
+
     doc.image(imageBuffer, {
-      fit: [Math.min(doc.page.width - 150, 420), 220],
+      fit: [imageWidth, imageHeight],
       align: "center",
     });
-    doc.font("Times-Bold").fontSize(10).text(item.label, {
-      align: "center",
+
+    doc.moveDown(0.35);
+
+    const labelText = item.caption ? `${item.label}. ` : item.label;
+    const captionText = item.caption ?? "";
+    const labelWidth = doc.widthOfString(labelText);
+    const captionWidth = item.caption ? doc.widthOfString(captionText) : 0;
+    const combinedWidth = labelWidth + captionWidth;
+    const startX = doc.page.margins.left + (textWidth - combinedWidth) / 2;
+
+    doc.font("Times-Bold").fontSize(10).text(labelText, startX, doc.y, {
+      lineBreak: false,
     });
     if (item.caption) {
-      doc.font("Times-Roman").fontSize(9).text(item.caption, {
-        align: "center",
+      doc.font("Times-Roman").fontSize(10).text(captionText, {
+        continued: false,
+        lineBreak: false,
       });
     }
+
     doc.moveDown(0.5);
   }
 }
@@ -244,24 +271,24 @@ export function renderWordFigureMedia(
         spacing: { before: 120, after: 80 },
         children: [
           new ImageRun({
+            type: findImageType(item.src),
             data: imageBuffer,
             transformation: { width: 450, height: 300 },
-          } as any),
+          }),
         ],
       }),
     );
 
     paragraphs.push(
       new Paragraph({
-        spacing: { after: 20 },
-        children: [new TextRun({ text: item.label, bold: true })],
-      }),
-    );
-
-    paragraphs.push(
-      new Paragraph({
+        alignment: AlignmentType.CENTER,
         spacing: { after: 120 },
-        children: [new TextRun({ text: item.caption })],
+        children: item.caption
+          ? [
+              new TextRun({ text: `${item.label}. `, bold: true }),
+              new TextRun({ text: item.caption }),
+            ]
+          : [new TextRun({ text: item.label, bold: true })],
       }),
     );
   }
