@@ -27,6 +27,7 @@ import {
 } from "src/shared/utils/project.helper.js";
 
 type PdfDocument = InstanceType<typeof PDFDocument>;
+const exportBodyFontSize = 12;
 
 export class ProjectService {
   public constructor(private readonly projectRepository: ProjectRepository) {}
@@ -304,7 +305,7 @@ export class ProjectService {
 
       doc.moveDown(0.3);
 
-      doc.font("Times-Roman").fontSize(11);
+      doc.font("Times-Roman").fontSize(exportBodyFontSize);
       this.writeSectionBody(doc, section, mediaItems);
 
       doc.moveDown(0.8);
@@ -322,7 +323,7 @@ export class ProjectService {
           .fontSize(12)
           .text(`${sectionNumber}.${subNumber} ${sub.title}`);
         doc.moveDown(0.2);
-        doc.font("Times-Roman").fontSize(11);
+        doc.font("Times-Roman").fontSize(exportBodyFontSize);
         this.writeSectionBody(doc, sub, mediaItems);
         doc.moveDown(0.8);
       }
@@ -397,7 +398,7 @@ export class ProjectService {
       paragraphs.push(
         new Paragraph({
           spacing: { after: referenceOnly ? 80 : 120 },
-          children: [new TextRun({ text: cleanLine })],
+          children: [new TextRun({ text: cleanLine, size: exportBodyFontSize * 2 })],
         }),
       );
     }

@@ -224,17 +224,39 @@ export function renderFigureMedia(
     const imageBuffer = readMediaBuffer(item.src);
     if (!imageBuffer) continue;
 
-    const imageWidth = Math.min(doc.page.width - 150, 420);
-    const imageHeight = 220;
     const textWidth =
       doc.page.width - doc.page.margins.left - doc.page.margins.right;
+    const image = (
+      doc as PDFKit.PDFDocument & {
+        openImage: (buffer: Buffer) => { width: number; height: number };
+      }
+    ).openImage(imageBuffer);
+    const maxImageHeight = 280;
+    const scale = Math.min(
+      textWidth / image.width,
+      maxImageHeight / image.height,
+    );
+    const imageWidth = image.width * scale;
+    const imageHeight = image.height * scale;
+    const captionHeight = 34;
 
-    doc.image(imageBuffer, {
-      fit: [imageWidth, imageHeight],
-      align: "center",
+    if (
+      doc.y + imageHeight + captionHeight >
+      doc.page.height - doc.page.margins.bottom
+    ) {
+      doc.addPage();
+      doc.moveDown(0.5);
+    }
+
+    const imageX = doc.page.margins.left + (textWidth - imageWidth) / 2;
+    const imageY = doc.y;
+
+    doc.image(imageBuffer, imageX, imageY, {
+      width: imageWidth,
+      height: imageHeight,
     });
 
-    doc.moveDown(0.35);
+    doc.y = imageY + imageHeight + 12;
 
     const labelText = item.caption ? `${item.label}. ` : item.label;
     const captionText = item.caption ?? "";
@@ -253,7 +275,7 @@ export function renderFigureMedia(
       });
     }
 
-    doc.moveDown(0.5);
+    doc.moveDown(2);
   }
 }
 

@@ -496,6 +496,11 @@ export const SectionEditorPage = () => {
       }
     }
 
+    // Convert figure labels back to markers
+    for (const figure of mediaItems) {
+      text = text.split(figure.label).join(`{{figure:${figure.id}}}`);
+    }
+
     return text;
   };
 
