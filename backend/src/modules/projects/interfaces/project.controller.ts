@@ -220,11 +220,19 @@ export class ProjectController {
     }
 
     if (format === "word") {
-      throw new AppError(
-        "Word export is not implemented yet.",
-        StatusCodes.NOT_IMPLEMENTED,
-        "EXPORT_WORD_NOT_IMPLEMENTED",
+      const safeFilename = project.title.replace(/[^a-z0-9-_]/gi, "_");
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${safeFilename}.docx"`,
+      );
+
+      const buffer = await this.projectService.exportAsWord(project);
+      res.send(buffer);
+      return;
     }
   }
 }

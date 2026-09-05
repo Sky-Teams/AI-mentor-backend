@@ -44,6 +44,7 @@ export interface AuthResult {
 
 export type ProjectStatus = "DRAFT" | "IN_REVIEW" | "READY" | "ARCHIVED";
 export type SectionStatus = "NOT_STARTED" | "DRAFT" | "IN_REVIEW" | "READY";
+export type ExportFormat = "pdf" | "word";
 export type SectionContent = {
   text: string;
   references?: {

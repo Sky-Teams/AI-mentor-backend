@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { IssuesList } from "../components/IssuesList";
 import { ReadinessCard } from "../components/ReadinessCard";
@@ -18,6 +18,9 @@ export const ProjectDetailsPage = () => {
   const [reviews, setReviews] = useState<ReviewRun[]>([]);
   const [issues, setIssues] = useState<ReviewIssue[]>([]);
   const [readiness, setReadiness] = useState<ReadinessSnapshot | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
 
   const load = async () => {
     const [projectData, reviewsData, issuesData, readinessData] =
@@ -38,10 +41,34 @@ export const ProjectDetailsPage = () => {
     void load();
   }, [projectId]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        exportMenuRef.current &&
+        !exportMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsExportMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleToggleIssue = async (issue: ReviewIssue) => {
     const nextStatus = issue.status === "RESOLVED" ? "OPEN" : "RESOLVED";
     await reviewsApi.updateIssue(issue.id, nextStatus);
     await load();
+  };
+
+  const handleExport = async (format: "pdf" | "word") => {
+    setIsExporting(true);
+    setIsExportMenuOpen(false);
+    try {
+      await projectsApi.exportProject(projectId, format);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const allSections = project?.sections ?? [];
@@ -53,9 +80,41 @@ export const ProjectDetailsPage = () => {
         <div>
           <p className="eyebrow">Project</p>
           <h1>{project?.title ?? "Loading project..."}</h1>
-          <button onClick={() => projectsApi.exportProject(projectId)}>
-            Export Project
-          </button>
+
+          <div className="export-menu" ref={exportMenuRef}>
+            <button
+              className="primary-button export-menu__button"
+              onClick={() => setIsExportMenuOpen((open) => !open)}
+              disabled={!project || isExporting}
+              aria-haspopup="menu"
+              aria-expanded={isExportMenuOpen}
+            >
+              {isExporting ? "Exporting..." : "Export Project"}
+              <span className="export-menu__caret">▾</span>
+            </button>
+
+            {isExportMenuOpen ? (
+              <div className="export-menu__dropdown" role="menu">
+                <button
+                  className="export-menu__item"
+                  role="menuitem"
+                  onClick={() => handleExport("pdf")}
+                  disabled={!project || isExporting}
+                >
+                  Export as PDF
+                </button>
+                <button
+                  className="export-menu__item"
+                  role="menuitem"
+                  onClick={() => handleExport("word")}
+                  disabled={!project || isExporting}
+                >
+                  Export as Word
+                </button>
+              </div>
+            ) : null}
+          </div>
+
           <p className="muted-text">
             Status: {project?.status ?? "-"} · Target journal:{" "}
             {project?.targetJournal ?? "Not set"}
@@ -79,7 +138,6 @@ export const ProjectDetailsPage = () => {
 
               return (
                 <div key={section.id}>
-                  {/* Root section */}
                   <Link
                     className="section-link"
                     to={`/projects/${projectId}/sections/${section.key}`}
@@ -91,10 +149,7 @@ export const ProjectDetailsPage = () => {
                         {section.isOptional ? "· Optional" : ""}
                       </p>
                     </div>
-                    <span>
-                      {countWords(section.content.text) + " "}
-                      Words
-                    </span>
+                    <span>{countWords(section.content.text)} Words</span>
                   </Link>
 
                   {subsections.map((sub) => (

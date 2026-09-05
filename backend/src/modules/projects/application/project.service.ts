@@ -9,12 +9,25 @@ import type {
 import type { Project, ProjectSection } from "../domain/project";
 import PDFDocument from "pdfkit";
 import {
+  AlignmentType,
+  Document,
+  HeadingLevel,
+  Packer,
+  Paragraph,
+  TextRun,
+} from "docx";
+import {
   getSectionExportLines,
+  readMediaBuffer,
+  renderFigureMedia,
   renderFormattedText,
   renderReferenceText,
+  renderWordFigureMedia,
+  type ExportMediaItem,
 } from "src/shared/utils/project.helper.js";
 
 type PdfDocument = InstanceType<typeof PDFDocument>;
+const exportBodyFontSize = 12;
 
 export class ProjectService {
   public constructor(private readonly projectRepository: ProjectRepository) {}
@@ -167,16 +180,55 @@ export class ProjectService {
     });
 
     const allSections = project.sections ?? [];
+    const mediaItems = allSections.flatMap(
+      (section) => section.content?.media ?? [],
+    );
     const titleSection = allSections.find((sec) => sec.key === "TITLE");
     const rootSections = allSections
       .filter((sec) => !sec.parentSectionId && sec.key !== "TITLE")
       .sort((a, b) => a.sectionOrder - b.sectionOrder);
 
     this.writeTitle(doc, titleSection);
-    this.writeSections(doc, rootSections, allSections);
+    this.writeSections(doc, rootSections, allSections, mediaItems);
     this.writePageNumber(doc);
 
     return doc;
+  }
+
+  public async exportAsWord(project: Project): Promise<Buffer> {
+    const allSections = project.sections ?? [];
+    const mediaItems = allSections.flatMap(
+      (section) => section.content?.media ?? [],
+    );
+    const titleSection = allSections.find((sec) => sec.key === "TITLE");
+    const rootSections = allSections
+      .filter((sec) => !sec.parentSectionId && sec.key !== "TITLE")
+      .sort((a, b) => a.sectionOrder - b.sectionOrder);
+
+    const childrenByParent = new Map<string, ProjectSection[]>();
+    for (const section of allSections) {
+      if (!section.parentSectionId) continue;
+
+      const items = childrenByParent.get(section.parentSectionId) ?? [];
+      items.push(section);
+      childrenByParent.set(section.parentSectionId, items);
+    }
+
+    const paragraphs: Paragraph[] = [];
+
+    this.writeWordTitle(paragraphs, titleSection);
+    this.writeWordSections(
+      paragraphs,
+      rootSections,
+      childrenByParent,
+      mediaItems,
+    );
+
+    const doc = new Document({
+      sections: [{ children: paragraphs }],
+    });
+
+    return await Packer.toBuffer(doc);
   }
 
   private writeTitle(doc: PdfDocument, titleSection?: ProjectSection) {
@@ -205,22 +257,31 @@ export class ProjectService {
     doc.moveDown(1.5);
   }
 
-  private writeSectionBody(doc: PdfDocument, section: ProjectSection) {
-    const lines = getSectionExportLines(section);
+  private writeSectionBody(
+    doc: PdfDocument,
+    section: ProjectSection,
+    mediaItems: ExportMediaItem[],
+  ) {
+    const lines = getSectionExportLines(section, { mediaItems });
     const referenceOnly =
       !section.content?.text?.trim() &&
       (section.content?.references?.items?.length ?? 0) > 0;
 
     for (const line of lines) {
       doc.x = doc.page.margins.left;
+      const exportLine = line;
 
       if (referenceOnly) {
-        renderReferenceText(doc, line);
+        renderReferenceText(doc, exportLine);
         doc.moveDown(0.35);
         continue;
       }
 
-      renderFormattedText(doc, line);
+      renderFormattedText(doc, exportLine);
+    }
+
+    if (section.key === "FIGURES AND TABLES") {
+      renderFigureMedia(doc, section.content?.media ?? []);
     }
   }
 
@@ -228,6 +289,7 @@ export class ProjectService {
     doc: PdfDocument,
     rootSections: ProjectSection[],
     allSections: ProjectSection[],
+    mediaItems: ExportMediaItem[],
   ) {
     let sectionNumber = 0;
 
@@ -243,8 +305,8 @@ export class ProjectService {
 
       doc.moveDown(0.3);
 
-      doc.font("Times-Roman").fontSize(11);
-      this.writeSectionBody(doc, section);
+      doc.font("Times-Roman").fontSize(exportBodyFontSize);
+      this.writeSectionBody(doc, section, mediaItems);
 
       doc.moveDown(0.8);
 
@@ -255,20 +317,14 @@ export class ProjectService {
       let subNumber = 0;
       for (const sub of subsections) {
         subNumber++;
-
         doc.x = doc.page.margins.left;
         doc
           .font("Times-Bold")
           .fontSize(12)
-          .text(`${sectionNumber}.${subNumber} ${sub.title}`, {
-            align: "left",
-          });
-
+          .text(`${sectionNumber}.${subNumber} ${sub.title}`);
         doc.moveDown(0.2);
-
-        doc.font("Times-Roman").fontSize(11);
-        this.writeSectionBody(doc, sub);
-
+        doc.font("Times-Roman").fontSize(exportBodyFontSize);
+        this.writeSectionBody(doc, sub, mediaItems);
         doc.moveDown(0.8);
       }
     }
@@ -302,5 +358,92 @@ export class ProjectService {
     }
   }
 
-  // public async exportAsWord(project, res: Response): Promise<void> {}
+  private writeWordTitle(
+    paragraphs: Paragraph[],
+    titleSection?: ProjectSection,
+  ): void {
+    const titleText = titleSection
+      ? getSectionExportLines(titleSection).join(" ").trim()
+      : "";
+
+    if (!titleText) return;
+
+    paragraphs.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 300 },
+        children: [new TextRun({ text: titleText, bold: true, size: 32 })],
+      }),
+    );
+  }
+
+  private writeWordSectionBody(
+    paragraphs: Paragraph[],
+    section: ProjectSection,
+    mediaItems: ExportMediaItem[],
+  ): void {
+    const lines = getSectionExportLines(section, { mediaItems });
+    const referenceOnly =
+      !section.content?.text?.trim() &&
+      (section.content?.references?.items?.length ?? 0) > 0;
+
+    for (const line of lines) {
+      const cleanLine = line
+        .replace(/<\/?(i|em)>/gi, "")
+        .replace(/<br\s*\/?>/gi, " ")
+        .trim();
+
+      if (!cleanLine) continue;
+
+      paragraphs.push(
+        new Paragraph({
+          spacing: { after: referenceOnly ? 80 : 120 },
+          children: [new TextRun({ text: cleanLine, size: exportBodyFontSize * 2 })],
+        }),
+      );
+    }
+
+    if (section.key === "FIGURES AND TABLES") {
+      renderWordFigureMedia(paragraphs, section.content?.media ?? []);
+    }
+  }
+
+  private writeWordSections(
+    paragraphs: Paragraph[],
+    rootSections: ProjectSection[],
+    childrenByParent: Map<string, ProjectSection[]>,
+    mediaItems: ExportMediaItem[],
+  ): void {
+    let sectionNumber = 0;
+
+    for (const section of rootSections) {
+      sectionNumber++;
+      paragraphs.push(
+        new Paragraph({
+          text: `${sectionNumber}. ${section.title}`,
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 200, after: 100 },
+        }),
+      );
+
+      this.writeWordSectionBody(paragraphs, section, mediaItems);
+
+      const subsections = (childrenByParent.get(section.id) ?? []).sort(
+        (a, b) => a.sectionOrder - b.sectionOrder,
+      );
+
+      let subNumber = 0;
+      for (const sub of subsections) {
+        subNumber++;
+        paragraphs.push(
+          new Paragraph({
+            text: `${sectionNumber}.${subNumber} ${sub.title}`,
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 150, after: 80 },
+          }),
+        );
+        this.writeWordSectionBody(paragraphs, sub, mediaItems);
+      }
+    }
+  }
 }
