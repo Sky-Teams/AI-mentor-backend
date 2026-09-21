@@ -255,6 +255,11 @@ export const SectionEditorPage = () => {
     setStatusMessage(null);
     try {
       setError("");
+      const isMaxLength =
+        (section?.maxWords as number) < countWords(content.text);
+
+      if (isMaxLength) window.alert("You have reached the maximum word limit.");
+
       await projectsApi.updateSection(projectId, sectionKey, {
         content,
         changeSummary: "Updated from internal web UI",
@@ -273,6 +278,11 @@ export const SectionEditorPage = () => {
     setStatusMessage(null);
     try {
       setError("");
+      const isMaxLength =
+        (section?.maxWords as number) < countWords(content.text);
+
+      if (isMaxLength) window.alert("You have reached the maximum word limit.");
+
       await projectsApi.updateSection(projectId, sectionKey, {
         content,
         changeSummary: "Saved before AI review",
