@@ -76,18 +76,16 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
       lengthStrategy === "MAINTAIN"
         ? "CRITICAL: Maintain a similar word count and level of detail as the original text. Do not summarize, do not omit facts, and do not delete or merge sentences."
         : "Rewrite the text to be significantly more concise. If a sentence doesn't add new value, merge or delete it.";
-    const wordLimitInstruction = content.maxWords
-      ? `CRITICAL: The final text must not exceed ${content.maxWords} words under any circumstances.`
-      : "";
 
     const systemPrompt = [
       `Return only structured JSON that matches the schema.`,
       `TASK: Paraphrase the text based on these specific constraints:`,
       `1. Tone requirement: ${toneTypeDescriptions[tone]}.`,
       `2. Length strategy: ${lengthStrategyDescriptions[lengthStrategy]}.`,
-      `3. Length Instruction: ${lengthInstruction} and ${wordLimitInstruction}`,
+      `3. Length Instruction: ${lengthInstruction}`,
       `4. STRUCTURE: Ensure the output avoids plagiarism by changing sentence structures and using synonyms appropriately.`,
       `5. Preserved Words Rule: ${preservedWordsRule}`,
+      `6. CITATION RULE: Citation placeholders in the format {{cite:REFERENCE_ID}} are protected content. Preserve every citation placeholder exactly as provided. Do not paraphrase, modify, remove, duplicate, reorder, or replace citation placeholders. Treat citation placeholders as non-paraphrasable content and exclude them from word-count and length calculations.`,
       `Limit the 'changes' array to a maximum of 2 essential items.`,
       `You MUST include 'metrics', 'grammarTips', and 'readabilityScore' keys, even if they contain empty arrays or default values.`,
       `Do not let the response cut off.`,

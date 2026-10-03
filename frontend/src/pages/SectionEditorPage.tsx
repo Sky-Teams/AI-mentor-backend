@@ -1078,7 +1078,7 @@ export const SectionEditorPage = () => {
       )}
       <ParaphrasePanel
         sectionId={sectionId}
-        content={content.text}
+        content={content}
         sectionKey={sectionKey}
         onSaveSuccess={loadData}
       />

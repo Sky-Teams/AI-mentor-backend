@@ -1,13 +1,19 @@
-import { LengthStrategy, ParaphraseRun, ToneType } from "../types/api";
+import {
+  LengthStrategy,
+  ParaphraseRun,
+  SectionContent,
+  ToneType,
+} from "../types/api";
 import { paraphraseApi } from "../services/api/paraphrase";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 // import { ParaphraseList } from "./paraphraseList";
 import { projectsApi } from "../services/api/projects";
+import { toSuperscript } from "../services/api/reference";
 
 interface ParaphrasePanelProps {
   sectionId: string;
-  content: string;
+  content: SectionContent;
   sectionKey: string;
   onSaveSuccess?: () => void | Promise<void>;
 }
@@ -64,7 +70,7 @@ export const ParaphrasePanel = ({
         tone: selectedTone.toLocaleUpperCase() as ToneType,
         lengthStrategy: selectedLength.toLocaleUpperCase() as LengthStrategy,
         preservedWords: finalWords,
-        content: content,
+        content: content.text,
       });
 
       // show latest generated paraphrase directly
@@ -81,6 +87,37 @@ export const ParaphrasePanel = ({
     }
   };
 
+  const getItemReferenceId = (item: {
+    referenceId?: string;
+    reference?: { id?: string };
+  }): string => item.referenceId ?? item.reference?.id ?? "";
+
+  const getShownTextFromText = (
+    text: string,
+    items = content.references?.items || [],
+  ) => {
+    let shownText = text;
+    let index = 1;
+
+    for (const item of items) {
+      const placeholder = `{{cite:${getItemReferenceId(item)}}}`;
+
+      if (
+        content.references?.style === "CHICAGO_FULL_NOTE" ||
+        content.references?.style === "OSCOLA"
+      ) {
+        const number = toSuperscript(index);
+        shownText = shownText.split(placeholder).join(number);
+        index++;
+      } else {
+        if (item.formattedText) {
+          shownText = shownText.split(placeholder).join(item.formattedText);
+        }
+      }
+    }
+
+    return shownText;
+  };
   // const updateTopPanel = (latest: ParaphraseRun[]) => {
   //   setLatestParaphrase(latest?.[0] ?? null);
   // };
@@ -102,7 +139,7 @@ export const ParaphrasePanel = ({
       }
 
       await projectsApi.updateSection(projectId, sectionKey, {
-        content: { text: textToSave },
+        content: { ...content, text: textToSave },
         changeSummary: "Saved change",
       });
       if (onSaveSuccess) {
@@ -193,11 +230,11 @@ export const ParaphrasePanel = ({
             <div className="review-layout two-column">
               <div className="card">
                 <h2>Original Text</h2>
-                <p>{currentData.originalText}</p>
+                <p>{getShownTextFromText(currentData.originalText)}</p>
               </div>
               <div className="card">
                 <h2>Paraphrase Text</h2>
-                <p>{currentData.paraphrasedText}</p>
+                <p>{getShownTextFromText(currentData.paraphrasedText)}</p>
               </div>
             </div>
 
