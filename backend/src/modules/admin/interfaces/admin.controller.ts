@@ -43,7 +43,14 @@ export class AdminController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const template = await this.adminService.upsertPromptTemplate(request.body);
+    const body = request.body as Record<string, unknown>;
+    const template =
+      typeof body.name === "string"
+        ? await this.adminService.upsertPromptTemplate(request.body)
+        : await this.adminService.updatePromptTemplateCustomContent(
+            body.id as string,
+            body.customContent as string | null,
+          );
     response.status(StatusCodes.OK).json(successResponse(template));
   }
 

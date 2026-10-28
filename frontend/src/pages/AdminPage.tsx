@@ -17,6 +17,58 @@ export const AdminPage = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [users, setUsers] = useState<AdminUsageUserSummary[]>([]);
   const [journals, setJournals] = useState<any[]>([]);
+  const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
+  const [promptDraft, setPromptDraft] = useState("");
+  const [savingPrompt, setSavingPrompt] = useState(false);
+  const [promptError, setPromptError] = useState("");
+  const [savedPromptId, setSavedPromptId] = useState<string | null>(null);
+
+  const beginPromptEdit = (template: PromptTemplate) => {
+    setEditingPromptId(template.id);
+    setPromptDraft(template.customContent ?? "");
+    setPromptError("");
+    setSavedPromptId(null);
+  };
+
+  const savePrompt = async (
+    template: PromptTemplate,
+    customContent: string | null = promptDraft,
+  ) => {
+    setSavingPrompt(true);
+    setPromptError("");
+    try {
+      const updated = await adminApi.updatePromptTemplateCustomContent(
+        template.id,
+        customContent,
+      );
+      setTemplates((current) =>
+        current.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setPromptDraft(updated.customContent ?? "");
+      setSavedPromptId(template.id);
+      setEditingPromptId(null);
+    } catch (error) {
+      const message =
+        error && typeof error === "object" && "message" in error
+          ? String(error.message)
+          : "Could not save additional instructions. Please try again.";
+      setPromptError(message);
+    } finally {
+      setSavingPrompt(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!editingPromptId) return;
+    document.body.classList.add("active-modal");
+    return () => document.body.classList.remove("active-modal");
+  }, [editingPromptId]);
+
+  useEffect(() => {
+    if (!savedPromptId) return;
+    const timeout = window.setTimeout(() => setSavedPromptId(null), 3000);
+    return () => window.clearTimeout(timeout);
+  }, [savedPromptId]);
 
   useEffect(() => {
     const load = async () => {
@@ -42,6 +94,10 @@ export const AdminPage = () => {
 
     void load();
   }, []);
+
+  const editingTemplate = templates.find(
+    (template) => template.id === editingPromptId,
+  );
 
   return (
     <div className="page-shell">
@@ -77,6 +133,23 @@ export const AdminPage = () => {
                 <p className="muted-text">
                   {template.code} · v{template.version} · {template.status}
                 </p>
+                {template.type === "SECTION_REVIEW" ||
+                template.type === "SECTION_PARAPHRASE" ? (
+                  <div className="prompt-template-actions">
+                    {savedPromptId === template.id && (
+                      <span className="success-text" role="status">
+                        Saved
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="outline-button"
+                      onClick={() => beginPromptEdit(template)}
+                    >
+                      Edit prompt
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
@@ -140,6 +213,77 @@ export const AdminPage = () => {
           </div>
         </div>
       </div>
+
+      {editingTemplate && (
+        <div className="prompt-edit-modal-backdrop">
+          <section
+            className="prompt-edit-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="prompt-edit-title"
+          >
+            <div className="prompt-edit-modal-header">
+              <div>
+                <h2 id="prompt-edit-title">Edit prompt instructions</h2>
+                <p className="muted-text">{editingTemplate.name}</p>
+              </div>
+            </div>
+
+            <label className="field">
+              <span>Original prompt</span>
+              <textarea
+                rows={10}
+                value={editingTemplate.templateText}
+                readOnly
+                style={{ background: "#f1f1f1", color: "#777" }}
+              />
+            </label>
+            <label className="field">
+              <span>Additional instructions</span>
+              <textarea
+                rows={7}
+                maxLength={4000}
+                value={promptDraft}
+                autoFocus
+                onChange={(event) => setPromptDraft(event.target.value)}
+              />
+              <span className="muted-text">
+                {promptDraft.trim()
+                  ? promptDraft.trim().split(/\s+/).length
+                  : 0}{" "}
+                words
+              </span>
+            </label>
+            {promptError && (
+              <p role="alert" className="error-text">
+                {promptError}
+              </p>
+            )}
+            <div className="button-row prompt-edit-modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={savingPrompt}
+                onClick={() => setEditingPromptId(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                disabled={
+                  savingPrompt ||
+                  promptDraft.length > 4000 ||
+                  promptDraft === (editingTemplate.customContent ?? "")
+                }
+                onClick={() => void savePrompt(editingTemplate)}
+              >
+                {savingPrompt ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };

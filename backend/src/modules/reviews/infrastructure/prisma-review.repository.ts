@@ -513,6 +513,7 @@ export class PrismaReviewRepository implements ReviewRepository {
   public async getActiveReviewPrompt(): Promise<{
     id: string;
     templateText: string;
+    customContent: string | null;
   } | null> {
     const template = await this.prisma.promptTemplate.findFirst({
       where: {
@@ -528,6 +529,7 @@ export class PrismaReviewRepository implements ReviewRepository {
       ? {
           id: template.id,
           templateText: template.templateText,
+          customContent: template.customContent,
         }
       : null;
   }

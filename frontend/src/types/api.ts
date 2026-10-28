@@ -291,6 +291,7 @@ export interface PromptTemplate {
   version: number;
   status: string;
   templateText: string;
+  customContent?: string | null;
 }
 
 export interface AdminUsageUserSummary {

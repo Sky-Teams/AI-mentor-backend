@@ -27,6 +27,7 @@ export interface PromptTemplate {
   version: number;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   templateText: string;
+  customContent: string | null;
   responseSchema: Record<string, unknown> | null;
   config: Record<string, unknown> | null;
 }
