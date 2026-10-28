@@ -491,6 +491,7 @@ model PromptTemplate {
   version        Int                  @default(1)
   status         PromptTemplateStatus @default(DRAFT)
   templateText   String
+  customContent  String?
   responseSchema Json?
   config         Json?
   createdById    String?

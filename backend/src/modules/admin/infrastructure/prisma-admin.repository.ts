@@ -37,6 +37,7 @@ const mapPromptTemplate = (template: {
   version: number;
   status: PromptTemplate["status"];
   templateText: string;
+  customContent: string | null;
   responseSchema: unknown;
   config: unknown;
 }): PromptTemplate => ({
@@ -48,6 +49,7 @@ const mapPromptTemplate = (template: {
   version: template.version,
   status: template.status,
   templateText: template.templateText,
+  customContent: template.customContent,
   responseSchema:
     (template.responseSchema as Record<string, unknown> | null) ?? null,
   config: (template.config as Record<string, unknown> | null) ?? null,
@@ -159,6 +161,7 @@ export class PrismaAdminRepository implements AdminRepository {
     version?: number;
     status: PromptTemplate["status"];
     templateText: string;
+    customContent?: string | null;
     responseSchema?: Record<string, unknown>;
     config?: Record<string, unknown>;
   }): Promise<PromptTemplate> {
@@ -175,6 +178,7 @@ export class PrismaAdminRepository implements AdminRepository {
             version: input.version,
             status: input.status,
             templateText: input.templateText,
+            customContent: input.customContent,
             responseSchema: input.responseSchema as Prisma.InputJsonValue,
             config: input.config as Prisma.InputJsonValue,
           },
@@ -188,11 +192,28 @@ export class PrismaAdminRepository implements AdminRepository {
             version: input.version ?? 1,
             status: input.status,
             templateText: input.templateText,
+            customContent: input.customContent,
             responseSchema: input.responseSchema as Prisma.InputJsonValue,
             config: input.config as Prisma.InputJsonValue,
           },
         });
 
+    return mapPromptTemplate(template);
+  }
+
+  public async updatePromptTemplateCustomContent(
+    id: string,
+    customContent: string | null,
+  ): Promise<PromptTemplate | null> {
+    const existing = await this.prisma.promptTemplate.findUnique({
+      where: { id },
+    });
+    if (!existing) return null;
+
+    const template = await this.prisma.promptTemplate.update({
+      where: { id },
+      data: { customContent },
+    });
     return mapPromptTemplate(template);
   }
 

@@ -170,6 +170,7 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
   public async getActiveParaphrasePrompt(): Promise<{
     id: string;
     templateText: string;
+    customContent: string | null;
   } | null> {
     const template = await this.prisma.promptTemplate.findFirst({
       where: {
@@ -184,6 +185,7 @@ export class PrismaParaphraseRepository implements ParaphraseRepository {
       ? {
           id: template.id,
           templateText: template.templateText,
+          customContent: template.customContent,
         }
       : null;
   }
