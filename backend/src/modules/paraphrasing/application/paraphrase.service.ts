@@ -1,18 +1,10 @@
-import {
-  GrammarTip,
-  LengthStrategy,
-  ParaphraseChange,
-  ParaphraseMetric,
-  ParaphraseRun,
-  ToneType,
-} from "../domain/paraphrase";
+import { LengthStrategy, ParaphraseRun, ToneType } from "../domain/paraphrase";
 import { ParaphraseRepository } from "../domain/paraphrase.repository";
 import { SectionParaphrase } from "../domain/section-paraphrase";
 import { ProjectService } from "src/modules/projects/application/project.service";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
 import { BillingService } from "src/modules/billing/application/billing.service";
-import { env } from "src/shared/config/env";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
 import { CreditEstimatorService } from "src/modules/billing/application/credit-estimator.service";
 import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-paraphrase";
@@ -20,6 +12,7 @@ import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { toneTypeDescriptions } from "../domain/paraphrase";
 import crypto from "crypto";
+import { defaultAiTarget } from "src/shared/ai/ai-client.js";
 
 export class ParaphraseService {
   public constructor(
@@ -41,6 +34,7 @@ export class ParaphraseService {
     lengthStrategy?: LengthStrategy;
     content: string;
   }): Promise<ParaphraseRun> {
+    const ai = defaultAiTarget();
     await this.userRepository.getUserById(input.ownerId);
     const project = await this.projectService.getProject(
       input.projectId,
@@ -101,7 +95,7 @@ export class ParaphraseService {
         },
         promptTemplate,
         guidelineRules,
-        model: env.OPENAI_MODEL,
+        model: ai.model,
       },
       AiParaphraseResponseSchema,
     );
@@ -140,6 +134,7 @@ export class ParaphraseService {
         promptTemplate,
         guidelineRules,
         maxWords: section.maxWords,
+        ai,
       });
 
       const actualCredits = this.CreditEstimator.calculateActualCredit(
@@ -151,7 +146,7 @@ export class ParaphraseService {
         paraphraseRunId: undefined,
         operation: "PARAPHRASE",
         projectId: input.projectId,
-        model: env.OPENAI_MODEL,
+        model: ai.model,
         usage: execution.usage,
         amount: actualCredits,
       });
@@ -182,7 +177,7 @@ export class ParaphraseService {
         tone: execution.result.tone ?? input.tone,
         changes: execution.result.changes ?? [],
         metrics: execution.result.metrics ?? [],
-        aiModel: env.OPENAI_MODEL,
+        aiModel: ai.model,
         preservedWords: input.preservedWords ?? [],
         lengthStrategy: input.lengthStrategy ?? "SHORTEN",
         inputTokens: execution.usage.inputTokens,
@@ -199,7 +194,7 @@ export class ParaphraseService {
         projectId: input.projectId,
         paraphraseRunId: undefined,
         operation: "PARAPHRASE",
-        model: env.OPENAI_MODEL,
+        model: ai.model,
       });
 
       // const message =
