@@ -118,7 +118,8 @@ enum CreditTransactionSource {
 }
 
 enum AiProvider {
-  OPENAI
+  GROQ
+  OPENROUTER
 }
 
 enum AiUsageStatus {
@@ -138,6 +139,11 @@ enum paraphraseRunStatuses {
 enum ArticleTypesStatus {
   ACTIVE
   INACTIVE
+}
+
+enum LimitPeriod {
+  WEEKLY
+  MONTHLY
 }
 
 model Journal {
@@ -361,7 +367,7 @@ model ReviewRun {
   initiatedById        String
   promptTemplateId     String?
   guidelinePackId      String?
-  aiProvider           AiProvider          @default(OPENAI)
+  aiProvider           AiProvider          @default(GROQ)
   aiModel              String
   status               ReviewRunStatus     @default(QUEUED)
   summary              String?
@@ -505,7 +511,7 @@ model PromptTemplate {
 
 model SubscriptionPlan {
   id                      String                 @id @default(cuid())
-  name                    String
+  name                    String                 @unique
   code                    String                 @unique
   description             String?
   billingModel            PlanBillingModel
@@ -516,6 +522,10 @@ model SubscriptionPlan {
   status                  SubscriptionPlanStatus @default(ACTIVE)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
+  aiProvider              AiProvider             @default(GROQ)
+  aiModel                 String                 @default("openai/gpt-oss-120b")
+  tokenLimit              Int                    @default(0)
+  limitPeriod             LimitPeriod            @default(MONTHLY)
   subscriptions           UserSubscription[]
   subscriptionRequests    SubscriptionRequest[]
 
@@ -612,7 +622,7 @@ model AiUsageLog {
   projectId             String?
   reviewRunId           String?        @unique
   paraphraseRunId       String?        @unique
-  provider              AiProvider     @default(OPENAI)
+  provider              AiProvider     @default(GROQ)
   model                 String
   operation             String
   status                AiUsageStatus
@@ -659,7 +669,7 @@ model ParaphraseRun {
   lengthStrategy     String?
   changes            Json?
   metrics            Json?
-  aiProvider         AiProvider            @default(OPENAI)
+  aiProvider         AiProvider            @default(GROQ)
   grammarTips        Json?
   status             paraphraseRunStatuses @default(QUEUED)
   aiModel            String
