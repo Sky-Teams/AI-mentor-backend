@@ -14,6 +14,7 @@ import type { SectionReviewer } from "../domain/section-reviewer";
 import { sectionReviewSchema } from "../infrastructure/openai-section-reviewer";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
 import { buildPromptFromTemplate } from "src/shared/prompTemplate/build-prompt-from-template";
+import { defaultAiTarget } from "src/shared/ai/ai-client.js";
 
 const severityPenalty: Record<ReviewIssue["severity"], number> = {
   LOW: 5,
