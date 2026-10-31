@@ -1,3 +1,4 @@
+import { AiTarget } from "src/shared/ai/ai-client.js";
 import type { Project } from "../../projects/domain/project";
 import type { AiSectionReviewResult } from "./review";
 
@@ -11,6 +12,7 @@ export interface ReviewContext {
   };
   promptTemplate: string;
   guidelineRules: Record<string, unknown>;
+  ai: AiTarget;
 }
 
 export interface ReviewExecutionResult {

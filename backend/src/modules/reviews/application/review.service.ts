@@ -1,5 +1,4 @@
 import { StatusCodes } from "http-status-codes";
-import { env } from "../../../shared/config/env";
 import { AppError } from "../../../shared/errors/app-error";
 import type { BillingService } from "../../billing/application/billing.service";
 import type { CreditEstimatorService } from "../../billing/application/credit-estimator.service";
@@ -15,6 +14,7 @@ import type { SectionReviewer } from "../domain/section-reviewer";
 import { sectionReviewSchema } from "../infrastructure/openai-section-reviewer";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
 import { buildPromptFromTemplate } from "src/shared/prompTemplate/build-prompt-from-template";
+import { defaultAiTarget } from "src/shared/ai/ai-client.js";
 
 const severityPenalty: Record<ReviewIssue["severity"], number> = {
   LOW: 5,
@@ -37,6 +37,7 @@ export class ReviewService {
     ownerId: string;
     sectionKey: string;
   }): Promise<ReviewRun> {
+    const ai = defaultAiTarget();
     const project = await this.projectService.getProject(
       input.projectId,
       input.ownerId,
@@ -101,7 +102,7 @@ export class ReviewService {
         },
         promptTemplate,
         guidelineRules,
-        model: env.OPENAI_MODEL,
+        model: ai.model,
       },
       sectionReviewSchema,
     );
@@ -113,7 +114,7 @@ export class ReviewService {
     );
 
     const reviewRun = await this.reviewRepository.createQueuedReview({
-      aiModel: env.OPENAI_MODEL,
+      aiModel: ai.model,
       initiatedById: input.ownerId,
       projectId: input.projectId,
       sectionId: section.id,
@@ -134,6 +135,7 @@ export class ReviewService {
         },
         promptTemplate,
         guidelineRules,
+        ai,
       });
 
       const actualCredits = this.CreditEstimator.calculateActualCredit(
@@ -144,7 +146,7 @@ export class ReviewService {
         userId: input.ownerId,
         projectId: input.projectId,
         reviewRunId: reviewRun.id,
-        model: env.OPENAI_MODEL,
+        model: ai.model,
         amount: actualCredits,
         usage: execution.usage,
         operation: "REVIEW",
@@ -176,7 +178,7 @@ export class ReviewService {
         projectId: input.projectId,
         operation: "REVIEW",
         reviewRunId: reviewRun.id,
-        model: env.OPENAI_MODEL,
+        model: ai.model,
       });
 
       const message =
