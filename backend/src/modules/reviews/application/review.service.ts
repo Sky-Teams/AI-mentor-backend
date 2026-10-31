@@ -13,7 +13,7 @@ import type { ReviewRepository } from "../domain/review.repository";
 import type { SectionReviewer } from "../domain/section-reviewer";
 import { sectionReviewSchema } from "../infrastructure/openai-section-reviewer";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
-import { defaultAiTarget } from "src/shared/ai/ai-client.js";
+import { SubscriptionService } from "src/modules/subscription/application/subscription.service.js";
 
 const severityPenalty: Record<ReviewIssue["severity"], number> = {
   LOW: 5,
@@ -29,6 +29,7 @@ export class ReviewService {
     private readonly sectionReviewer: SectionReviewer,
     private readonly billingService: BillingService,
     private readonly CreditEstimator: CreditEstimatorService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   public async triggerSectionReview(input: {
@@ -36,7 +37,8 @@ export class ReviewService {
     ownerId: string;
     sectionKey: string;
   }): Promise<ReviewRun> {
-    const ai = defaultAiTarget();
+    const ai = await this.subscriptionService.getAiTargetForUser(input.ownerId);
+
     const project = await this.projectService.getProject(
       input.projectId,
       input.ownerId,
