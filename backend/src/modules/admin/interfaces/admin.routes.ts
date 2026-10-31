@@ -8,7 +8,7 @@ import type { AdminController } from "./admin.controller";
 import {
   guidelinePackSchema,
   planSchema,
-  promptTemplateSchema,
+  promptTemplateUpdateSchema,
 } from "./admin.schemas";
 import {
   subscriptionRequestIdSchema,
@@ -52,7 +52,7 @@ export const createAdminRouter = (
   );
   router.put(
     "/prompt-templates",
-    validate(promptTemplateSchema),
+    validate(promptTemplateUpdateSchema),
     asyncHandler((request, response) =>
       controller.upsertPromptTemplate(request, response),
     ),

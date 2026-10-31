@@ -12,6 +12,20 @@ import { RequestedPlans } from "./subscription";
 
 type Plan = BillingOverview["plans"][number];
 
+type PromptTemplateUpdateInput = Omit<
+  PromptTemplate,
+  "type" | "status" | "version" | "description"
+> & {
+  type:
+    | "SECTION_REVIEW"
+    | "SECTION_PARAPHRASE"
+    | "SYSTEM_GUARDRAIL"
+    | "FOLLOW_UP";
+  status: "DRAFT" | "ACTIVE" | "ARCHIVED";
+  version?: number;
+  description?: string;
+};
+
 export const adminApi = {
   async getGuidelines(): Promise<GuidelinePack[]> {
     const response = await apiClient.get<ApiSuccessResponse<GuidelinePack[]>>(
@@ -23,6 +37,27 @@ export const adminApi = {
   async getPromptTemplates(): Promise<PromptTemplate[]> {
     const response = await apiClient.get<ApiSuccessResponse<PromptTemplate[]>>(
       "/admin/prompt-templates",
+    );
+    return unwrap(response.data);
+  },
+
+  async updatePromptTemplate(
+    template: PromptTemplateUpdateInput,
+  ): Promise<PromptTemplate> {
+    const response = await apiClient.put<ApiSuccessResponse<PromptTemplate>>(
+      "/admin/prompt-templates",
+      template,
+    );
+    return unwrap(response.data);
+  },
+
+  async updatePromptTemplateCustomContent(
+    id: string,
+    customContent: string | null,
+  ): Promise<PromptTemplate> {
+    const response = await apiClient.put<ApiSuccessResponse<PromptTemplate>>(
+      "/admin/prompt-templates",
+      { id, customContent },
     );
     return unwrap(response.data);
   },

@@ -1,5 +1,10 @@
 import type { SubscriptionPlan } from "../../billing/domain/billing";
-import type { GuidelinePack, PromptTemplate, AdminUsageUserSummary, PlanUpsertInput } from "./admin";
+import type {
+  GuidelinePack,
+  PromptTemplate,
+  AdminUsageUserSummary,
+  PlanUpsertInput,
+} from "./admin";
 
 export interface AdminRepository {
   listGuidelinePacks(): Promise<GuidelinePack[]>;
@@ -23,9 +28,14 @@ export interface AdminRepository {
     version?: number;
     status: PromptTemplate["status"];
     templateText: string;
+    customContent?: string | null;
     responseSchema?: Record<string, unknown>;
     config?: Record<string, unknown>;
   }): Promise<PromptTemplate>;
+  updatePromptTemplateCustomContent(
+    id: string,
+    customContent: string | null,
+  ): Promise<PromptTemplate | null>;
   listPlans(): Promise<SubscriptionPlan[]>;
   upsertPlan(input: PlanUpsertInput): Promise<SubscriptionPlan>;
   listUsersUsage(): Promise<AdminUsageUserSummary[]>;

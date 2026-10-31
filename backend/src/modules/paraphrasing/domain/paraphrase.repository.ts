@@ -60,5 +60,6 @@ export interface ParaphraseRepository {
   getActiveParaphrasePrompt(): Promise<{
     id: string;
     templateText: string;
+    customContent: string | null;
   } | null>;
 }
