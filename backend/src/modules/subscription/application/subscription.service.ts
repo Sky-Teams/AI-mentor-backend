@@ -8,6 +8,7 @@ import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
+import { AiTarget } from "src/shared/ai/ai-client.js";
 
 export class SubscriptionService {
   public constructor(
@@ -98,5 +99,9 @@ export class SubscriptionService {
 
   public async expirePlans(): Promise<{ message: string }> {
     return await this.subscriptionRepository.expirePlans();
+  }
+
+  public async getAiTargetForUser(userId: string): Promise<AiTarget> {
+    return await this.subscriptionRepository.getAiTargetForUser(userId);
   }
 }
