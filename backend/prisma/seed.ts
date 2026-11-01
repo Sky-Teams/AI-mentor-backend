@@ -4,9 +4,9 @@ import { env } from "../src/shared/config/env";
 import { ELSEVIER_SCARE_JOURNAL } from "../src/shared/seed-data/journals";
 import { ARTICLE_TYPES, SPECIALTIES } from "src/shared/seed-data/constants.js";
 
-// TODO: Replace these with the Luna and Sol model IDs chosen by the customer.
-const LUNA_MODEL_ID = "TODO-luna-model-id";
-const SOL_MODEL_ID = "TODO-sol-model-id";
+// TODO: Replace these with the Luna and Sol model real IDs
+const LUNA_MODEL_ID = env.LUNA_MODEL_ID;
+const SOL_MODEL_ID = env.SOL_MODEL_ID;
 
 const j = ELSEVIER_SCARE_JOURNAL;
 
