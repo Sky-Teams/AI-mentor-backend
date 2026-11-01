@@ -72,10 +72,12 @@ export interface ReviewRepository {
     projectId: string,
     ownerId: string,
   ): Promise<ReadinessSnapshot | null>;
-  getActiveReviewPrompt(): Promise<{ id: string; templateText: string } | null>;
-  getDefaultGuidelinePack(
-    type: AiOperation,
-  ): Promise<{
+  getActiveReviewPrompt(): Promise<{
+    id: string;
+    templateText: string;
+    customContent: string | null;
+  } | null>;
+  getDefaultGuidelinePack(type: AiOperation): Promise<{
     id: string;
     name: string;
     version: string;

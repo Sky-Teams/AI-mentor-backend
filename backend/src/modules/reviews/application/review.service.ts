@@ -14,6 +14,7 @@ import type { SectionReviewer } from "../domain/section-reviewer";
 import { sectionReviewSchema } from "../infrastructure/openai-section-reviewer";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
 import { SubscriptionService } from "src/modules/subscription/application/subscription.service.js";
+import { buildPromptFromTemplate } from "src/shared/prompTemplate/build-prompt-from-template";
 
 const severityPenalty: Record<ReviewIssue["severity"], number> = {
   LOW: 5,
@@ -74,7 +75,9 @@ export class ReviewService {
     }
 
     const activePrompt = await this.reviewRepository.getActiveReviewPrompt();
-    const promptTemplate = activePrompt?.templateText ?? PROMPT_TEMPLATE.REVIEW;
+    const promptTemplate = buildPromptFromTemplate(
+      activePrompt ?? { templateText: PROMPT_TEMPLATE.REVIEW },
+    );
 
     const activeGuidelinePack =
       project.journal?.guidelinePack ??

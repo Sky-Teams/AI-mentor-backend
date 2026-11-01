@@ -6,6 +6,7 @@ import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
 import { BillingService } from "src/modules/billing/application/billing.service";
 import { PROMPT_TEMPLATE } from "src/shared/prompTemplate/openAiPromptTemplate";
+import { buildPromptFromTemplate } from "src/shared/prompTemplate/build-prompt-from-template";
 import { CreditEstimatorService } from "src/modules/billing/application/credit-estimator.service";
 import { AiParaphraseResponseSchema } from "../infrastructure/openai-section-paraphrase";
 import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
@@ -66,14 +67,11 @@ export class ParaphraseService {
     const activePrompt =
       await this.paraphraseRepository.getActiveParaphrasePrompt();
     const toneText = `${toneTypeDescriptions[input.tone]}`;
-    const promptTemplate = activePrompt?.templateText
-      ? activePrompt.templateText
-          .replace("{{tone}}", toneText)
-          .replace("{{content}}", input.content)
-      : PROMPT_TEMPLATE.PARAPHRASE.replace("{{tone}}", toneText).replace(
-          "{{content}}",
-          input.content,
-        );
+    const promptTemplate = buildPromptFromTemplate(
+      activePrompt ?? { templateText: PROMPT_TEMPLATE.PARAPHRASE },
+    )
+      .replaceAll("{{tone}}", toneText)
+      .replaceAll("{{content}}", input.content);
 
     const GuidelinePack =
       await this.reviewRepository.getDefaultGuidelinePack("PARAPHRASE");

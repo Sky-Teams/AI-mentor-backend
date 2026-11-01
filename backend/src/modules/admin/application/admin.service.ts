@@ -1,6 +1,12 @@
 import type { SubscriptionPlan } from "../../billing/domain/billing";
-import type { AdminUsageUserSummary, GuidelinePack, PromptTemplate, PlanUpsertInput } from "../domain/admin";
+import type {
+  AdminUsageUserSummary,
+  GuidelinePack,
+  PromptTemplate,
+  PlanUpsertInput,
+} from "../domain/admin";
 import type { AdminRepository } from "../domain/admin.repository";
+import { AppError } from "../../../shared/errors/app-error";
 
 export class AdminService {
   public constructor(private readonly adminRepository: AdminRepository) {}
@@ -35,10 +41,30 @@ export class AdminService {
     version?: number;
     status: PromptTemplate["status"];
     templateText: string;
+    customContent?: string | null;
     responseSchema?: Record<string, unknown>;
     config?: Record<string, unknown>;
   }): Promise<PromptTemplate> {
     return this.adminRepository.upsertPromptTemplate(input);
+  }
+
+  public async updatePromptTemplateCustomContent(
+    id: string,
+    customContent: string | null,
+  ): Promise<PromptTemplate> {
+    const template =
+      await this.adminRepository.updatePromptTemplateCustomContent(
+        id,
+        customContent,
+      );
+    if (!template) {
+      throw new AppError(
+        "Prompt template not found.",
+        404,
+        "PROMPT_TEMPLATE_NOT_FOUND",
+      );
+    }
+    return template;
   }
 
   public async listPlans(): Promise<SubscriptionPlan[]> {
