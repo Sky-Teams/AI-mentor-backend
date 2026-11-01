@@ -5,11 +5,13 @@ import {
 } from "src/modules/journal/domain/journal.repository.js";
 import { JournalSearchRepository } from "src/modules/journal/infrastructure/journal-search.repository.js";
 import { OpenAiJournalGenerator } from "src/modules/journal/infrastructure/openai-journal-generator";
+import { SubscriptionService } from "src/modules/subscription/application/subscription.service.js";
 
 export class JournalService {
   public constructor(
     private readonly journalRepository: JournalRepository,
     private readonly journalSearchRepository: JournalSearchRepository,
+    private readonly subscriptionService: SubscriptionService,
     private readonly journalGenerator: OpenAiJournalGenerator = new OpenAiJournalGenerator(),
   ) {}
 
@@ -43,8 +45,11 @@ export class JournalService {
     publisher?: string;
     url: string;
     issn?: string | null;
+    userId: string;
   }) {
-    return this.journalGenerator.generateJournalTemplate(input);
+    const ai = await this.subscriptionService.getAiTargetForUser(input.userId);
+
+    return this.journalGenerator.generateJournalTemplate(input, ai);
   }
 
   public async findJournalByName(name: string) {

@@ -6,7 +6,6 @@ import { AppError } from "src/shared/errors/app-error";
 import { CreateJournalInput } from "src/modules/journal/domain/journal.repository.js";
 import {
   type AiTarget,
-  defaultAiTarget,
   getAiClient,
 } from "src/shared/ai/ai-client.js";
 
@@ -133,7 +132,7 @@ export class OpenAiJournalGenerator {
       url?: string;
       issn?: string | null;
     },
-    ai: AiTarget = defaultAiTarget(),
+    ai: AiTarget,
   ): Promise<CreateJournalInput> {
     const context = buildJournalGenerationContext(input.journalName, {
       publisher: input.publisher,

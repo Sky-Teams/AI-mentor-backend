@@ -112,11 +112,14 @@ export class AdminController {
       );
     }
 
+    const userId = req.auth!.userId;
+
     const journal = await this.journalService.extractJournalFromSource({
       journalName: journalName.trim(),
       publisher: publisher?.trim() || undefined,
       url: url.trim(),
       issn: issn ?? null,
+      userId,
     });
 
     res.status(StatusCodes.OK).json(successResponse(journal));

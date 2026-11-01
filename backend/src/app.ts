@@ -179,6 +179,7 @@ export const createApp = (): express.Express => {
   const journalService = new JournalService(
     journalRepository,
     journalSearchRepository,
+    subscriptionService,
   );
 
   const userService = new UserService(passwordHasher, userRepository);
