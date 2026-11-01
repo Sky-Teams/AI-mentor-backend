@@ -4,7 +4,6 @@ import {
   ParaphraseExecutionResult,
   SectionParaphrase,
 } from "../domain/section-paraphrase";
-import OpenAI from "openai";
 import { env } from "../../../shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
 import { zodResponseFormat } from "openai/helpers/zod";
@@ -13,6 +12,7 @@ import {
   lengthStrategyDescriptions,
   toneTypeDescriptions,
 } from "../domain/paraphrase";
+import { getAiClient } from "src/shared/ai/ai-client.js";
 
 const changesSchema = z.object({
   originalPhrase: z.string().min(1),
@@ -45,23 +45,9 @@ export const AiParaphraseResponseSchema = z.object({
 });
 
 export class OpenAiSectionParaphrase implements SectionParaphrase {
-  private readonly client = new OpenAI({
-    apiKey: env.OPENAI_API_KEY,
-    baseURL: env.OPENAI_BASE_URL,
-    timeout: env.OPENAI_TIMEOUT_MS,
-  });
-
   public async paraphraseSection(
     content: ParaphraseContext,
   ): Promise<ParaphraseExecutionResult> {
-    if (!env.OPENAI_API_KEY) {
-      throw new AppError(
-        "OPENAI_API_KEY is missing.",
-        500,
-        "OPENAI_NOT_CONFIGURED",
-      );
-    }
-
     if (!content.originalText || content.originalText.length === 0)
       throw new AppError("Text for paraphrase is empty", 400);
 
@@ -102,9 +88,11 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
       2,
     );
 
-    const response = await this.client.beta.chat.completions.parse({
-      model: env.OPENAI_MODEL,
-      temperature: env.OPENAI_PARAPHRASE_TEMPERATURE,
+    const response = await getAiClient(
+      content.ai.provider,
+    ).beta.chat.completions.parse({
+      model: content.ai.model,
+      temperature: env.AI_PARAPHRASE_TEMPERATURE,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -118,9 +106,9 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {
       throw new AppError(
-        "OpenAI paraphrase response could not be parsed.",
+        "AI paraphrase response could not be parsed.",
         502,
-        "OPENAI_PARSE_ERROR",
+        "AI_PARSE_ERROR",
       );
     }
 

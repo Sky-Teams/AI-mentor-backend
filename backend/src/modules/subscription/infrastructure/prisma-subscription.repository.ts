@@ -14,6 +14,7 @@ import {
   PlanBillingModel,
   UserSubscription,
 } from "src/modules/billing/domain/billing";
+import { AiTarget, defaultAiTarget } from "src/shared/ai/ai-client.js";
 
 const mapPlan = (plan: {
   id: string;
@@ -537,5 +538,22 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     return {
       message: `Expired plans: ${count}`,
     };
+  }
+
+  public async getAiTargetForUser(userId: string): Promise<AiTarget> {
+    const subscription = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+      include: { subscriptionPlan: true },
+    });
+
+    const plan =
+      subscription?.subscriptionPlan ??
+      (await this.prisma.subscriptionPlan.findUnique({
+        where: { name: "Free" },
+      }));
+
+    if (!plan) return defaultAiTarget();
+
+    return { provider: plan.aiProvider, model: plan.aiModel };
   }
 }

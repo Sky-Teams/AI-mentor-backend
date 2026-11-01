@@ -4,6 +4,10 @@ import { env } from "../src/shared/config/env";
 import { ELSEVIER_SCARE_JOURNAL } from "../src/shared/seed-data/journals";
 import { ARTICLE_TYPES, SPECIALTIES } from "src/shared/seed-data/constants.js";
 
+// TODO: Replace these with the Luna and Sol model real IDs
+const LUNA_MODEL_ID = env.LUNA_MODEL_ID;
+const SOL_MODEL_ID = env.SOL_MODEL_ID;
+
 const j = ELSEVIER_SCARE_JOURNAL;
 
 const prisma = new PrismaClient();
@@ -40,89 +44,120 @@ async function upsertUser(input: {
 }
 
 async function main() {
-  const [freePlan, standardPlan, premiumPlan, creditPackPlan] =
-    await Promise.all([
-      prisma.subscriptionPlan.upsert({
-        where: { code: "free" },
-        update: {
-          name: "Free",
-          description: "Starter plan for local demos.",
-          billingModel: "FREE",
-          includedCredits: 5000,
-          monthlyPriceCents: 0,
-          status: "ACTIVE",
-        },
-        create: {
-          name: "Free",
-          code: "free",
-          description: "Starter plan for local demos.",
-          billingModel: "FREE",
-          includedCredits: 5000,
-          monthlyPriceCents: 0,
-          status: "ACTIVE",
-        },
-      }),
-      prisma.subscriptionPlan.upsert({
-        where: { code: "standard-monthly" },
-        update: {
-          name: "Standard",
-          description: "Monthly plan with moderate review usage.",
-          billingModel: "MONTHLY",
-          includedCredits: 30000,
-          monthlyPriceCents: 4900,
-          status: "ACTIVE",
-        },
-        create: {
-          name: "Standard",
-          code: "standard-monthly",
-          description: "Monthly plan with moderate review usage.",
-          billingModel: "MONTHLY",
-          includedCredits: 30000,
-          monthlyPriceCents: 4900,
-          status: "ACTIVE",
-        },
-      }),
-      prisma.subscriptionPlan.upsert({
-        where: { code: "premium-monthly" },
-        update: {
-          name: "Premium",
-          description: "Monthly plan for heavier AI review usage.",
-          billingModel: "MONTHLY",
-          includedCredits: 90000,
-          monthlyPriceCents: 12900,
-          status: "ACTIVE",
-        },
-        create: {
-          name: "Premium",
-          code: "premium-monthly",
-          description: "Monthly plan for heavier AI review usage.",
-          billingModel: "MONTHLY",
-          includedCredits: 90000,
-          monthlyPriceCents: 12900,
-          status: "ACTIVE",
-        },
-      }),
-      prisma.subscriptionPlan.upsert({
-        where: { code: "credit-pack-500" },
-        update: {
-          name: "Credit Pack 500",
-          description: "One-time credit pack for extra review demand.",
-          billingModel: "CREDIT_PACK",
-          includedCredits: 50000,
-          monthlyPriceCents: 9900,
-          status: "ACTIVE",
-        },
-        create: {
-          name: "Credit Pack 500",
-          code: "credit-pack-500",
-          description: "One-time credit pack for extra review demand.",
-          billingModel: "CREDIT_PACK",
-          includedCredits: 50000,
-          monthlyPriceCents: 9900,
-          status: "ACTIVE",
-        },
-      }),
-    ]);
+  const [freePlan, basicPlan, lunaPlan, solPlan] = await Promise.all([
+    prisma.subscriptionPlan.upsert({
+      where: { name: "Free" },
+      update: {
+        name: "Free",
+        description: "Free plan with a weekly token limit.",
+        billingModel: "FREE",
+        monthlyPriceCents: 0,
+        status: "ACTIVE",
+        aiProvider: "GROQ",
+        aiModel: "openai/gpt-oss-120b",
+        tokenLimit: 100000,
+        includedCredits: 100000,
+        limitPeriod: "WEEKLY",
+      },
+      create: {
+        name: "Free",
+        code: "free",
+        description: "Free plan with a weekly token limit.",
+        billingModel: "FREE",
+        monthlyPriceCents: 0,
+        status: "ACTIVE",
+        aiProvider: "GROQ",
+        aiModel: "openai/gpt-oss-120b",
+        tokenLimit: 100000,
+        includedCredits: 100000,
+        limitPeriod: "WEEKLY",
+      },
+    }),
+    prisma.subscriptionPlan.upsert({
+      where: { name: "Basic" },
+      update: {
+        name: "Basic",
+        description: "Basic plan with 1M tokens per month.",
+        billingModel: "MONTHLY",
+        monthlyPriceCents: 499,
+        status: "ACTIVE",
+        aiProvider: "GROQ",
+        aiModel: "openai/gpt-oss-120b",
+        tokenLimit: 1000000,
+        includedCredits: 1000000,
+        limitPeriod: "MONTHLY",
+      },
+      create: {
+        name: "Basic",
+        code: "basic",
+        description: "Basic plan with 1M tokens per month.",
+        billingModel: "MONTHLY",
+        monthlyPriceCents: 499,
+        status: "ACTIVE",
+        aiProvider: "GROQ",
+        aiModel: "openai/gpt-oss-120b",
+        tokenLimit: 1000000,
+        includedCredits: 1000000,
+        limitPeriod: "MONTHLY",
+      },
+    }),
+    prisma.subscriptionPlan.upsert({
+      where: { name: "Luna" },
+      update: {
+        name: "Luna",
+        description: "Luna plan with a better AI model.",
+        billingModel: "MONTHLY",
+        monthlyPriceCents: 999,
+        status: "ACTIVE",
+        aiProvider: "OPENROUTER",
+        aiModel: LUNA_MODEL_ID,
+        tokenLimit: 3000000,
+        includedCredits: 3000000,
+        limitPeriod: "MONTHLY",
+      },
+      create: {
+        name: "Luna",
+        code: "luna",
+        description: "Luna plan with a better AI model.",
+        billingModel: "MONTHLY",
+        monthlyPriceCents: 999,
+        status: "ACTIVE",
+        aiProvider: "OPENROUTER",
+        aiModel: LUNA_MODEL_ID,
+        tokenLimit: 3000000,
+        includedCredits: 3000000,
+        limitPeriod: "MONTHLY",
+      },
+    }),
+    prisma.subscriptionPlan.upsert({
+      where: { name: "Sol" },
+      update: {
+        name: "Sol",
+        description: "Sol plan with our strongest AI model.",
+        billingModel: "MONTHLY",
+        monthlyPriceCents: 1999,
+        status: "ACTIVE",
+        aiProvider: "OPENROUTER",
+        aiModel: SOL_MODEL_ID,
+        tokenLimit: 5000000,
+        includedCredits: 5000000,
+        limitPeriod: "MONTHLY",
+      },
+      create: {
+        name: "Sol",
+        code: "sol",
+        description: "Sol plan with our strongest AI model.",
+        billingModel: "MONTHLY",
+        monthlyPriceCents: 1999,
+        status: "ACTIVE",
+        aiProvider: "OPENROUTER",
+        aiModel: SOL_MODEL_ID,
+        tokenLimit: 5000000,
+        includedCredits: 5000000,
+        limitPeriod: "MONTHLY",
+      },
+    }),
+  ]);
 
   const admin = await upsertUser({
     email: env.DEFAULT_ADMIN_EMAIL,
@@ -177,7 +212,7 @@ async function main() {
   await prisma.userSubscription.create({
     data: {
       userId: testUser.id,
-      subscriptionPlanId: standardPlan.id,
+      subscriptionPlanId: basicPlan.id,
       status: "ACTIVE",
       currentPeriodStart: new Date(),
       currentPeriodEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
@@ -770,7 +805,7 @@ async function main() {
       {
         actorUserId: admin.id,
         entityType: "SubscriptionPlan",
-        entityId: standardPlan.id,
+        entityId: basicPlan.id,
         action: "SEED_UPSERT",
         metadata: { source: "seed" },
       },
@@ -798,14 +833,14 @@ async function main() {
       {
         actorUserId: admin.id,
         entityType: "SubscriptionPlan",
-        entityId: premiumPlan.id,
+        entityId: lunaPlan.id,
         action: "SEED_UPSERT",
         metadata: { source: "seed" },
       },
       {
         actorUserId: admin.id,
         entityType: "SubscriptionPlan",
-        entityId: creditPackPlan.id,
+        entityId: solPlan.id,
         action: "SEED_UPSERT",
         metadata: { source: "seed" },
       },
