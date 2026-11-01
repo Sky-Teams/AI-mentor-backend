@@ -56,6 +56,7 @@ async function main() {
         aiProvider: "GROQ",
         aiModel: "openai/gpt-oss-120b",
         tokenLimit: 100000,
+        includedCredits: 100000,
         limitPeriod: "WEEKLY",
       },
       create: {
@@ -68,6 +69,7 @@ async function main() {
         aiProvider: "GROQ",
         aiModel: "openai/gpt-oss-120b",
         tokenLimit: 100000,
+        includedCredits: 100000,
         limitPeriod: "WEEKLY",
       },
     }),
@@ -82,6 +84,7 @@ async function main() {
         aiProvider: "GROQ",
         aiModel: "openai/gpt-oss-120b",
         tokenLimit: 1000000,
+        includedCredits: 1000000,
         limitPeriod: "MONTHLY",
       },
       create: {
@@ -94,6 +97,7 @@ async function main() {
         aiProvider: "GROQ",
         aiModel: "openai/gpt-oss-120b",
         tokenLimit: 1000000,
+        includedCredits: 1000000,
         limitPeriod: "MONTHLY",
       },
     }),
@@ -108,6 +112,7 @@ async function main() {
         aiProvider: "OPENROUTER",
         aiModel: LUNA_MODEL_ID,
         tokenLimit: 3000000,
+        includedCredits: 3000000,
         limitPeriod: "MONTHLY",
       },
       create: {
@@ -120,6 +125,7 @@ async function main() {
         aiProvider: "OPENROUTER",
         aiModel: LUNA_MODEL_ID,
         tokenLimit: 3000000,
+        includedCredits: 3000000,
         limitPeriod: "MONTHLY",
       },
     }),
@@ -134,6 +140,7 @@ async function main() {
         aiProvider: "OPENROUTER",
         aiModel: SOL_MODEL_ID,
         tokenLimit: 5000000,
+        includedCredits: 5000000,
         limitPeriod: "MONTHLY",
       },
       create: {
@@ -146,6 +153,7 @@ async function main() {
         aiProvider: "OPENROUTER",
         aiModel: SOL_MODEL_ID,
         tokenLimit: 5000000,
+        includedCredits: 5000000,
         limitPeriod: "MONTHLY",
       },
     }),
