@@ -4,6 +4,7 @@ import {
   SubscriptionPlan,
   SubscriptionRequest,
 } from "./subscription";
+import { AiTarget } from "src/shared/ai/ai-client.js";
 
 export interface SubscriptionRepository {
   listPlans(): Promise<SubscriptionPlan[]>;
@@ -22,4 +23,5 @@ export interface SubscriptionRepository {
   cancelRequestedPlan(id: string, userId: string): Promise<RequestedPlans>;
   getUserRequestedPlan(userId: string): Promise<RequestedPlans | null>;
   expirePlans(): Promise<{ message: string }>;
+  getAiTargetForUser(userId: string): Promise<AiTarget>;
 }

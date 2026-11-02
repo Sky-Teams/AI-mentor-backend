@@ -103,12 +103,17 @@ export const createApp = (): express.Express => {
   const projectService = new ProjectService(projectRepository);
   const billingService = new BillingService(billingRepository);
   const CreditEstimator = new CreditEstimatorService();
+  const subscriptionService = new SubscriptionService(
+    subscriptionRepository,
+    userRepository,
+  );
   const reviewService = new ReviewService(
     reviewRepository,
     projectService,
     new OpenAiSectionReviewer(),
     billingService,
     CreditEstimator,
+    subscriptionService,
   );
   const journalExternalApiRepository = new JournalExternalApiRepository();
   const journalReferenceService = new JournalReferenceService(
@@ -123,6 +128,7 @@ export const createApp = (): express.Express => {
     CreditEstimator,
     reviewRepository,
     userRepository,
+    subscriptionService,
   );
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
@@ -168,15 +174,12 @@ export const createApp = (): express.Express => {
   );
 
   const referenceService = new ReferenceSearchService(journalReferenceService);
-  const subscriptionService = new SubscriptionService(
-    subscriptionRepository,
-    userRepository,
-  );
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalSearchRepository = new JournalSearchRepository();
   const journalService = new JournalService(
     journalRepository,
     journalSearchRepository,
+    subscriptionService,
   );
 
   const userService = new UserService(passwordHasher, userRepository);
