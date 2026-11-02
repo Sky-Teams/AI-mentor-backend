@@ -367,7 +367,7 @@ model ReviewRun {
   initiatedById        String
   promptTemplateId     String?
   guidelinePackId      String?
-  aiProvider           AiProvider          @default(GROQ)
+  aiProvider           AiProvider
   aiModel              String
   status               ReviewRunStatus     @default(QUEUED)
   summary              String?
@@ -523,7 +523,7 @@ model SubscriptionPlan {
   status                  SubscriptionPlanStatus @default(ACTIVE)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
-  aiProvider              AiProvider             @default(GROQ)
+  aiProvider              AiProvider
   aiModel                 String                 @default("openai/gpt-oss-120b")
   tokenLimit              Int                    @default(0)
   limitPeriod             LimitPeriod            @default(MONTHLY)
@@ -623,7 +623,7 @@ model AiUsageLog {
   projectId             String?
   reviewRunId           String?        @unique
   paraphraseRunId       String?        @unique
-  provider              AiProvider     @default(GROQ)
+  provider              AiProvider
   model                 String
   operation             String
   status                AiUsageStatus
@@ -670,7 +670,7 @@ model ParaphraseRun {
   lengthStrategy     String?
   changes            Json?
   metrics            Json?
-  aiProvider         AiProvider            @default(GROQ)
+  aiProvider         AiProvider
   grammarTips        Json?
   status             paraphraseRunStatuses @default(QUEUED)
   aiModel            String
