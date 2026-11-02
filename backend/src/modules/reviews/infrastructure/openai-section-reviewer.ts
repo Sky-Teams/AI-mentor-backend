@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { env } from "../../../shared/config/env";
@@ -9,6 +8,7 @@ import type {
   SectionReviewer,
 } from "../domain/section-reviewer";
 import { AiSectionReviewResult } from "src/modules/reviews/domain/review.js";
+import { getAiClient } from "src/shared/ai/ai-client.js";
 
 const issueSchema = z.object({
   category: z.string().min(1),
@@ -45,23 +45,9 @@ export const sectionReviewSchema = z.object({
 });
 
 export class OpenAiSectionReviewer implements SectionReviewer {
-  private readonly client = new OpenAI({
-    apiKey: env.OPENAI_API_KEY,
-    baseURL: env.OPENAI_BASE_URL,
-    timeout: env.OPENAI_TIMEOUT_MS,
-  });
-
   public async reviewSection(
     context: ReviewContext,
   ): Promise<ReviewExecutionResult> {
-    if (!env.OPENAI_API_KEY) {
-      throw new AppError(
-        "OPENAI_API_KEY is missing.",
-        500,
-        "OPENAI_NOT_CONFIGURED",
-      );
-    }
-
     const systemPrompt = [
       context.promptTemplate,
       "Return only structured JSON that matches the schema.",
@@ -87,9 +73,11 @@ export class OpenAiSectionReviewer implements SectionReviewer {
       2,
     );
 
-    const response = await this.client.beta.chat.completions.parse({
-      model: env.OPENAI_MODEL,
-      temperature: env.OPENAI_REVIEW_TEMPERATURE,
+    const response = await getAiClient(
+      context.ai.provider,
+    ).beta.chat.completions.parse({
+      model: context.ai.model,
+      temperature: env.AI_REVIEW_TEMPERATURE,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -103,9 +91,9 @@ export class OpenAiSectionReviewer implements SectionReviewer {
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {
       throw new AppError(
-        "OpenAI review response could not be parsed.",
+        "AI review response could not be parsed.",
         502,
-        "OPENAI_PARSE_ERROR",
+        "AI_PARSE_ERROR",
       );
     }
 

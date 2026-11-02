@@ -1,10 +1,14 @@
-import OpenAI from "openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { StatusCodes } from "http-status-codes";
 import { env } from "src/shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
 import { CreateJournalInput } from "src/modules/journal/domain/journal.repository.js";
+import {
+  type AiTarget,
+  defaultAiTarget,
+  getAiClient,
+} from "src/shared/ai/ai-client.js";
 
 export const AiJournalGenerationSchema = z.object({
   name: z.string().min(1),
@@ -122,26 +126,15 @@ Requirements:
 };
 
 export class OpenAiJournalGenerator {
-  private readonly client = new OpenAI({
-    apiKey: env.OPENAI_API_KEY,
-    baseURL: env.OPENAI_BASE_URL,
-    timeout: env.OPENAI_TIMEOUT_MS,
-  });
-
-  public async generateJournalTemplate(input: {
-    journalName: string;
-    publisher?: string;
-    url?: string;
-    issn?: string | null;
-  }): Promise<CreateJournalInput> {
-    if (!env.OPENAI_API_KEY) {
-      throw new AppError(
-        "OPENAI_API_KEY is missing.",
-        500,
-        "OPENAI_NOT_CONFIGURED",
-      );
-    }
-
+  public async generateJournalTemplate(
+    input: {
+      journalName: string;
+      publisher?: string;
+      url?: string;
+      issn?: string | null;
+    },
+    ai: AiTarget = defaultAiTarget(),
+  ): Promise<CreateJournalInput> {
     const context = buildJournalGenerationContext(input.journalName, {
       publisher: input.publisher,
       url: input.url,
@@ -151,8 +144,8 @@ export class OpenAiJournalGenerator {
     let response;
 
     try {
-      response = await this.client.beta.chat.completions.parse({
-        model: env.OPENAI_MODEL,
+      response = await getAiClient(ai.provider).beta.chat.completions.parse({
+        model: ai.model,
         temperature: 0.3,
         messages: [
           {
@@ -197,9 +190,9 @@ export class OpenAiJournalGenerator {
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {
       throw new AppError(
-        "OpenAI journal generation response could not be parsed.",
+        "AI journal generation response could not be parsed.",
         StatusCodes.BAD_GATEWAY,
-        "OPENAI_PARSE_ERROR",
+        "AI_PARSE_ERROR",
       );
     }
 

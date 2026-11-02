@@ -1,5 +1,6 @@
 import { Project } from "src/modules/projects/domain/project";
 import { AiPharaphraseResult, LengthStrategy, ToneType } from "./paraphrase";
+import { AiTarget } from "src/shared/ai/ai-client.js";
 
 export interface ParaphraseContext {
   project: Project;
@@ -11,6 +12,7 @@ export interface ParaphraseContext {
   promptTemplate?: string;
   guidelineRules: Record<string, unknown>;
   maxWords: number;
+  ai: AiTarget;
 }
 
 export interface ParaphraseExecutionResult {
