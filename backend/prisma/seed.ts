@@ -713,6 +713,7 @@ async function main() {
           userId: testUser.id,
           projectId: project.id,
           reviewRunId: reviewRun.id,
+          provider: "GROQ",
           model: "gpt-5-mini",
           operation: "section_review",
           status: "SUCCESS",
