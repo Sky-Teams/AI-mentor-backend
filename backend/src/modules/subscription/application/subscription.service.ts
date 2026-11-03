@@ -104,4 +104,8 @@ export class SubscriptionService {
   public async getAiTargetForUser(userId: string): Promise<AiTarget> {
     return await this.subscriptionRepository.getAiTargetForUser(userId);
   }
+
+  public async renewFreePlans(): Promise<number> {
+    return await this.subscriptionRepository.renewFreePlans();
+  }
 }
