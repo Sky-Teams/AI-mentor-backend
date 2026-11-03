@@ -13,9 +13,11 @@ const subscriptionService = new SubscriptionService(
   userRepository,
 );
 
-export function startExpirePlansJob() {
+export function startSubscriptionJobs() {
   const scheduleTime =
     process.env.SUBSCRIPTION_EXPIRE_SCHEDULE_TIME ?? "0 0 * * *";
+  const freePlanExpirationTime =
+    process.env.FREE_PLAN_EXPIRE_SCHEDULE_TIME ?? "0 * * * *";
 
   cron.schedule(scheduleTime, async () => {
     try {
@@ -24,6 +26,16 @@ export function startExpirePlansJob() {
       console.log(result.message);
     } catch (error) {
       console.error("Expire plans job failed:", error);
+    }
+  });
+
+  cron.schedule(freePlanExpirationTime, async () => {
+    try {
+      console.log("Free plan reactivating job is running...");
+      const result = await subscriptionService.renewFreePlans();
+      console.log(result);
+    } catch (err) {
+      console.log("Reactivating Free plans job failed: ", err);
     }
   });
 }
