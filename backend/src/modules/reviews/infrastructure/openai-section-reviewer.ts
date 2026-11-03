@@ -9,6 +9,8 @@ import type {
 } from "../domain/section-reviewer";
 import { AiSectionReviewResult } from "src/modules/reviews/domain/review.js";
 import { getAiClient } from "src/shared/ai/ai-client.js";
+import { StatusCodes } from "http-status-codes";
+import { RateLimitError } from "openai";
 
 const issueSchema = z.object({
   category: z.string().min(1),
@@ -73,20 +75,33 @@ export class OpenAiSectionReviewer implements SectionReviewer {
       2,
     );
 
-    const response = await getAiClient(
-      context.ai.provider,
-    ).beta.chat.completions.parse({
-      model: context.ai.model,
-      temperature: env.AI_REVIEW_TEMPERATURE,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: zodResponseFormat(
-        sectionReviewSchema,
-        "case_report_section_review",
-      ),
-    });
+    let response;
+    try {
+      response = await getAiClient(
+        context.ai.provider,
+      ).beta.chat.completions.parse({
+        model: context.ai.model,
+        temperature: env.AI_REVIEW_TEMPERATURE,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: zodResponseFormat(
+          sectionReviewSchema,
+          "case_report_section_review",
+        ),
+      });
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        throw new AppError(
+          "The AI service is busy. Please try again shortly.",
+          StatusCodes.TOO_MANY_REQUESTS,
+          "AI_RATE_LIMITED",
+        );
+      }
+
+      throw err;
+    }
 
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {

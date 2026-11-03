@@ -13,6 +13,8 @@ import {
   toneTypeDescriptions,
 } from "../domain/paraphrase";
 import { getAiClient } from "src/shared/ai/ai-client.js";
+import { RateLimitError } from "openai";
+import { StatusCodes } from "http-status-codes";
 
 const changesSchema = z.object({
   originalPhrase: z.string().min(1),
@@ -88,20 +90,33 @@ export class OpenAiSectionParaphrase implements SectionParaphrase {
       2,
     );
 
-    const response = await getAiClient(
-      content.ai.provider,
-    ).beta.chat.completions.parse({
-      model: content.ai.model,
-      temperature: env.AI_PARAPHRASE_TEMPERATURE,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: zodResponseFormat(
-        AiParaphraseResponseSchema,
-        "case_report_section_paraphrase",
-      ),
-    });
+    let response;
+    try {
+      response = await getAiClient(
+        content.ai.provider,
+      ).beta.chat.completions.parse({
+        model: content.ai.model,
+        temperature: env.AI_PARAPHRASE_TEMPERATURE,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: zodResponseFormat(
+          AiParaphraseResponseSchema,
+          "case_report_section_paraphrase",
+        ),
+      });
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        throw new AppError(
+          "The AI service is busy. Please try again shortly.",
+          StatusCodes.TOO_MANY_REQUESTS,
+          "AI_RATE_LIMITED",
+        );
+      }
+
+      throw err;
+    }
 
     const parsed = response.choices[0]?.message.parsed;
     if (!parsed) {
