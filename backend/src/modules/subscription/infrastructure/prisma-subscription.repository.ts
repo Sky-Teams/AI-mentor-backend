@@ -395,7 +395,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
   // Give a free plan to users who have no active plan
   public async renewFreePlans(): Promise<number> {
     const freePlan = await this.prisma.subscriptionPlan.findFirst({
-      where: { monthlyPriceCents: 0, status: "ACTIVE" },
+      where: { billingModel: "FREE", status: "ACTIVE" },
     });
 
     if (!freePlan)

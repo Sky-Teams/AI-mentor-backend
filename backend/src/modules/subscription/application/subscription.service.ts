@@ -35,7 +35,7 @@ export class SubscriptionService {
         `PLAN_NOT_FOUND`,
       );
 
-    if (plan.monthlyPriceCents === 0)
+    if (plan.billingModel === "FREE")
       throw new AppError(
         "Free plans cannot be activated by users.",
         StatusCodes.FORBIDDEN,
@@ -74,7 +74,7 @@ export class SubscriptionService {
         `PLAN_NOT_FOUND`,
       );
 
-    if (plan.monthlyPriceCents === 0)
+    if (plan.billingModel === "FREE")
       throw new AppError(
         "Free plans cannot be activated by users.",
         StatusCodes.FORBIDDEN,
