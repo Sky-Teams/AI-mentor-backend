@@ -556,4 +556,56 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
     return { provider: plan.aiProvider, model: plan.aiModel };
   }
+
+  // Find the free plans after 7 days,find users that have no active plans and create free plans for them
+  public async renewFreePlans(): Promise<number> {
+    const freePlan = await this.prisma.subscriptionPlan.findFirst({
+      where: { monthlyPriceCents: 0, status: "ACTIVE" },
+    });
+
+    if (!freePlan)
+      throw new AppError(
+        "Free active Plan not found",
+        StatusCodes.NOT_FOUND,
+        `PLAN_NOT_FOUND`,
+      );
+
+    // 1. Deactivate plans that
+    const now = new Date();
+
+    await this.prisma.userSubscription.updateMany({
+      where: {
+        status: "ACTIVE",
+        subscriptionPlanId: freePlan.id,
+        currentPeriodEnd: { lte: now },
+      },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
+    // 2. Find users with no active subscription
+    const users = await this.prisma.user.findMany({
+      where: { subscriptions: { none: { status: "ACTIVE" } } },
+      select: { id: true },
+    });
+
+    // 3. Give each one a new Free plan
+    for (const user of users) {
+      const end = new Date(now);
+      end.setDate(end.getDate() + 7);
+
+      await this.prisma.userSubscription.create({
+        data: {
+          userId: user.id,
+          subscriptionPlanId: freePlan.id,
+          status: "ACTIVE",
+          currentPeriodStart: now,
+          currentPeriodEnd: end,
+        },
+      });
+    }
+
+    return users.length;
+  }
 }
