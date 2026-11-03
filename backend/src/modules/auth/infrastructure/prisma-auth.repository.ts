@@ -127,6 +127,26 @@ export class PrismaAuthRepository implements AuthRepository {
               currentPeriodEnd: end,
             },
           });
+
+          const wallet = await transaction.creditWallet.update({
+            where: { userId: user.id },
+            data: {
+              balance: { increment: freePlan.includedCredits },
+              lifetimeCreditsGranted: { increment: freePlan.includedCredits },
+            },
+          });
+
+          await transaction.creditTransaction.create({
+            data: {
+              walletId: wallet.id,
+              userId: user.id,
+              type: "PURCHASE",
+              source: "SUBSCRIPTION",
+              amount: freePlan.includedCredits,
+              balanceAfter: wallet.balance,
+              description: "Free subscription and credits added",
+            },
+          });
         }
 
         return user;
