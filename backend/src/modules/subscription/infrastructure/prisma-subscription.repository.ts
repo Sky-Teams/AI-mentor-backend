@@ -14,6 +14,7 @@ import {
   PlanBillingModel,
   UserSubscription,
 } from "src/modules/billing/domain/billing";
+import { AiTarget, defaultAiTarget } from "src/shared/ai/ai-client.js";
 
 const mapPlan = (plan: {
   id: string;
@@ -537,5 +538,100 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     return {
       message: `Expired plans: ${count}`,
     };
+  }
+
+  public async getAiTargetForUser(userId: string): Promise<AiTarget> {
+    const subscription = await this.prisma.userSubscription.findFirst({
+      where: { userId, status: "ACTIVE" },
+      include: { subscriptionPlan: true },
+    });
+
+    const plan =
+      subscription?.subscriptionPlan ??
+      (await this.prisma.subscriptionPlan.findUnique({
+        where: { name: "Free" },
+      }));
+
+    if (!plan) return defaultAiTarget();
+
+    return { provider: plan.aiProvider, model: plan.aiModel };
+  }
+
+    // Give a free plan to users who have no active plan
+  public async renewFreePlans(): Promise<number> {
+    const freePlan = await this.prisma.subscriptionPlan.findFirst({
+      where: { monthlyPriceCents: 0, status: "ACTIVE" },
+    });
+
+    if (!freePlan)
+      throw new AppError(
+        "Free active Plan not found",
+        StatusCodes.NOT_FOUND,
+        `PLAN_NOT_FOUND`,
+      );
+
+    const now = new Date();
+
+    // Find users with no active plan
+    const users = await this.prisma.user.findMany({
+      where: { subscriptions: { none: { status: "ACTIVE" } } },
+      select: { id: true },
+    });
+
+    let addedCount = 0;
+
+    for (const user of users) {
+      const end = new Date(now);
+      end.setDate(end.getDate() + 7);
+
+      const isAdded = await this.prisma.$transaction(async (transaction) => {
+        // Check again, in case the user got a plan in the meantime
+        const activeSubscription = await transaction.userSubscription.findFirst({
+          where: { userId: user.id, status: "ACTIVE" },
+        });
+
+        if (activeSubscription) return false;
+
+        // Create the free subscription
+        await transaction.userSubscription.create({
+          data: {
+            userId: user.id,
+            subscriptionPlanId: freePlan.id,
+            status: "ACTIVE",
+            currentPeriodStart: now,
+            currentPeriodEnd: end,
+          },
+        });
+
+        // Add free credits to the wallet
+        const wallet = await transaction.creditWallet.update({
+          where: { userId: user.id },
+          data: {
+            balance: { increment: freePlan.includedCredits },
+            lifetimeCreditsGranted: { increment: freePlan.includedCredits },
+          },
+        });
+
+        // Save the credit history
+        await transaction.creditTransaction.create({
+          data: {
+            walletId: wallet.id,
+            userId: user.id,
+            type: "PURCHASE",
+            source: "SUBSCRIPTION",
+            amount: freePlan.includedCredits,
+            balanceAfter: wallet.balance,
+            description: "Weekly Free subscription and credits added",
+          },
+        });
+
+        return true;
+      });
+
+      if (isAdded) addedCount += 1;
+    }
+
+    // How many users got a free plan
+    return addedCount;
   }
 }

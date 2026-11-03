@@ -20,11 +20,14 @@ const envSchema = z.object({
   GROQ_MODEL: z.string().default("openai/gpt-oss-120b"),
   OPENROUTER_API_KEY: z.string().optional(),
   OPENROUTER_BASE_URL: z.string().url().default("https://openrouter.ai/api/v1"),
+  LUNA_MODEL_ID: z.string().default("openai/gpt-oss-120b"),
+  SOL_MODEL_ID: z.string().default("openai/gpt-oss-120b"),
   AI_TIMEOUT_MS: z.coerce.number().default(45000),
   AI_REVIEW_TEMPERATURE: z.coerce.number().min(0).max(1).default(0.2),
   AI_PARAPHRASE_TEMPERATURE: z.coerce.number().min(0).max(1).default(0.4),
   APP_REVIEW_CREDIT_COST: z.coerce.number().int().positive().default(25),
   APP_PARAPHRASE_CREDIT_COST: z.coerce.number().int().positive().default(10),
+  FREE_PLAN_RENEW_SCHEDULE_TIME: z.string().default("0 * * * *"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])

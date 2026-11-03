@@ -1,4 +1,5 @@
 import type { AiOperation, BillingOverview } from "./billing";
+import type { AiProvider } from "@prisma/client";
 
 export interface BillingRepository {
   getBillingOverview(userId: string): Promise<BillingOverview>;
@@ -10,6 +11,7 @@ export interface BillingRepository {
     operation: AiOperation;
     amount: number;
     model: string;
+    provider: AiProvider;
     projectId: string;
     usage: {
       inputTokens: number;
@@ -24,5 +26,6 @@ export interface BillingRepository {
     paraphraseRunId?: string;
     operation: AiOperation;
     model: string;
+    provider: AiProvider;
   }): Promise<void>;
 }
