@@ -523,7 +523,7 @@ model SubscriptionPlan {
   status                  SubscriptionPlanStatus @default(ACTIVE)
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
-  aiProvider              AiProvider          @default(GROQ)
+  aiProvider              AiProvider             @default(GROQ)
   aiModel                 String                 @default("openai/gpt-oss-120b")
   tokenLimit              Int                    @default(0)
   limitPeriod             LimitPeriod            @default(MONTHLY)
@@ -542,7 +542,7 @@ model UserSubscription {
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
   cancelledAt        DateTime?
-  autoRenew          Boolean                @default(true)
+  autoRenew          Boolean                @default(false)
   externalReference  String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
@@ -670,7 +670,7 @@ model ParaphraseRun {
   lengthStrategy     String?
   changes            Json?
   metrics            Json?
-  aiProvider         AiProvider          @default(GROQ)
+  aiProvider         AiProvider            @default(GROQ)
   grammarTips        Json?
   status             paraphraseRunStatuses @default(QUEUED)
   aiModel            String
