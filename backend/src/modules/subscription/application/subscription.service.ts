@@ -35,6 +35,13 @@ export class SubscriptionService {
         `PLAN_NOT_FOUND`,
       );
 
+    if (plan.monthlyPriceCents === 0)
+      throw new AppError(
+        "Free plans cannot be activated by users.",
+        StatusCodes.FORBIDDEN,
+        "FREE_PLAN_USER_ACTIVATION_DISABLED",
+      );
+
     return await this.subscriptionRepository.buyPlan(
       subscriptionPlanId,
       userId,
@@ -65,6 +72,13 @@ export class SubscriptionService {
         "Plan was not found",
         StatusCodes.NOT_FOUND,
         `PLAN_NOT_FOUND`,
+      );
+
+    if (plan.monthlyPriceCents === 0)
+      throw new AppError(
+        "Free plans cannot be activated by users.",
+        StatusCodes.FORBIDDEN,
+        "FREE_PLAN_USER_ACTIVATION_DISABLED",
       );
 
     return await this.subscriptionRepository.upgradePlan(
