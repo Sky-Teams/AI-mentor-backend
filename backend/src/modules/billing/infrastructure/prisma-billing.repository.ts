@@ -2,6 +2,7 @@ import {
   CreditTransactionSource,
   PrismaClient,
   type Prisma,
+  type AiProvider,
 } from "@prisma/client";
 import { StatusCodes } from "http-status-codes";
 import { AppError } from "../../../shared/errors/app-error";
@@ -204,6 +205,7 @@ export class PrismaBillingRepository implements BillingRepository {
       outputTokens: number;
       totalTokens: number;
     };
+    provider: AiProvider;
   }): Promise<number> {
     const { label, source } = OPERATION_CONFIG[input.operation];
     await this.prisma.$transaction(
@@ -269,6 +271,7 @@ export class PrismaBillingRepository implements BillingRepository {
               projectId: input.projectId,
               reviewRunId: input.reviewRunId,
               paraphraseRunId: input.paraphraseRunId,
+              provider: input.provider,
               model: input.model,
               operation: input.operation,
               status: "SUCCESS",
@@ -278,6 +281,7 @@ export class PrismaBillingRepository implements BillingRepository {
               billedCredits: input.amount,
             },
             update: {
+              provider: input.provider,
               status: "SUCCESS",
               technicalInputTokens: input.usage.inputTokens,
               technicalOutputTokens: input.usage.outputTokens,
@@ -290,6 +294,7 @@ export class PrismaBillingRepository implements BillingRepository {
             data: {
               userId: input.userId,
               projectId: input.projectId,
+              provider: input.provider,
               model: input.model,
               operation: input.operation,
               status: "SUCCESS",
@@ -313,6 +318,7 @@ export class PrismaBillingRepository implements BillingRepository {
     paraphraseRunId?: string;
     operation: AiOperation;
     model: string;
+    provider: AiProvider;
   }): Promise<void> {
     if (input.reviewRunId || input.paraphraseRunId) {
       await this.prisma.aiUsageLog.upsert({
@@ -325,6 +331,7 @@ export class PrismaBillingRepository implements BillingRepository {
           projectId: input.projectId,
           reviewRunId: input.reviewRunId,
           paraphraseRunId: input.paraphraseRunId,
+          provider: input.provider,
           model: input.model,
           operation: input.operation,
           status: "FAILED",
@@ -333,13 +340,14 @@ export class PrismaBillingRepository implements BillingRepository {
           technicalTotalTokens: 0,
           billedCredits: 0,
         },
-        update: { status: "FAILED" },
+        update: { status: "FAILED", provider: input.provider },
       });
     } else {
       await this.prisma.aiUsageLog.create({
         data: {
           userId: input.userId,
           projectId: input.projectId,
+          provider: input.provider,
           model: input.model,
           operation: input.operation,
           status: "FAILED",
