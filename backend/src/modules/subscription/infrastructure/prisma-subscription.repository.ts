@@ -127,75 +127,6 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         `ALREADY_HAVE_PENDING_REQUEST`,
       );
 
-    const requestedFreePlan = await this.prisma.subscriptionPlan.findFirst({
-      where: { monthlyPriceCents: 0, status: "ACTIVE", id: subscriptionPlanId },
-    });
-
-    /** If user requested for free plan create a new subscription plan for user */
-    if (requestedFreePlan) {
-      const result = await this.prisma.$transaction(
-        async (transaction: any) => {
-          const billingModel = requestedFreePlan.billingModel;
-
-          const startDate = new Date();
-          let endDate = new Date(startDate);
-
-          if (billingModel === "CREDIT_PACK") {
-            endDate.setFullYear(endDate.getFullYear() + 50);
-          } else {
-            endDate.setMonth(endDate.getMonth() + 1);
-          }
-
-          /** Create a new subscription for user*/
-          await transaction.userSubscription.create({
-            data: {
-              userId: userId,
-              subscriptionPlanId: subscriptionPlanId,
-              status: "ACTIVE",
-              currentPeriodStart: startDate,
-              currentPeriodEnd: endDate,
-              autoRenew: false,
-            },
-          });
-
-          const creditsToGrant = requestedFreePlan.includedCredits;
-
-          const wallet = await transaction.creditWallet.update({
-            where: { userId },
-            data: {
-              balance: {
-                increment: creditsToGrant,
-              },
-              lifetimeCreditsGranted: {
-                increment: creditsToGrant,
-              },
-            },
-          });
-
-          await transaction.creditTransaction.create({
-            data: {
-              walletId: wallet.id,
-              userId: userId,
-              type: "PURCHASE",
-              source: "SUBSCRIPTION",
-              amount: creditsToGrant,
-              balanceAfter: wallet.balance,
-              description: "Subscription and credits added",
-            },
-          });
-
-          return await transaction.userSubscription.findFirst({
-            where: { userId },
-            include: {
-              subscriptionPlan: true,
-            },
-          });
-        },
-      );
-
-      return result as UserSubscription;
-    }
-
     return await this.prisma.subscriptionRequest.create({
       data: {
         userId: userId,
@@ -345,102 +276,6 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
         `ALREADY_HAVE_PENDING_REQUEST`,
       );
 
-    const requestedFreePlan = await this.prisma.subscriptionPlan.findFirst({
-      where: { monthlyPriceCents: 0, status: "ACTIVE", id: subscriptionPlanId },
-    });
-
-    /** Check free plan: If user requested for free plan:
-     * If it has already been used throw an error
-     * Otherwise check if the user has an active plan,so deactivate it and create a new free plan for user*/
-    if (requestedFreePlan) {
-      const existingFreePlanSubscription =
-        await this.prisma.userSubscription.findFirst({
-          where: { userId, subscriptionPlanId: subscriptionPlanId },
-        });
-
-      if (existingFreePlanSubscription)
-        throw new AppError(
-          "You have already used this free plan",
-          StatusCodes.BAD_REQUEST,
-          "FREE_PLAN_ALREADY_USED",
-        );
-
-      const result = await this.prisma.$transaction(async (transaction) => {
-        const activeSubscription = await transaction.userSubscription.findFirst(
-          {
-            where: { userId, status: "ACTIVE" },
-          },
-        );
-
-        /** Deactivate free plan */
-        if (activeSubscription) {
-          await transaction.userSubscription.update({
-            where: { id: activeSubscription.id },
-            data: {
-              status: "INACTIVE",
-            },
-          });
-        }
-
-        const billingModel = requestedFreePlan.billingModel;
-
-        const startDate = new Date();
-        let endDate = new Date(startDate);
-
-        if (billingModel === "CREDIT_PACK") {
-          endDate.setFullYear(endDate.getFullYear() + 50);
-        } else {
-          endDate.setMonth(endDate.getMonth() + 1);
-        }
-
-        /** Create a new subscription for user*/
-        await transaction.userSubscription.create({
-          data: {
-            userId: userId,
-            subscriptionPlanId: subscriptionPlanId,
-            status: "ACTIVE",
-            currentPeriodStart: startDate,
-            currentPeriodEnd: endDate,
-            autoRenew: false,
-          },
-        });
-
-        const creditsToGrant = requestedFreePlan.includedCredits;
-
-        const wallet = await transaction.creditWallet.update({
-          where: { userId },
-          data: {
-            balance: {
-              increment: creditsToGrant,
-            },
-            lifetimeCreditsGranted: {
-              increment: creditsToGrant,
-            },
-          },
-        });
-
-        await transaction.creditTransaction.create({
-          data: {
-            walletId: wallet.id,
-            userId: userId,
-            type: "PURCHASE",
-            source: "SUBSCRIPTION",
-            amount: creditsToGrant,
-            balanceAfter: wallet.balance,
-            description: "Subscription and credits added",
-          },
-        });
-
-        return await transaction.userSubscription.findFirst({
-          where: { userId },
-          include: {
-            subscriptionPlan: true,
-          },
-        });
-      });
-      return result as UserSubscription;
-    }
-
     return await this.prisma.subscriptionRequest.create({
       data: {
         userId: userId,
@@ -557,7 +392,7 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
     return { provider: plan.aiProvider, model: plan.aiModel };
   }
 
-    // Give a free plan to users who have no active plan
+  // Give a free plan to users who have no active plan
   public async renewFreePlans(): Promise<number> {
     const freePlan = await this.prisma.subscriptionPlan.findFirst({
       where: { monthlyPriceCents: 0, status: "ACTIVE" },
@@ -586,9 +421,11 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
       const isAdded = await this.prisma.$transaction(async (transaction) => {
         // Check again, in case the user got a plan in the meantime
-        const activeSubscription = await transaction.userSubscription.findFirst({
-          where: { userId: user.id, status: "ACTIVE" },
-        });
+        const activeSubscription = await transaction.userSubscription.findFirst(
+          {
+            where: { userId: user.id, status: "ACTIVE" },
+          },
+        );
 
         if (activeSubscription) return false;
 
