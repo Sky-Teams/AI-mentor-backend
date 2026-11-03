@@ -27,6 +27,7 @@ const envSchema = z.object({
   AI_PARAPHRASE_TEMPERATURE: z.coerce.number().min(0).max(1).default(0.4),
   APP_REVIEW_CREDIT_COST: z.coerce.number().int().positive().default(25),
   APP_PARAPHRASE_CREDIT_COST: z.coerce.number().int().positive().default(10),
+  FREE_PLAN_RENEW_SCHEDULE_TIME: z.string().default("0 * * * *"),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])
