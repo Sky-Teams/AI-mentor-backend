@@ -144,23 +144,30 @@ export function SubscriptionListPanel({
                   </div>
 
                   <div>
-                    <button
-                      className="outline-button"
-                      type="button"
-                      onClick={() =>
-                        isActivePlan
-                          ? handleUpgradePlan(plan.id)
-                          : handleBuyPlan(plan.id)
-                      }
-                    >
-                      {isActivePlan
-                        ? buyingId === plan.id
-                          ? "Upgrading..."
-                          : "Upgrade"
-                        : buyingId === plan.id
-                          ? "Buying..."
-                          : "Buy"}
-                    </button>
+                    {plan.billingModel === "FREE" ? (
+                      <span className="muted-text">
+                        Automatically activated when you don&apos;t have an
+                        active plan.
+                      </span>
+                    ) : (
+                      <button
+                        className="outline-button"
+                        type="button"
+                        onClick={() =>
+                          isActivePlan
+                            ? handleUpgradePlan(plan.id)
+                            : handleBuyPlan(plan.id)
+                        }
+                      >
+                        {isActivePlan
+                          ? buyingId === plan.id
+                            ? "Upgrading..."
+                            : "Upgrade"
+                          : buyingId === plan.id
+                            ? "Buying..."
+                            : "Buy"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
