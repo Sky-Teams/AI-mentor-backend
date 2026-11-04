@@ -16,7 +16,7 @@ export function SubscriptionListPanel({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isActivePlan, setIsActivePlan] = useState<boolean>(false);
+  const [hasPaidActivePlan, setHasPaidActivePlan] = useState<boolean>(false);
   const [requestedPlan, setRequestedPlan] = useState<RequestedPlans | null>(
     null,
   );
@@ -34,7 +34,11 @@ export function SubscriptionListPanel({
 
         setPlans(plans);
         setRequestedPlan(requestedPlan);
-        if (activePlan) setIsActivePlan(true);
+        setHasPaidActivePlan(
+          Boolean(
+            activePlan && activePlan.subscriptionPlan.billingModel !== "FREE",
+          ),
+        );
       } catch (error: any) {
         setErrorMessage(error.message);
       } finally {
@@ -153,12 +157,12 @@ export function SubscriptionListPanel({
                         className="outline-button"
                         type="button"
                         onClick={() =>
-                          isActivePlan
+                          hasPaidActivePlan
                             ? handleUpgradePlan(plan.id)
                             : handleBuyPlan(plan.id)
                         }
                       >
-                        {isActivePlan
+                        {hasPaidActivePlan
                           ? buyingId === plan.id
                             ? "Upgrading..."
                             : "Upgrade"
