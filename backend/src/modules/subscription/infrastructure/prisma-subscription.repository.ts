@@ -104,10 +104,14 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
   ): Promise<SubscriptionRequest | UserSubscription> {
     const activeSubscription = await this.prisma.userSubscription.findFirst({
       where: { userId, status: "ACTIVE" },
+      include: { subscriptionPlan: true },
     });
 
     /** Check user active plan */
-    if (activeSubscription)
+    if (
+      activeSubscription &&
+      activeSubscription.subscriptionPlan.billingModel !== "FREE"
+    )
       throw new AppError(
         "You already have an active subscription.Please upgrade instead",
         StatusCodes.BAD_REQUEST,
@@ -173,10 +177,14 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
 
       const activeSubscription = await transaction.userSubscription.findFirst({
         where: { userId, status: "ACTIVE" },
+        include: { subscriptionPlan: true },
       });
 
       /** Deactivate the user's active subscription */
-      if (existing.type === "UPGRADE") {
+      if (
+        existing.type === "UPGRADE" ||
+        activeSubscription?.subscriptionPlan.billingModel === "FREE"
+      ) {
         if (!activeSubscription)
           throw new AppError(
             "Active subscription not found.",
