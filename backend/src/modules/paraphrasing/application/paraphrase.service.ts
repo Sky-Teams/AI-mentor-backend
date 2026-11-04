@@ -13,7 +13,7 @@ import { ReviewRepository } from "src/modules/reviews/domain/review.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { toneTypeDescriptions } from "../domain/paraphrase";
 import crypto from "crypto";
-import { defaultAiTarget } from "src/shared/ai/ai-client.js";
+import { SubscriptionService } from "src/modules/subscription/application/subscription.service.js";
 
 export class ParaphraseService {
   public constructor(
@@ -24,6 +24,7 @@ export class ParaphraseService {
     private readonly CreditEstimator: CreditEstimatorService,
     private readonly reviewRepository: ReviewRepository,
     private readonly userRepository: UserRepository,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   public async triggerSectionParaphrase(input: {
@@ -35,7 +36,8 @@ export class ParaphraseService {
     lengthStrategy?: LengthStrategy;
     content: string;
   }): Promise<ParaphraseRun> {
-    const ai = defaultAiTarget();
+    const ai = await this.subscriptionService.getAiTargetForUser(input.ownerId);
+
     await this.userRepository.getUserById(input.ownerId);
     const project = await this.projectService.getProject(
       input.projectId,
@@ -145,6 +147,7 @@ export class ParaphraseService {
         operation: "PARAPHRASE",
         projectId: input.projectId,
         model: ai.model,
+        provider: ai.provider,
         usage: execution.usage,
         amount: actualCredits,
       });
@@ -193,6 +196,7 @@ export class ParaphraseService {
         paraphraseRunId: undefined,
         operation: "PARAPHRASE",
         model: ai.model,
+        provider: ai.provider,
       });
 
       // const message =

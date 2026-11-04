@@ -27,6 +27,10 @@ export interface SubscriptionPlan {
   includedCredits: number;
 }
 
+export interface ActiveSubscription {
+  subscriptionPlan: SubscriptionPlan;
+}
+
 export interface SubscriptionRequest {
   id: string;
   userId: string;
@@ -66,9 +70,9 @@ export const subscriptionApi = {
   },
   
   async getActivePlan() {
-    const response = await apiClient.get<ApiSuccessResponse<any>>(
-      `/subscriptions/plans/active`,
-    );
+    const response = await apiClient.get<
+      ApiSuccessResponse<ActiveSubscription | null>
+    >(`/subscriptions/plans/active`);
 
     return unwrap(response.data);
   },

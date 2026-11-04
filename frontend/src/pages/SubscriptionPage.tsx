@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RequestedPlans } from "../services/api/subscription";
 import { adminApi } from "../services/api/admin";
+import { formatCredits } from "../utils/formatCredits";
 
 export function SubscriptionPage() {
   const [requestedPlans, setRequestedPlan] = useState<RequestedPlans[] | []>(
@@ -71,7 +72,7 @@ export function SubscriptionPage() {
               <div>
                 <b>Credit amount:</b>
               </div>
-              <div>{item.subscriptionPlan.includedCredits}</div>
+              <div>{formatCredits(item.subscriptionPlan.includedCredits)}</div>
             </div>
 
             <div>

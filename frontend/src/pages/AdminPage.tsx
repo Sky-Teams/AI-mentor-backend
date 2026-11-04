@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi } from "../services/api/admin";
 import { journalsApi } from "../services/api/journal";
+import { formatCredits } from "../utils/formatCredits";
 import { Link } from "react-router-dom";
 import type {
   AdminUsageUserSummary,
@@ -185,7 +186,7 @@ export const AdminPage = () => {
               <div className="issue-item" key={plan.id}>
                 <strong>{plan.name}</strong>
                 <p className="muted-text">
-                  {plan.billingModel} · {plan.includedCredits} credits ·{" "}
+                  {plan.billingModel} · {formatCredits(plan.includedCredits)} credits ·{" "}
                   {plan.monthlyPriceCents
                     ? `$${(plan.monthlyPriceCents / 100).toFixed(2)}`
                     : "No monthly fee"}

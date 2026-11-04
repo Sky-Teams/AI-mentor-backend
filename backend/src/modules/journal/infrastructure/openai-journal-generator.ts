@@ -1,14 +1,12 @@
 import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { StatusCodes } from "http-status-codes";
 import { env } from "src/shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
 import { CreateJournalInput } from "src/modules/journal/domain/journal.repository.js";
-import {
-  type AiTarget,
-  defaultAiTarget,
-  getAiClient,
-} from "src/shared/ai/ai-client.js";
+import { type AiTarget, getAiClient } from "src/shared/ai/ai-client.js";
+import { RateLimitError } from "openai";
 
 export const AiJournalGenerationSchema = z.object({
   name: z.string().min(1),
@@ -126,14 +124,17 @@ Requirements:
 };
 
 export class OpenAiJournalGenerator {
+  public constructor(private readonly prisma: PrismaClient) {}
+
   public async generateJournalTemplate(
     input: {
       journalName: string;
       publisher?: string;
       url?: string;
       issn?: string | null;
+      userId: string;
     },
-    ai: AiTarget = defaultAiTarget(),
+    ai: AiTarget,
   ): Promise<CreateJournalInput> {
     const context = buildJournalGenerationContext(input.journalName, {
       publisher: input.publisher,
@@ -184,6 +185,14 @@ export class OpenAiJournalGenerator {
         );
       }
 
+      if (error instanceof RateLimitError) {
+        throw new AppError(
+          "The AI service is busy. Please try again shortly.",
+          StatusCodes.TOO_MANY_REQUESTS,
+          "AI_RATE_LIMITED",
+        );
+      }
+
       throw error;
     }
 
@@ -195,6 +204,19 @@ export class OpenAiJournalGenerator {
         "AI_PARSE_ERROR",
       );
     }
+
+    await this.prisma.aiUsageLog.create({
+      data: {
+        userId: input.userId,
+        provider: ai.provider,
+        model: ai.model,
+        operation: "JOURNAL_GENERATION",
+        status: "SUCCESS",
+        technicalInputTokens: response.usage?.prompt_tokens ?? 0,
+        technicalOutputTokens: response.usage?.completion_tokens ?? 0,
+        technicalTotalTokens: response.usage?.total_tokens ?? 0,
+      },
+    });
 
     return {
       ...parsed,

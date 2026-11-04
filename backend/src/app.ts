@@ -72,6 +72,7 @@ import { CitationFormatterService } from "./modules/citation/application/citatio
 import { CitationController } from "./modules/citation/interface/citation.controller";
 import { createCitationRouter } from "./modules/citation/interface/citation.routes";
 import { JournalSearchRepository } from "src/modules/journal/infrastructure/journal-search.repository.js";
+import { OpenAiJournalGenerator } from "./modules/journal/infrastructure/openai-journal-generator";
 import { ChicagoAuthorDateCitationFormatter } from "./modules/citation/infrastructure/formatters/chicago.author.date.formatter";
 import { HarvardCitationFormatter } from "./modules/citation/infrastructure/formatters/harvard.formatter";
 import { MLACitationFormatter } from "./modules/citation/infrastructure/formatters/mla.formatter";
@@ -103,12 +104,17 @@ export const createApp = (): express.Express => {
   const projectService = new ProjectService(projectRepository);
   const billingService = new BillingService(billingRepository);
   const CreditEstimator = new CreditEstimatorService();
+  const subscriptionService = new SubscriptionService(
+    subscriptionRepository,
+    userRepository,
+  );
   const reviewService = new ReviewService(
     reviewRepository,
     projectService,
     new OpenAiSectionReviewer(),
     billingService,
     CreditEstimator,
+    subscriptionService,
   );
   const journalExternalApiRepository = new JournalExternalApiRepository();
   const journalReferenceService = new JournalReferenceService(
@@ -123,6 +129,7 @@ export const createApp = (): express.Express => {
     CreditEstimator,
     reviewRepository,
     userRepository,
+    subscriptionService,
   );
   const apa = new APAFormatter();
   const mla = new MLAFormatter();
@@ -168,15 +175,13 @@ export const createApp = (): express.Express => {
   );
 
   const referenceService = new ReferenceSearchService(journalReferenceService);
-  const subscriptionService = new SubscriptionService(
-    subscriptionRepository,
-    userRepository,
-  );
   const journalRepository = new PrismaJournalRepository(prisma);
   const journalSearchRepository = new JournalSearchRepository();
   const journalService = new JournalService(
     journalRepository,
     journalSearchRepository,
+    subscriptionService,
+    new OpenAiJournalGenerator(prisma),
   );
 
   const userService = new UserService(passwordHasher, userRepository);

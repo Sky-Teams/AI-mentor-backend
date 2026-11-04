@@ -1,11 +1,11 @@
 import { createApp } from "./app";
-import { startExpirePlansJob } from "./jobs/subscription-job";
+import { startSubscriptionJobs } from "./jobs/subscription-job";
 import { env } from "./shared/config/env";
 import { logger } from "./shared/logging/logger";
 
 const app = createApp();
 
-startExpirePlansJob();
+startSubscriptionJobs();
 
 app.listen(env.PORT, () => {
   logger.info(

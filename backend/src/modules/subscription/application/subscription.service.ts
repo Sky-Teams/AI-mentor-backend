@@ -8,6 +8,7 @@ import { SubscriptionRepository } from "../domain/subscription.repository";
 import { UserRepository } from "src/modules/users/domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
+import { AiTarget } from "src/shared/ai/ai-client.js";
 
 export class SubscriptionService {
   public constructor(
@@ -32,6 +33,13 @@ export class SubscriptionService {
         "Plan was not found",
         StatusCodes.NOT_FOUND,
         `PLAN_NOT_FOUND`,
+      );
+
+    if (plan.billingModel === "FREE")
+      throw new AppError(
+        "Free plans cannot be activated by users.",
+        StatusCodes.FORBIDDEN,
+        "FREE_PLAN_USER_ACTIVATION_DISABLED",
       );
 
     return await this.subscriptionRepository.buyPlan(
@@ -66,6 +74,13 @@ export class SubscriptionService {
         `PLAN_NOT_FOUND`,
       );
 
+    if (plan.billingModel === "FREE")
+      throw new AppError(
+        "Free plans cannot be activated by users.",
+        StatusCodes.FORBIDDEN,
+        "FREE_PLAN_USER_ACTIVATION_DISABLED",
+      );
+
     return await this.subscriptionRepository.upgradePlan(
       subscriptionPlanId,
       userId,
@@ -98,5 +113,13 @@ export class SubscriptionService {
 
   public async expirePlans(): Promise<{ message: string }> {
     return await this.subscriptionRepository.expirePlans();
+  }
+
+  public async getAiTargetForUser(userId: string): Promise<AiTarget> {
+    return await this.subscriptionRepository.getAiTargetForUser(userId);
+  }
+
+  public async renewFreePlans(): Promise<number> {
+    return await this.subscriptionRepository.renewFreePlans();
   }
 }
