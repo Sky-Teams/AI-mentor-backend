@@ -4,6 +4,7 @@ import {
   subscriptionApi,
   SubscriptionPlan,
 } from "../services/api/subscription";
+import { formatCredits } from "../utils/formatCredits";
 
 type SubscriptionListPanelProps = {
   onPlanActivated: () => Promise<void>;
@@ -133,7 +134,7 @@ export function SubscriptionListPanel({
                     <div>
                       <b>Credit amount</b>
                     </div>
-                    <div>{plan.includedCredits} credits</div>
+                    <div>{formatCredits(plan.includedCredits)} credits</div>
                   </div>
 
                   <div className="paraphrase-row main-info">
@@ -150,7 +151,7 @@ export function SubscriptionListPanel({
                   <div>
                     {plan.billingModel === "FREE" ? (
                       <span className="muted-text">
-                        100,000 free credits every week.
+                        {formatCredits(100_000)} free credits every week.
                       </span>
                     ) : (
                       <button
@@ -207,7 +208,7 @@ export function SubscriptionListPanel({
                   <b>Credit amount</b>
                 </div>
                 <div>
-                  {requestedPlan.subscriptionPlan.includedCredits} credits
+                  {formatCredits(requestedPlan.subscriptionPlan.includedCredits)} credits
                 </div>
               </div>
 
