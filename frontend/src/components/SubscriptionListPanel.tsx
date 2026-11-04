@@ -146,8 +146,7 @@ export function SubscriptionListPanel({
                   <div>
                     {plan.billingModel === "FREE" ? (
                       <span className="muted-text">
-                        Automatically activated when you don&apos;t have an
-                        active plan.
+                        100,000 free credits every week.
                       </span>
                     ) : (
                       <button
