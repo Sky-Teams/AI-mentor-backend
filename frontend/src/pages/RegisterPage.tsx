@@ -8,9 +8,14 @@ export const RegisterPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [hasAcceptedLegal, setHasAcceptedLegal] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!hasAcceptedLegal) {
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -74,11 +79,25 @@ export const RegisterPage = () => {
           />
         </Field>
 
+        <div className="legal-consent">
+          <input
+            aria-label="I agree to the Terms of Service and acknowledge the Privacy Policy"
+            checked={hasAcceptedLegal}
+            onChange={(event) => setHasAcceptedLegal(event.target.checked)}
+            required
+            type="checkbox"
+          />
+          <span>
+            I agree to the <Link to="/terms-of-service">Terms of Service</Link> and
+            acknowledge the <Link to="/privacy-policy">Privacy Policy</Link>.
+          </span>
+        </div>
+
         {error ? <p className="error-text">{error}</p> : null}
 
         <button
-          className="primary-button"
-          disabled={isSubmitting}
+          className="primary-button legal-consent-submit"
+          disabled={isSubmitting || !hasAcceptedLegal}
           type="submit"
         >
           {isSubmitting ? "Creating account..." : "Create account"}

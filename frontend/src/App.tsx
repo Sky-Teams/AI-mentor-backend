@@ -18,6 +18,8 @@ import { SubscriptionPage } from "./pages/SubscriptionPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
+import { TermsOfServicePage } from "./pages/TermsOfServicePage";
 // import { ParaphraseDetails } from "./pages/ParaphraseDetails";
 
 export const App = () => (
@@ -29,6 +31,8 @@ export const App = () => (
       <Route element={<VerifyEmailPage />} path="/verify-email/:token" />
       <Route element={<ForgotPassword />} path="/forgot-password" />
       <Route element={<ResetPassword />} path="/reset-password/:token" />
+      <Route element={<PrivacyPolicyPage />} path="/privacy-policy" />
+      <Route element={<TermsOfServicePage />} path="/terms-of-service" />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
