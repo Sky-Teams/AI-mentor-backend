@@ -15,27 +15,25 @@ const subscriptionService = new SubscriptionService(
 );
 
 export function startSubscriptionJobs() {
-  const scheduleTime =
-    process.env.SUBSCRIPTION_EXPIRE_SCHEDULE_TIME ?? "0 0 * * *";
-  const freePlanRenewalTime = env.FREE_PLAN_RENEW_SCHEDULE_TIME;
+  const scheduleTime = env.SUBSCRIPTION_EXPIRE_SCHEDULE_TIME;
 
   cron.schedule(scheduleTime, async () => {
+    console.log(
+      "Subscription expiration and Free plan reactivating job is running...",
+    );
+
     try {
-      console.log("Subscription expiration job is running...");
-      const result = await subscriptionService.expirePlans();
-      console.log(result.message);
+      const expirePlansResult = await subscriptionService.expirePlans();
+      console.log(expirePlansResult.message);
     } catch (error) {
       console.error("Expire plans job failed:", error);
     }
-  });
 
-  cron.schedule(freePlanRenewalTime, async () => {
     try {
-      console.log("Free plan reactivating job is running...");
-      const result = await subscriptionService.renewFreePlans();
-      console.log(result);
-    } catch (err) {
-      console.log("Reactivating Free plans job failed: ", err);
+      const renewedFreePlansCount = await subscriptionService.renewFreePlans();
+      console.log(`Reactivated ${renewedFreePlansCount} Free plans.`);
+    } catch (error) {
+      console.error("Free plan reactivation job failed:", error);
     }
   });
 }
