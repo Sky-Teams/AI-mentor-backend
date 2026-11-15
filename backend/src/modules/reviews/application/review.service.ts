@@ -152,6 +152,7 @@ export class ReviewService {
         amount: actualCredits,
         usage: execution.usage,
         operation: "REVIEW",
+        provider: ai.provider,
       });
 
       const completedReview = await this.reviewRepository.completeReview({
@@ -181,6 +182,7 @@ export class ReviewService {
         operation: "REVIEW",
         reviewRunId: reviewRun.id,
         model: ai.model,
+        provider: ai.provider,
       });
 
       const message =

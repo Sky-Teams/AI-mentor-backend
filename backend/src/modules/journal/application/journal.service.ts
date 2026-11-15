@@ -12,7 +12,7 @@ export class JournalService {
     private readonly journalRepository: JournalRepository,
     private readonly journalSearchRepository: JournalSearchRepository,
     private readonly subscriptionService: SubscriptionService,
-    private readonly journalGenerator: OpenAiJournalGenerator = new OpenAiJournalGenerator(),
+    private readonly journalGenerator: OpenAiJournalGenerator,
   ) {}
 
   public async getAllJournals(specialtyId: string) {

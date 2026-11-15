@@ -72,6 +72,7 @@ import { CitationFormatterService } from "./modules/citation/application/citatio
 import { CitationController } from "./modules/citation/interface/citation.controller";
 import { createCitationRouter } from "./modules/citation/interface/citation.routes";
 import { JournalSearchRepository } from "src/modules/journal/infrastructure/journal-search.repository.js";
+import { OpenAiJournalGenerator } from "./modules/journal/infrastructure/openai-journal-generator";
 import { ChicagoAuthorDateCitationFormatter } from "./modules/citation/infrastructure/formatters/chicago.author.date.formatter";
 import { HarvardCitationFormatter } from "./modules/citation/infrastructure/formatters/harvard.formatter";
 import { MLACitationFormatter } from "./modules/citation/infrastructure/formatters/mla.formatter";
@@ -180,6 +181,7 @@ export const createApp = (): express.Express => {
     journalRepository,
     journalSearchRepository,
     subscriptionService,
+    new OpenAiJournalGenerator(prisma),
   );
 
   const userService = new UserService(passwordHasher, userRepository);

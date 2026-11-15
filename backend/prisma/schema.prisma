@@ -542,7 +542,7 @@ model UserSubscription {
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
   cancelledAt        DateTime?
-  autoRenew          Boolean                @default(true)
+  autoRenew          Boolean                @default(false)
   externalReference  String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
@@ -623,7 +623,7 @@ model AiUsageLog {
   projectId             String?
   reviewRunId           String?        @unique
   paraphraseRunId       String?        @unique
-  provider              AiProvider     @default(GROQ)
+  provider              AiProvider
   model                 String
   operation             String
   status                AiUsageStatus

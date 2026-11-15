@@ -24,4 +24,5 @@ export interface SubscriptionRepository {
   getUserRequestedPlan(userId: string): Promise<RequestedPlans | null>;
   expirePlans(): Promise<{ message: string }>;
   getAiTargetForUser(userId: string): Promise<AiTarget>;
+  renewFreePlans(): Promise<number>;
 }

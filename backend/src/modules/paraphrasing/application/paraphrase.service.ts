@@ -147,6 +147,7 @@ export class ParaphraseService {
         operation: "PARAPHRASE",
         projectId: input.projectId,
         model: ai.model,
+        provider: ai.provider,
         usage: execution.usage,
         amount: actualCredits,
       });
@@ -195,6 +196,7 @@ export class ParaphraseService {
         paraphraseRunId: undefined,
         operation: "PARAPHRASE",
         model: ai.model,
+        provider: ai.provider,
       });
 
       // const message =

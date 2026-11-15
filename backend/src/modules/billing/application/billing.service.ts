@@ -6,6 +6,8 @@ import {
   type BillingOverview,
 } from "../domain/billing";
 import type { BillingRepository } from "../domain/billing.repository";
+import type { AiProvider } from "@prisma/client";
+
 
 export class BillingService {
   public constructor(private readonly billingRepository: BillingRepository) {}
@@ -47,6 +49,7 @@ export class BillingService {
       outputTokens: number;
       totalTokens: number;
     };
+    provider: AiProvider;
   }): Promise<number> {
     return this.billingRepository.deductCredits(input);
   }
@@ -58,6 +61,7 @@ export class BillingService {
     operation: AiOperation;
     projectId: string;
     model: string;
+    provider: AiProvider;
   }): Promise<void> {
     await this.billingRepository.recordFailedUsage(input);
   }

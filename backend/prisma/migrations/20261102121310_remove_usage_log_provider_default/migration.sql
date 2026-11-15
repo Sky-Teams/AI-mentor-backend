@@ -1,0 +1,1 @@
+ALTER TABLE "AiUsageLog" ALTER COLUMN "provider" DROP DEFAULT;
