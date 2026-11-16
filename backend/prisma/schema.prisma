@@ -354,7 +354,7 @@ model SectionVersion {
   editedById    String
   createdAt     DateTime       @default(now())
   section       ProjectSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  editedBy      User           @relation(fields: [editedById], references: [id], onDelete: Restrict)
+  editedBy      User           @relation(fields: [editedById], references: [id], onDelete: Cascade)
 
   @@unique([sectionId, versionNumber])
   @@index([editedById, createdAt])
@@ -388,7 +388,7 @@ model ReviewRun {
   updatedAt            DateTime            @updatedAt
   project              Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   section              ProjectSection      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  initiatedBy          User                @relation("ReviewInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
+  initiatedBy          User                @relation("ReviewInitiator", fields: [initiatedById], references: [id], onDelete: Cascade)
   issues               ReviewIssue[]
   suggestions          ReviewSuggestion[]
   metrics              ReviewMetric[]
@@ -687,7 +687,7 @@ model ParaphraseRun {
   updatedAt          DateTime              @updatedAt
   project            Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
   section            ProjectSection        @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  initiatedBy        User                  @relation("ParaphraseInitiator", fields: [initiatedById], references: [id], onDelete: Restrict)
+  initiatedBy        User                  @relation("ParaphraseInitiator", fields: [initiatedById], references: [id], onDelete: Cascade)
   creditTransactions CreditTransaction[]
   promptTemplate     PromptTemplate?       @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
   aiUsageLog         AiUsageLog?
