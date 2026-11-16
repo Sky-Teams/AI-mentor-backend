@@ -53,7 +53,7 @@ export class UserService {
 
   public async deleteUser(
     userId: string,
-  ): Promise<{ message: "User deleted successfully" }> {
+  ): Promise<{ message: "Account deleted successfully" }> {
     return await this.userRepository.deleteUser(userId);
   }
 }
