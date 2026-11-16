@@ -28,5 +28,10 @@ export const createUserRoute = (
       controller.updateProfile(request, response),
     ),
   );
+
+  router.delete(
+    "/delete",
+    asyncHandler((req, res) => controller.deleteUser(req, res)),
+  );
   return router;
 };
