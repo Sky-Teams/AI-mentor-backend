@@ -66,7 +66,8 @@ export class ReviewService {
       );
     }
 
-    if (!section.content.text.trim()) {
+    const sectionText = section.content?.text;
+    if (typeof sectionText !== "string" || !sectionText.trim()) {
       throw new AppError(
         "Section content is required before running review.",
         StatusCodes.BAD_REQUEST,
@@ -100,7 +101,7 @@ export class ReviewService {
         section: {
           key: section.key,
           title: section.title,
-          content: section.content.text,
+          content: sectionText,
         },
         promptTemplate,
         guidelineRules,
@@ -132,7 +133,7 @@ export class ReviewService {
         section: {
           key: section.key,
           title: section.title,
-          content: section.content.text,
+          content: sectionText,
           sectionPrompt: section.sectionPrompt ?? "",
         },
         promptTemplate,
