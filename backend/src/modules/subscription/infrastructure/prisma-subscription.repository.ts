@@ -192,12 +192,41 @@ export class PrismaSubscriptionRepository implements SubscriptionRepository {
             "ACTIVE_SUBSCRIPTION_NOT_FOUND",
           );
 
+        const upgradingFromFreePlan =
+          activeSubscription.subscriptionPlan.billingModel === "FREE" &&
+          updateRequestedPlan.subscriptionPlan.billingModel !== "FREE";
+
         await transaction.userSubscription.update({
           where: { id: activeSubscription.id },
           data: {
             status: "INACTIVE",
           },
         });
+
+        if (upgradingFromFreePlan) {
+          const wallet = await transaction.creditWallet.findUniqueOrThrow({
+            where: { userId },
+          });
+
+          if (wallet.balance > 0) {
+            const clearedWallet = await transaction.creditWallet.update({
+              where: { userId },
+              data: { balance: 0 },
+            });
+
+            await transaction.creditTransaction.create({
+              data: {
+                walletId: wallet.id,
+                userId,
+                type: "ADJUSTMENT",
+                source: "SUBSCRIPTION",
+                amount: -wallet.balance,
+                balanceAfter: clearedWallet.balance,
+                description: "Unused Free-plan credits removed on upgrade",
+              },
+            });
+          }
+        }
       }
 
       const billingModel = updateRequestedPlan.subscriptionPlan.billingModel;
