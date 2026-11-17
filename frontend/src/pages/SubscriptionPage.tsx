@@ -78,7 +78,11 @@ export function SubscriptionPage() {
               <div>
                 <b>Cost:</b>
               </div>
-              <div>{item.subscriptionPlan.monthlyPriceCents}</div>
+              <div>
+                {item.subscriptionPlan.monthlyPriceCents
+                  ? `$${(item.subscriptionPlan.monthlyPriceCents / 100).toFixed(2)}`
+                  : "No monthly fee"}
+              </div>
             </div>
 
             <div>
