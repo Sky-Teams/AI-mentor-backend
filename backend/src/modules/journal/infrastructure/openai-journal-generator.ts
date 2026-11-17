@@ -5,10 +5,8 @@ import { StatusCodes } from "http-status-codes";
 import { env } from "src/shared/config/env";
 import { AppError } from "src/shared/errors/app-error";
 import { CreateJournalInput } from "src/modules/journal/domain/journal.repository.js";
-import {
-  type AiTarget,
-  getAiClient,
-} from "src/shared/ai/ai-client.js";
+import { type AiTarget, getAiClient } from "src/shared/ai/ai-client.js";
+import { RateLimitError } from "openai";
 
 export const AiJournalGenerationSchema = z.object({
   name: z.string().min(1),
@@ -184,6 +182,14 @@ export class OpenAiJournalGenerator {
           "The AI returned an invalid journal template. Please try again.",
           StatusCodes.BAD_GATEWAY,
           "AI_SCHEMA_VALIDATION_FAILED",
+        );
+      }
+
+      if (error instanceof RateLimitError) {
+        throw new AppError(
+          "The AI service is busy. Please try again shortly.",
+          StatusCodes.TOO_MANY_REQUESTS,
+          "AI_RATE_LIMITED",
         );
       }
 

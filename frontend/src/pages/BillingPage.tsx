@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { billingApi } from "../services/api/billing";
 import type { BillingOverview } from "../types/api";
 import { SubscriptionListPanel } from "../components/SubscriptionListPanel";
+import { formatCredits } from "../utils/formatCredits";
 
 export const BillingPage = () => {
   const [overview, setOverview] = useState<BillingOverview | null>(null);
@@ -57,8 +58,11 @@ export const BillingPage = () => {
               </p>
               <p>
                 Included credits:{" "}
-                {overview.activeSubscription.subscriptionPlan
-                  ?.includedCredits ?? "-"}
+                {overview.activeSubscription.subscriptionPlan?.includedCredits != null
+                  ? formatCredits(
+                      overview.activeSubscription.subscriptionPlan.includedCredits,
+                    )
+                  : "-"}
               </p>
               <p>
                 {overview.activeSubscription.subscriptionPlan?.monthlyPriceCents

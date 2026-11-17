@@ -4,6 +4,7 @@ import {
   subscriptionApi,
   SubscriptionPlan,
 } from "../services/api/subscription";
+import { formatCredits } from "../utils/formatCredits";
 
 type SubscriptionListPanelProps = {
   onPlanActivated: () => Promise<void>;
@@ -16,7 +17,7 @@ export function SubscriptionListPanel({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isActivePlan, setIsActivePlan] = useState<boolean>(false);
+  const [hasPaidActivePlan, setHasPaidActivePlan] = useState<boolean>(false);
   const [requestedPlan, setRequestedPlan] = useState<RequestedPlans | null>(
     null,
   );
@@ -34,7 +35,11 @@ export function SubscriptionListPanel({
 
         setPlans(plans);
         setRequestedPlan(requestedPlan);
-        if (activePlan) setIsActivePlan(true);
+        setHasPaidActivePlan(
+          Boolean(
+            activePlan && activePlan.subscriptionPlan.billingModel !== "FREE",
+          ),
+        );
       } catch (error: any) {
         setErrorMessage(error.message);
       } finally {
@@ -129,7 +134,7 @@ export function SubscriptionListPanel({
                     <div>
                       <b>Credit amount</b>
                     </div>
-                    <div>{plan.includedCredits} credits</div>
+                    <div>{formatCredits(plan.includedCredits)} credits</div>
                   </div>
 
                   <div className="paraphrase-row main-info">
@@ -144,23 +149,29 @@ export function SubscriptionListPanel({
                   </div>
 
                   <div>
-                    <button
-                      className="outline-button"
-                      type="button"
-                      onClick={() =>
-                        isActivePlan
-                          ? handleUpgradePlan(plan.id)
-                          : handleBuyPlan(plan.id)
-                      }
-                    >
-                      {isActivePlan
-                        ? buyingId === plan.id
-                          ? "Upgrading..."
-                          : "Upgrade"
-                        : buyingId === plan.id
-                          ? "Buying..."
-                          : "Buy"}
-                    </button>
+                    {plan.billingModel === "FREE" ? (
+                      <span className="muted-text">
+                        {formatCredits(100_000)} free credits every week.
+                      </span>
+                    ) : (
+                      <button
+                        className="outline-button"
+                        type="button"
+                        onClick={() =>
+                          hasPaidActivePlan
+                            ? handleUpgradePlan(plan.id)
+                            : handleBuyPlan(plan.id)
+                        }
+                      >
+                        {hasPaidActivePlan
+                          ? buyingId === plan.id
+                            ? "Upgrading..."
+                            : "Upgrade"
+                          : buyingId === plan.id
+                            ? "Buying..."
+                            : "Buy"}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -197,7 +208,7 @@ export function SubscriptionListPanel({
                   <b>Credit amount</b>
                 </div>
                 <div>
-                  {requestedPlan.subscriptionPlan.includedCredits} credits
+                  {formatCredits(requestedPlan.subscriptionPlan.includedCredits)} credits
                 </div>
               </div>
 
