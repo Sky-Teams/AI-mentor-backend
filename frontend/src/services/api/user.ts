@@ -32,4 +32,12 @@ export const userApi = {
 
     return unwrap(response.data);
   },
+
+  async deleteAccount(): Promise<{ message: string }> {
+    const response = await apiClient.delete<
+      ApiSuccessResponse<{ message: string }>
+    >("/user/delete");
+
+    return unwrap(response.data);
+  },
 };

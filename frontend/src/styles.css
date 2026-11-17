@@ -355,6 +355,20 @@ textarea {
   background: var(--accent-strong);
 }
 
+.danger-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.85rem 1.2rem;
+  background: var(--danger);
+  color: white;
+  font-weight: 600;
+}
+
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .export-menu {
   position: relative;
   display: inline-block;

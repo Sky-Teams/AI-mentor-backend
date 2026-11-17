@@ -3,13 +3,18 @@ import { useAuth } from "../hooks/useAuth";
 import { UpdateProfilePane } from "../components/UpdateProfilePanel";
 import { User, userApi } from "../services/api/user";
 import { ChangePasswordPanel } from "../components/ChangePasswordPanel";
+import { useNavigate } from "react-router-dom";
+import { normalizeApiError } from "../utils/normalizeApiError";
 
 export function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isOpenUpdateModal, setIsOpenUpdateModal] = useState<boolean>(false);
   const [isOpenChangePasswordModal, setIsOpenChangePasswordModal] =
     useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [updateProfile, setUpdateProfile] = useState<User>();
 
   const handleUpdateProfile = async (fullName: string) => {
@@ -19,6 +24,25 @@ export function ProfilePage() {
       setUpdateProfile(result);
     } catch (error: any) {
       setErrorMessage(error.message);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "Permanently delete your account and its associated data? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    setDeleteError("");
+    setIsDeletingAccount(true);
+    try {
+      await userApi.deleteAccount();
+      logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      setDeleteError(normalizeApiError(error).message);
+    } finally {
+      setIsDeletingAccount(false);
     }
   };
 
@@ -75,6 +99,27 @@ export function ProfilePage() {
             onClose={() => setIsOpenChangePasswordModal(false)}
           />
         )}
+      </div>
+
+      <div className="card danger-zone">
+        <h3>Delete account</h3>
+        <p>
+          Permanently delete your account and associated data. This action
+          cannot be undone.
+        </p>
+        {deleteError && (
+          <p className="error-text" role="alert">
+            {deleteError}
+          </p>
+        )}
+        <button
+          className="danger-button"
+          disabled={isDeletingAccount}
+          onClick={handleDeleteAccount}
+          type="button"
+        >
+          {isDeletingAccount ? "Deleting account..." : "Delete account"}
+        </button>
       </div>
     </div>
   );
