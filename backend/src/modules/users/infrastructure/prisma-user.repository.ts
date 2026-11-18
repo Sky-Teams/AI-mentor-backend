@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { User, UserRepository, UserWithPassword } from "../domain/user";
 import { AppError } from "src/shared/errors/app-error";
 import { StatusCodes } from "http-status-codes";
@@ -58,5 +58,30 @@ export class PrismaUserRepository implements UserRepository {
     });
 
     return mapUser(user);
+  }
+
+  public async deleteUser(
+    userId: string,
+  ): Promise<{ message: "Account deleted successfully" }> {
+    try {
+      await this.prisma.user.delete({
+        where: { id: userId },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        throw new AppError(
+          "User was not found",
+          StatusCodes.NOT_FOUND,
+          "USER_NOT_FOUND",
+        );
+      }
+
+      throw error;
+    }
+
+    return { message: "Account deleted successfully" };
   }
 }

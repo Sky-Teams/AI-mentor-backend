@@ -36,4 +36,10 @@ export class UserController {
 
     response.status(StatusCodes.OK).json(successResponse(result));
   }
+
+  public async deleteUser(req: Request, res: Response): Promise<void> {
+    const result = await this.userService.deleteUser(req.auth!.userId);
+
+    res.status(StatusCodes.OK).json(successResponse(result));
+  }
 }

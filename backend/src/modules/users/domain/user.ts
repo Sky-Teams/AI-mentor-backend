@@ -23,4 +23,7 @@ export interface UserRepository {
     newPassword: string,
   ): Promise<{ message: string }>;
   updateProfile(userId: string, fullName: string): Promise<User>;
+  deleteUser(
+    userId: string,
+  ): Promise<{ message: "Account deleted successfully" }>;
 }

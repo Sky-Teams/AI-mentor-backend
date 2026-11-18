@@ -40,7 +40,7 @@ export const RegisterPage = () => {
       {isRegistered && (
         <div style={{ color: "green", textAlign: "center" }}>
           <h5>You registered successfully</h5>
-          <p>Please check your email and verify account.</p>
+          <p>You can sign in now. Optionally verify your email using the link sent to you.</p>
         </div>
       )}
       <form className="auth-card" onSubmit={handleSubmit}>

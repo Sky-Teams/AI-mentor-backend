@@ -97,7 +97,7 @@ apiClient.interceptors.response.use(
     const isRefreshRoute = url.includes("/auth/refresh");
 
     if (isAuthRoute || isRefreshRoute || originalConfig._retry) {
-      return Promise.reject(error);
+      return Promise.reject(normalizeApiError(error));
     }
 
     originalConfig._retry = true;

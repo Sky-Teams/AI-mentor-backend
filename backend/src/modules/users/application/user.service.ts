@@ -50,4 +50,10 @@ export class UserService {
 
     return await this.userRepository.updateProfile(userId, fullName);
   }
+
+  public async deleteUser(
+    userId: string,
+  ): Promise<{ message: "Account deleted successfully" }> {
+    return await this.userRepository.deleteUser(userId);
+  }
 }
