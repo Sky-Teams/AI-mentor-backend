@@ -79,13 +79,6 @@ export class AuthService {
       );
     }
 
-    if (!user.isVerified)
-      throw new AppError(
-        "Your email is not verified ",
-        StatusCodes.FORBIDDEN,
-        "EMAIL_NOT_VERIFIED",
-      );
-
     const tokens = this.tokenService.issueTokens({
       email: user.email,
       role: user.role,

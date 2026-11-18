@@ -52,7 +52,7 @@ const emailTemplate = (fullName: string, verifyUrl: string) => {
                 <div style="color: #1f2937; font-size: 14px; line-height: 1.7">
                   <p>Hi ${fullName},</p>
 
-                  <p>Please verify your email address to activate your account.</p>
+                  <p>Verify your email address to confirm your account. You can sign in now without verification.</p>
 
                   <div style="text-align: center; margin: 35px 0">
                     <a

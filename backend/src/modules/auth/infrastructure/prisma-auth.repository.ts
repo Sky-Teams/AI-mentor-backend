@@ -167,7 +167,7 @@ export class PrismaAuthRepository implements AuthRepository {
 
     return {
       message:
-        "Registration Successful! Please check your email to activate your account.",
+        "Registration successful. You can sign in now; you may also verify your email.",
     };
   }
 
@@ -379,7 +379,7 @@ export class PrismaAuthRepository implements AuthRepository {
     }
 
     return {
-      message: "Please check your email to activate your account.",
+      message: "Please check your email to verify your account.",
     };
   }
 }
